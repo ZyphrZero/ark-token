@@ -28,6 +28,30 @@ export class AuthFlowError extends Error {
   }
 }
 
+/** 登录链路的网络层错误（无法连通或响应不可解析），可尝试改走一图流后端 */
+export class NetworkFlowError extends AuthFlowError {
+  constructor(message: string) {
+    super(message)
+    this.name = 'NetworkFlowError'
+  }
+}
+
+/** 主密码设置、校验或加解密失败 */
+export class SecurityError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'SecurityError'
+  }
+}
+
+/** 插件处于锁定状态（未解锁就尝试读凭据或写存储） */
+export class PluginLockedError extends Error {
+  constructor(message = '插件已锁定：请先输入主密码解锁后再操作') {
+    super(message)
+    this.name = 'PluginLockedError'
+  }
+}
+
 /** 一图流错误码到用户可读提示的映射（后端 ResultCode） */
 export function describeYituliuError(code: number, msg: string): string {
   switch (code) {

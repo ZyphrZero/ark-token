@@ -9,6 +9,7 @@
 - 配置**读 token** 后，同步完成自动调用 `GET /open-api/operator/info` 校验远端数据
 - 凭证失效时，若账号存有官网 HG Token 会自动刷新森空岛凭证并重试
 - 所有 token / 凭证只保存在本机 `chrome.storage.local`，不写入日志、不上报
+- **主密码加密**：森空岛凭证、HG Token、读写 token 以 AES-GCM 加密落盘，主密码本身不保存，防止浏览器数据文件被第三方软件读取后直接还原凭据
 
 ## 使用方法
 
@@ -42,6 +43,14 @@ npm run build   # 类型检查 + 打包到 dist/
 
 注意：同一权限重新生成 token 会使旧 token 失效。之后在插件弹窗中点「立即同步」即可更新数据。
 
+### 主密码与解锁
+
+- 首次添加账号时会要求设置**主密码**（至少 8 个字符）；也可在「设置 → 安全」中开启，已存在的明文凭据会自动加密迁移
+- 主密码经 PBKDF2（SHA-256，60 万次迭代）派生 AES-GCM 密钥，凭据密文与口令分离：磁盘上只有密文，**主密码本身不落盘、无法找回**
+- 解锁密钥只保存在本次浏览器运行的内存中（`chrome.storage.session`），**重启浏览器后自动锁定**，需重新输入主密码；设置页也可「立即锁定」
+- 锁定期间无法同步、无法修改凭据；账号列表（UID / 昵称 / 区服 / 同步状态）保持可见
+- 忘记主密码只能在「设置 → 安全 → 忘记主密码」中重置：清空全部账号并移除主密码，账号需重新添加
+
 ## 目录说明
 
 ```
@@ -54,18 +63,21 @@ ark-token/
 │   └── build-operator-table.mjs    # 从源表生成精简干员表（星级 + 模组类型映射）
 ├── src/
 │   ├── core/                       # 纯逻辑层（不依赖 DOM / chrome API，可直接单测）
-│   │   ├── types.ts                # GameAccount、PlayerInfoPayload 等数据模型
+│   │   ├── types.ts                # GameAccount、SecurityConfig、PlayerInfoPayload 等数据模型
 │   │   ├── errors.ts               # 错误类型与错误码 → 中文提示映射
+│   │   ├── crypto.ts               # 凭据加密（AES-GCM-256 + PBKDF2，WebCrypto）
 │   │   ├── skland.ts               # 森空岛签名（HMAC-SHA256+MD5）与数据 API
-│   │   ├── hgAuth.ts               # 官网 HG Token 换凭证（走后端，可降级直连）与输入解析
+│   │   ├── hgAuth.ts               # 官网 HG Token 换凭证（浏览器直连，失败可降级走后端）与输入解析
 │   │   ├── qrLogin.ts              # 森空岛扫码登录（创建二维码 + 轮询）
 │   │   ├── yituliuApi.ts           # 一图流 open-api 上传 / 读取封装
 │   │   ├── format.ts               # 森空岛干员数据 → 上传格式换算（依赖精简干员表）
 │   │   └── sync.ts                 # 单账号同步编排（凭证失效自动刷新重试）
 │   ├── storage/
-│   │   └── store.ts                # chrome.storage.local 封装（账号增删改 / 激活切换 / 设置）
+│   │   ├── store.ts                # chrome.storage.local 封装（账号增删改 / 激活切换 / 设置 / 主密码加解密边界与解锁）
+│   │   └── sessionKey.ts           # 解锁密钥会话缓存（chrome.storage.session，仅内存、随浏览器关闭清空）
 │   ├── background/
-│   │   └── index.ts                # service worker：同步消息路由 + chrome.alarms 定时同步
+│   │   └── index.ts                # service worker：同步消息路由 + chrome.alarms 定时同步（锁定时跳过）
+│   ├── security/                   # 安全相关界面（锁定屏 / 主密码设置 / 安全面板，popup 与 options 共用）
 │   ├── popup/                      # 弹窗界面（账号卡片、切换、单账号/全部同步）
 │   ├── options/                    # 管理页（账号管理 / 添加向导 / 设置）
 │   ├── assets/
@@ -104,6 +116,7 @@ ark-token/
 ## 已知限制
 
 - 定时自动同步依赖浏览器处于运行状态（`chrome.alarms`），间隔最小按小时计
+- 设置主密码后，浏览器重启到重新解锁期间定时同步会静默跳过，手动同步会提示先解锁
 - 一图流后端对同一账号 5 秒内只允许上传一次（错误码 39007），插件会提示稍后再试
 - 官网 HG Token 在官网退出登录后失效；提示「需要进行设备验证」时，需在森空岛 APP 关闭「新设备登录身份验证」
 - 上传报文中的 `itemList`（仓库材料）会随请求一起发送（与一图流官网导入行为一致）；当前后端 open-api 路径仅持久化干员数据
@@ -113,12 +126,14 @@ ark-token/
 森空岛凭证、官网 HG Token、一图流读写 token 均为敏感凭据：
 
 - 只保存在本机 `chrome.storage.local`，不硬编码、不写入日志、不参与任何上报
+- 设置主密码后凭据以 AES-GCM-256（PBKDF2-SHA256 派生，每条信封独立随机 IV）加密落盘，主密码与密钥不落盘；未设置主密码的存量数据保持明文，会在设置主密码时自动迁移
+- 加密覆盖 `skland` / `hgToken` / `yituliu` 三个字段；UID、昵称、区服、同步状态、后端地址等非敏感字段保持明文以便锁定时展示
 - 测试用例（`src/**/*.test.ts`）全部使用伪造 token，不含真实凭据
 - 如怀疑泄露，请立即在一图流官网删除对应 API Token，并重新登录森空岛/官网使旧凭证失效
 
 ## 验证记录
 
 - `npm ci`：依赖安装成功（Node ≥ 18）
-- `npm test`：6 个测试文件、43 个用例全部通过（签名算法用 `node:crypto` 独立实现交叉验证）
+- `npm test`：7 个测试文件、69 个用例全部通过（签名算法用 `node:crypto` 独立实现交叉验证；加密用例覆盖加解密往返、错误口令、密文篡改、明文迁移、锁定读写守卫、改密与重置）
 - `npm run build`：`tsc --noEmit` 无错误，产物输出至 `dist/`，可在 Chrome/Edge 开发者模式加载
 - 真实账号端到端联调：需扫码环境与一图流读写 token，按上文「使用方法」操作验证

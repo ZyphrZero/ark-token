@@ -1,17 +1,28 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
   DEFAULT_SETTINGS,
+  changeSecurityPassphrase,
+  getSecurityStatus,
   loadState,
+  lockSecurity,
   removeAccount,
+  resetSecurity,
   saveState,
   setActiveAccount,
+  setupSecurity,
   STORAGE_KEY,
+  subscribeState,
+  unlockSecurity,
   updateSettings,
   upsertAccount
 } from './store'
-import type { GameAccount } from '../core/types'
+import type { GameAccount, PluginState } from '../core/types'
+import { PluginLockedError, SecurityError } from '../core/errors'
 import type { StorageArea } from './store'
+import type { SessionArea } from './sessionKey'
+
+const LOW_ITERATIONS = 1000
 
 function makeAccount(id: string, uid: string): GameAccount {
   return {
@@ -34,6 +45,38 @@ function memoryStorage(initial: Record<string, unknown> = {}): StorageArea {
     },
     set(items, callback) {
       data = { ...data, ...items }
+      callback?.()
+    }
+  }
+}
+
+/** 额外暴露原始落盘内容，用于断言磁盘上不存在明文凭据 */
+function inspectableStorage(initial: Record<string, unknown> = {}): StorageArea & { raw(): Record<string, unknown> } {
+  let data = { ...initial }
+  return {
+    get(callback) {
+      callback(data)
+    },
+    set(items, callback) {
+      data = { ...data, ...items }
+      callback?.()
+    },
+    raw: () => data
+  }
+}
+
+function memorySession(initial: Record<string, unknown> = {}): SessionArea {
+  let data = { ...initial }
+  return {
+    get(callback) {
+      callback(data)
+    },
+    set(items, callback) {
+      data = { ...data, ...items }
+      callback?.()
+    },
+    remove(name, callback) {
+      delete data[name]
       callback?.()
     }
   }
@@ -130,3 +173,158 @@ describe('saveState 往返', () => {
     expect(after).toEqual(before)
   })
 })
+
+describe('主密码加密', () => {
+  it('未设置主密码时状态为未配置且视为已解锁', async () => {
+    await expect(getSecurityStatus({ area })).resolves.toEqual({ configured: false, unlocked: true })
+  })
+
+  it('主密码过短时拒绝设置', async () => {
+    await expect(setupSecurity('short', { area, session: memorySession(), iterations: LOW_ITERATIONS }))
+      .rejects.toBeInstanceOf(SecurityError)
+  })
+
+  it('设置后磁盘上不存在任何明文凭据，内存读回为明文', async () => {
+    await upsertAccount(makeAccount('a1', '111'), area)
+    const disk = inspectableStorage()
+    // 把已写入的明文状态拷到可检磁盘上再开启加密，模拟老用户迁移
+    disk.set({ [STORAGE_KEY]: await new Promise<unknown>(resolve => area.get(items => resolve(items[STORAGE_KEY]))) })
+    const session = memorySession()
+    await setupSecurity('主密码测试8888', { area: disk, session, iterations: LOW_ITERATIONS })
+
+    const raw = JSON.stringify(disk.raw())
+    expect(raw).not.toContain('cred-a1')
+    expect(raw).not.toContain('token-a1')
+    expect(raw).not.toContain('f'.repeat(32))
+    expect(raw).toContain('"iv"')
+
+    const state = await loadState(disk, session)
+    expect(state.accounts[0].skland.cred).toBe('cred-a1')
+    expect(state.accounts[0].yituliu.writeToken).toBe('f'.repeat(32))
+    expect(state.security?.version).toBe(1)
+    await expect(getSecurityStatus({ area: disk, session })).resolves.toEqual({ configured: true, unlocked: true })
+  })
+
+  it('锁定后读回脱敏状态，且禁止写入防止脱敏数据覆盖密文', async () => {
+    const disk = inspectableStorage()
+    const session = memorySession()
+    await setupSecurity('主密码测试8888', { area: disk, session, iterations: LOW_ITERATIONS })
+    await upsertAccount(makeAccount('a1', '111'), disk, session)
+    await lockSecurity({ area: disk, session })
+
+    const locked = await loadState(disk, session)
+    expect(locked.accounts[0].skland.cred).toBe('')
+    expect(locked.accounts[0].yituliu.writeToken).toBeUndefined()
+    expect(locked.accounts[0].uid).toBe('111')
+    await expect(getSecurityStatus({ area: disk, session })).resolves.toEqual({ configured: true, unlocked: false })
+
+    await expect(saveState(locked, disk, session)).rejects.toBeInstanceOf(PluginLockedError)
+    await expect(upsertAccount(makeAccount('a2', '222'), disk, session)).rejects.toBeInstanceOf(PluginLockedError)
+    // 锁定期间密文原样保留
+    expect(JSON.stringify(disk.raw())).not.toContain('cred-a1')
+  })
+
+  it('错误口令解锁失败，正确口令解锁后数据完整', async () => {
+    const disk = inspectableStorage()
+    const session = memorySession()
+    await setupSecurity('主密码测试8888', { area: disk, session, iterations: LOW_ITERATIONS })
+    await upsertAccount(makeAccount('a1', '111'), disk, session)
+    const before = await loadState(disk, session)
+    await lockSecurity({ area: disk, session })
+
+    await expect(unlockSecurity('错误的主密码88', { area: disk, session })).rejects.toBeInstanceOf(SecurityError)
+    await expect(getSecurityStatus({ area: disk, session })).resolves.toEqual({ configured: true, unlocked: false })
+
+    await unlockSecurity('主密码测试8888', { area: disk, session })
+    expect(await loadState(disk, session)).toEqual(before)
+  })
+
+  it('加密模式下新增账号同样落盘为密文', async () => {
+    const disk = inspectableStorage()
+    const session = memorySession()
+    await setupSecurity('主密码测试8888', { area: disk, session, iterations: LOW_ITERATIONS })
+    await upsertAccount(makeAccount('a1', '111'), disk, session)
+
+    const raw = JSON.stringify(disk.raw())
+    expect(raw).not.toContain('cred-a1')
+    expect((await loadState(disk, session)).accounts[0].skland.cred).toBe('cred-a1')
+  })
+
+  it('修改主密码后旧口令失效、新口令可用、数据不变', async () => {
+    const disk = inspectableStorage()
+    const session = memorySession()
+    await setupSecurity('旧主密码888888', { area: disk, session, iterations: LOW_ITERATIONS })
+    await upsertAccount(makeAccount('a1', '111'), disk, session)
+    const before = await loadState(disk, session)
+
+    await changeSecurityPassphrase('旧主密码888888', '新主密码888888', { area: disk, session, iterations: LOW_ITERATIONS })
+    // security 配置（盐/校验器）换密码后必然变化，只比较业务数据
+    const after = await loadState(disk, session)
+    expect(after.accounts).toEqual(before.accounts)
+    expect(after.activeAccountId).toBe(before.activeAccountId)
+    expect(after.settings).toEqual(before.settings)
+    expect(JSON.stringify(disk.raw())).not.toContain('cred-a1')
+
+    await lockSecurity({ area: disk, session })
+    await expect(unlockSecurity('旧主密码888888', { area: disk, session })).rejects.toBeInstanceOf(SecurityError)
+    await unlockSecurity('新主密码888888', { area: disk, session })
+    const reopened = await loadState(disk, session)
+    expect(reopened.accounts).toEqual(before.accounts)
+    expect(reopened.activeAccountId).toBe(before.activeAccountId)
+  })
+
+  it('重置安全配置清空账号并回到明文模式，其他设置保留', async () => {
+    const disk = inspectableStorage()
+    const session = memorySession()
+    await setupSecurity('主密码测试8888', { area: disk, session, iterations: LOW_ITERATIONS })
+    await upsertAccount(makeAccount('a1', '111'), disk, session)
+    await updateSettings({ autoSyncEnabled: true }, disk, session)
+
+    const state = await resetSecurity({ area: disk, session })
+    expect(state.accounts).toEqual([])
+    expect(state.security).toBeUndefined()
+    expect(state.settings.autoSyncEnabled).toBe(true)
+    expect(await getSecurityStatus({ area: disk, session })).toEqual({ configured: false, unlocked: true })
+    expect(JSON.stringify(disk.raw())).not.toContain('cred-a1')
+  })
+
+  it('subscribeState 推送的是按解锁状态解密后的状态', async () => {
+    const disk = inspectableStorage()
+    const session = memorySession()
+    await setupSecurity('主密码测试8888', { area: disk, session, iterations: LOW_ITERATIONS })
+    await upsertAccount(makeAccount('a1', '111'), disk, session)
+
+    const received: PluginState[] = []
+    const unsubscribe = subscribeState(state => received.push(state), disk, session)
+    // 模拟 chrome.storage.onChanged：携带落盘的密文 newValue
+    fireOnChanged({ [STORAGE_KEY]: { newValue: disk.raw()[STORAGE_KEY] } })
+    unsubscribe()
+    // 回调经 WebCrypto 异步解密后触发，完成时间可能晚于一个宏任务
+    await vi.waitFor(() => expect(received).toHaveLength(1))
+    expect(received[0].accounts.map(account => account.id)).toEqual(['a1'])
+    expect(received[0].accounts[0].skland.cred).toBe('cred-a1')
+  })
+})
+
+/** stub chrome.storage.onChanged，使 subscribeState 可在 Node 测试环境中注入内存存储 */
+const onChangedListeners = new Set<(changes: Record<string, { newValue?: unknown }>, areaName: string) => void>()
+
+beforeEach(() => {
+  onChangedListeners.clear()
+  ;(globalThis as unknown as { chrome?: unknown }).chrome = {
+    storage: {
+      onChanged: {
+        addListener: (listener: (changes: Record<string, { newValue?: unknown }>, areaName: string) => void) =>
+          onChangedListeners.add(listener),
+        removeListener: (listener: (changes: Record<string, { newValue?: unknown }>, areaName: string) => void) =>
+          onChangedListeners.delete(listener)
+      }
+    }
+  }
+})
+
+function fireOnChanged(changes: Record<string, { newValue?: unknown }>, areaName = 'local'): void {
+  for (const listener of [...onChangedListeners]) {
+    listener(changes, areaName)
+  }
+}

@@ -52,6 +52,33 @@ export interface PluginState {
   accounts: GameAccount[]
   activeAccountId: string | null
   settings: ExtensionSettings
+  /** 主密码安全配置；未设置时为 undefined（旧数据兼容，凭据明文存储） */
+  security?: SecurityConfig
+}
+
+/** 加密信封：AES-GCM 密文，每条信封使用独立随机 IV */
+export interface EncryptedEnvelope {
+  v: 1
+  /** base64 编码的 12 字节 IV */
+  iv: string
+  /** base64 编码的密文 */
+  ct: string
+}
+
+/**
+ * 主密码安全配置。KDF 参数与校验器都不是机密，可明文保存；
+ * 主密码本身与派生密钥永不落盘（密钥仅存浏览器会话内存）。
+ */
+export interface SecurityConfig {
+  version: 1
+  kdf: {
+    /** PBKDF2-HMAC-SHA256 迭代次数 */
+    iterations: number
+    /** base64 编码的盐值 */
+    salt: string
+  }
+  /** 用派生密钥加密的固定校验串，用于验证口令而不必解密全部数据 */
+  verifier: EncryptedEnvelope
 }
 
 /** 森空岛绑定列表中的单个明日方舟角色 */

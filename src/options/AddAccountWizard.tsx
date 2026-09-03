@@ -9,7 +9,8 @@ import {
 } from '../core/hgAuth'
 import { checkQrStatus, createQrSession, type QrSession } from '../core/qrLogin'
 import { fetchSklandBinding } from '../core/skland'
-import { loadState, upsertAccount } from '../storage/store'
+import { getSecurityStatus, loadState, upsertAccount } from '../storage/store'
+import SetupScreen from '../security/SetupScreen'
 import type { SklandBinding, SklandCredential } from '../core/types'
 
 type Method = 'qr' | 'hg' | 'cred'
@@ -323,8 +324,11 @@ export default function AddAccountWizard({ onFinished }: { onFinished: () => voi
   const [backendBaseUrl, setBackendBaseUrl] = useState('https://backend.yituliu.cn')
   const [wizardState, setWizardState] = useState<WizardState | null>(null)
   const [feedback, setFeedback] = useState<{ kind: 'ok' | 'err' | 'info'; text: string } | null>(null)
+  // 未设置主密码时先要求设置，保证新凭据不会以明文落盘；null 表示安全状态未确认
+  const [securityReady, setSecurityReady] = useState<boolean | null>(null)
 
   useEffect(() => {
+    void getSecurityStatus().then(status => setSecurityReady(!status.configured || status.unlocked))
     void loadState().then(state => setBackendBaseUrl(state.settings.backendBaseUrl))
   }, [])
 
@@ -336,6 +340,19 @@ export default function AddAccountWizard({ onFinished }: { onFinished: () => voi
   const handleError = useCallback((message: string) => {
     setFeedback({ kind: 'err', text: message })
   }, [])
+
+  if (securityReady === null) {
+    return (
+      <div className="card">
+        <h2>添加明日方舟账号</h2>
+        <p className="hint">加载中…</p>
+      </div>
+    )
+  }
+
+  if (!securityReady) {
+    return <SetupScreen onDone={() => setSecurityReady(true)} />
+  }
 
   return (
     <div className="card">

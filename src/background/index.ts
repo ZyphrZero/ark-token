@@ -1,5 +1,5 @@
 import { syncAccount } from '../core/sync'
-import { loadState, saveState } from '../storage/store'
+import { getSecurityStatus, loadState, saveState } from '../storage/store'
 import type { GameAccount } from '../core/types'
 
 /**
@@ -12,6 +12,12 @@ const AUTO_SYNC_ALARM = 'yituliu-auto-sync'
 
 /** 正在同步的账号 id，防止重复触发 */
 const inFlight = new Set<string>()
+
+/** 设置了主密码且未解锁时，凭据不可用；定时任务静默跳过，手动同步给出提示 */
+async function lockedMessage(): Promise<string | null> {
+  const status = await getSecurityStatus()
+  return status.unlocked ? null : '插件已锁定：请先输入主密码解锁后再同步'
+}
 
 /** 以补丁方式写回账号，避免覆盖同步期间用户在管理页保存的 token 等修改 */
 async function patchAccount(accountId: string, patch: Partial<GameAccount>): Promise<void> {
@@ -45,6 +51,10 @@ async function runSync(account: GameAccount, backendBaseUrl: string, skipVerify 
 }
 
 async function syncById(accountId: string): Promise<string> {
+  const locked = await lockedMessage()
+  if (locked) {
+    return locked
+  }
   const state = await loadState()
   const account = state.accounts.find(item => item.id === accountId)
   if (!account) {
@@ -54,11 +64,16 @@ async function syncById(accountId: string): Promise<string> {
   return 'ok'
 }
 
-async function syncAll(): Promise<void> {
+/** 返回 false 表示因锁定跳过本次同步 */
+async function syncAll(): Promise<boolean> {
+  if (await lockedMessage()) {
+    return false
+  }
   const state = await loadState()
   for (const account of state.accounts) {
     await runSync(account, state.settings.backendBaseUrl)
   }
+  return true
 }
 
 export async function applyAutoSyncAlarm(): Promise<void> {
@@ -91,8 +106,8 @@ chrome.runtime.onMessage.addListener((message: PopupMessage, _sender, sendRespon
             const result = await syncById(message.accountId)
             sendResponse({ ok: result === 'ok', message: result === 'ok' ? undefined : result })
           } else {
-            await syncAll()
-            sendResponse({ ok: true })
+            const ran = await syncAll()
+            sendResponse({ ok: ran, message: ran ? undefined : '插件已锁定：请先输入主密码解锁后再同步' })
           }
           break
         case 'applyAutoSync':

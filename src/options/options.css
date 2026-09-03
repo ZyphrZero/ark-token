@@ -329,3 +329,58 @@ textarea {
   font-size: 12px;
   line-height: 1.7;
 }
+
+/* 锁定屏 */
+.lock-screen {
+  background: #fff;
+  border: 1px solid #d0d7de;
+  border-radius: 10px;
+  padding: 20px 24px;
+  max-width: 520px;
+}
+
+.lock-screen h2 {
+  margin: 0 0 10px;
+  color: #1f4468;
+}
+
+.lock-hint {
+  color: #6b7280;
+  font-size: 13px;
+  line-height: 1.7;
+  margin: 0 0 12px;
+}
+
+.lock-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 12px;
+  border: 1px solid #d0d7de;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.lock-input:focus {
+  outline: none;
+  border-color: #2c5f8a;
+}
+
+.lock-actions {
+  margin-top: 12px;
+}
+
+.lock-error {
+  margin-top: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #ffebe9;
+  color: #cf222e;
+  font-size: 13px;
+}
+
+/* 安全面板 */
+.security-form {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed #d0d7de;
+}
