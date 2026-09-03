@@ -1,12 +1,17 @@
-import { AuthFlowError, YituliuError, describeYituliuError } from './errors'
+import { AuthFlowError, NetworkFlowError, YituliuError, describeYituliuError } from './errors'
 import type { SklandCredential } from './types'
 import type { FetchLike } from './skland'
 
 /**
  * 鹰角官网 token（HG token）换取森空岛凭证。
  *
- * 优先走一图流后端公开接口 POST /survey/hg/cred-token（与官网导入页一致），
- * 失败时降级为插件直连鹰角/森空岛服务器（请求头照搬后端 SklandHgTokenServiceImpl）。
+ * 优先在浏览器内直连鹰角/森空岛服务器（请求头照搬后端 SklandHgTokenServiceImpl）：
+ * 直连发生在用户自己的浏览器（携带官网 Cookie、用户本机 IP），与官网授权流程等价，
+ * 且能拿到上游原始报错。一图流后端的 /survey/hg/cred-token 走共享出口，历史上多次
+ * 整体故障且只返回裸 60002，故仅在直连无法连通时降级走后端。
+ *
+ * 注意：HG token 在 grant 接口很可能是一次性的，一条链路只能尝试一次授权，
+ * 因此业务性失败（token 无效、需设备验证等）不再换后端重试同一 token。
  */
 
 const OAUTH2_GRANT_URL = 'https://as.hypergryph.com/user/oauth2/v2/grant'
@@ -80,70 +85,94 @@ export async function exchangeHgTokenViaBackend(
   return { cred: envelope.data.cred, token: envelope.data.token, obtainedAt: Date.now() }
 }
 
-/** 直连鹰角/森空岛服务器换取凭证（后端接口不可用时的降级路径） */
+/** 直连鹰角/森空岛服务器换取凭证（默认路径） */
 export async function exchangeHgTokenDirect(hgToken: string, fetchFn: FetchLike = globalThis.fetch): Promise<SklandCredential> {
-  const grantResponse = await fetchFn(OAUTH2_GRANT_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'User-Agent': USER_AGENT,
-      Accept: '*/*',
-      'Accept-Language': 'zh-CN,zh;q=0.9',
-      'X-DeviceModel': 'Firefox',
-      'X-DeviceType': '7',
-      'X-OSVer': 'Windows',
-      'X-DeviceId': DEVICE_ID,
-      'X-Captcha-Version': '4.0'
-    },
-    body: JSON.stringify({ token: hgToken, appCode: APP_CODE, type: 0 })
-  })
+  let grantResponse: Response
+  try {
+    grantResponse = await fetchFn(OAUTH2_GRANT_URL, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': USER_AGENT,
+        Accept: '*/*',
+        'Accept-Language': 'zh-CN,zh;q=0.9',
+        'X-DeviceModel': 'Firefox',
+        'X-DeviceType': '7',
+        'X-OSVer': 'Windows',
+        'X-DeviceId': DEVICE_ID,
+        'X-Captcha-Version': '4.0'
+      },
+      body: JSON.stringify({ token: hgToken, appCode: APP_CODE, type: 0 })
+    })
+  } catch {
+    throw new NetworkFlowError('无法连接鹰角服务器（网络异常或被拦截），请检查网络')
+  }
   const grant = (await grantResponse.json().catch(() => null)) as { data?: { code?: string }; msg?: string } | null
   const code = grant?.data?.code
   if (typeof code !== 'string' || code.length === 0) {
     const upstreamMsg = grant?.msg
-    throw new AuthFlowError(
-      upstreamMsg
-        ? `官网 Token 换取凭证失败（来自鹰角的提示：${upstreamMsg}；若提示设备验证，请在森空岛 APP 关闭「新设备登录身份验证」）`
-        : '官网 Token 换取凭证失败：Token 可能已失效，请重新登录官网后复制'
-    )
+    if (!upstreamMsg) {
+      // 非 JSON 响应（如 WAF 拦截页）：视为网络层失败，允许降级走一图流后端
+      throw new NetworkFlowError(`鹰角服务器返回了无法解析的响应（HTTP ${grantResponse.status}）`)
+    }
+    // account/info/hg 返回的 Token 随登录会话下发且有时效：提示"登录已过期"时
+    // 需要退出并重新登录官网以签发新 Token，而非简单重试
+    const hint = upstreamMsg.includes('设备验证')
+      ? '请在森空岛 APP 中关闭「新设备登录身份验证」后重试'
+      : upstreamMsg.includes('登录已过期')
+        ? '请退出并重新登录鹰角官网（ak.hypergryph.com）以签发新 Token 后再试；若仍失败，请改用「扫码登录」或「森空岛凭证粘贴」'
+        : '请重新登录鹰角官网后重试'
+    throw new AuthFlowError(`官网 Token 换取凭证失败（来自鹰角的提示：${upstreamMsg}。${hint}）`)
   }
 
-  const credResponse = await fetchFn(GENERATE_CRED_BY_CODE_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'User-Agent': USER_AGENT,
-      Accept: '*/*',
-      'Accept-Language': 'zh-CN,zh;q=0.9',
-      platform: '3',
-      vName: '1.0.0',
-      timestamp: String(Math.floor(Date.now() / 1000)),
-      dId: D_ID
-    },
-    body: JSON.stringify({ kind: 1, code })
-  })
-  const cred = (await credResponse.json().catch(() => null)) as { code?: number; msg?: string; data?: { cred?: string; token?: string } } | null
+  let credResponse: Response
+  try {
+    credResponse = await fetchFn(GENERATE_CRED_BY_CODE_URL, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': USER_AGENT,
+        Accept: '*/*',
+        'Accept-Language': 'zh-CN,zh;q=0.9',
+        platform: '3',
+        vName: '1.0.0',
+        timestamp: String(Math.floor(Date.now() / 1000)),
+        dId: D_ID
+      },
+      body: JSON.stringify({ kind: 1, code })
+    })
+  } catch {
+    throw new NetworkFlowError('无法连接森空岛服务器（网络异常或被拦截），请检查网络')
+  }
+  const cred = (await credResponse.json().catch(() => null)) as { code?: number; msg?: string; message?: string; data?: { cred?: string; token?: string } } | null
   if (cred?.code !== 0 || !cred.data?.cred || !cred.data?.token) {
-    const upstreamMsg = cred?.msg
-    throw new AuthFlowError(upstreamMsg ? `森空岛返回错误：${upstreamMsg}` : '换取森空岛凭证失败，请稍后重试')
+    // 森空岛接口的错误字段是 message（鹰角是 msg），两者都兼容
+    const upstreamMsg = cred?.message ?? cred?.msg
+    throw new AuthFlowError(upstreamMsg ? `森空岛返回错误：${upstreamMsg}` : `换取森空岛凭证失败（HTTP ${credResponse.status}），请稍后重试`)
   }
   return { cred: cred.data.cred, token: cred.data.token, obtainedAt: Date.now() }
 }
 
-/** 先走后端，失败后直连；供添加账号与凭证刷新共用 */
+/** 直连优先，网络层失败时降级走一图流后端；供添加账号与凭证刷新共用 */
 export async function exchangeHgToken(
   hgToken: string,
   backendBaseUrl: string,
   fetchFn: FetchLike = globalThis.fetch
 ): Promise<SklandCredential> {
   try {
-    return await exchangeHgTokenViaBackend(hgToken, backendBaseUrl, fetchFn)
+    return await exchangeHgTokenDirect(hgToken, fetchFn)
   } catch (error) {
-    // 仅在网络层失败时降级直连；token 本身无效时直连也会失败，给出直连的报错更准确
-    try {
-      return await exchangeHgTokenDirect(hgToken, fetchFn)
-    } catch {
+    // 业务性失败（token 无效、需设备验证等）后端走同一上游只会得到相同或更含糊的报错，
+    // 且 token 可能已被本次授权消耗，不再换后端重试
+    if (!(error instanceof NetworkFlowError)) {
       throw error
+    }
+    try {
+      return await exchangeHgTokenViaBackend(hgToken, backendBaseUrl, fetchFn)
+    } catch {
+      throw new AuthFlowError(`${error.message}；改走一图流后端换凭证也失败了，请稍后重试或改用「扫码登录」`)
     }
   }
 }
