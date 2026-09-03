@@ -13,9 +13,10 @@
     "service_worker": "src/background/index.ts",
     "type": "module"
   },
-  "permissions": ["storage", "alarms"],
+  "permissions": ["storage", "alarms", "scripting"],
   "host_permissions": [
     "https://backend.yituliu.cn/*",
+    "https://ark.yituliu.cn/*",
     "https://zonai.skland.com/*",
     "https://as.hypergryph.com/*",
     "https://web-api.hypergryph.com/*",

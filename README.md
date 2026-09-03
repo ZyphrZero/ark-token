@@ -7,6 +7,7 @@
 - 管理多个明日方舟账号（扫码登录 / 官网 HG Token / 森空岛凭证三种方式添加），点击切换当前账号
 - 一键（或定时）从森空岛拉取最新干员练度与仓库材料，通过一图流**写 token** 上传到 `POST /open-api/operator/upload`
 - 配置**读 token** 后，同步完成自动调用 `GET /open-api/operator/info` 校验远端数据
+- **自动获取读写 token**：浏览器已登录一图流官网时，从标签页读取会话并复用/生成第三方 API Token，免去手动复制；读写 token 全局一对，在「设置」中配置、所有游戏账号共用
 - 凭证失效时，若账号存有官网 HG Token 会自动刷新森空岛凭证并重试
 - 所有 token / 凭证只保存在本机 `chrome.storage.local`，不写入日志、不上报
 - **主密码加密**：森空岛凭证、HG Token、读写 token 以 AES-GCM 加密落盘，主密码本身不保存，防止浏览器数据文件被第三方软件读取后直接还原凭据
@@ -36,7 +37,9 @@ npm run build   # 类型检查 + 打包到 dist/
 
 ### 配置一图流读写 token
 
-在一图流官网 [用户中心 → 第三方 API Token](https://ark.yituliu.cn/account/home) 生成：
+在插件「设置」页配置（读写 token 全局一对，所有游戏账号共用）。推荐**自动获取**：点「自动获取读写 token」（需浏览器已登录 [ark.yituliu.cn](https://ark.yituliu.cn/)）。插件会从一图流标签页读取登录会话，官网已生成的对应 token 直接复用，缺失的权限自动生成并保存。
+
+自动获取失败（未登录 / 无一图流标签页 / 接口异常）时再手动操作：到一图流官网 [用户中心 → 第三方 API Token](https://ark.yituliu.cn/account/home) 生成：
 
 - 「只读 Token」→ 填入插件的**读 token**（用于同步后校验，可选）
 - 「只写 Token」→ 填入插件的**写 token**（上传数据必填）
@@ -70,16 +73,18 @@ ark-token/
 │   │   ├── hgAuth.ts               # 官网 HG Token 换凭证（浏览器直连，失败可降级走后端）与输入解析
 │   │   ├── qrLogin.ts              # 森空岛扫码登录（创建二维码 + 轮询）
 │   │   ├── yituliuApi.ts           # 一图流 open-api 上传 / 读取封装
+│   │   ├── yituliuAccountApi.ts    # 一图流账号会话 API（自动获取读写 token：复用/生成）
 │   │   ├── format.ts               # 森空岛干员数据 → 上传格式换算（依赖精简干员表）
 │   │   └── sync.ts                 # 单账号同步编排（凭证失效自动刷新重试）
 │   ├── storage/
-│   │   ├── store.ts                # chrome.storage.local 封装（账号增删改 / 激活切换 / 设置 / 主密码加解密边界与解锁）
+│   │   ├── store.ts                # chrome.storage.local 封装（账号增删改 / 激活切换 / 设置与全局 token / 主密码加解密边界与解锁 / 旧版账号 token 迁移）
 │   │   └── sessionKey.ts           # 解锁密钥会话缓存（chrome.storage.session，仅内存、随浏览器关闭清空）
 │   ├── background/
 │   │   └── index.ts                # service worker：同步消息路由 + chrome.alarms 定时同步（锁定时跳过）
 │   ├── security/                   # 安全相关界面（锁定屏 / 主密码设置 / 安全面板，popup 与 options 共用）
 │   ├── popup/                      # 弹窗界面（账号卡片、切换、单账号/全部同步）
 │   ├── options/                    # 管理页（账号管理 / 添加向导 / 设置）
+│   │   └── yituliuSession.ts       # 从一图流标签页读取登录会话（chrome.scripting 胶水）
 │   ├── assets/
 │   │   └── operator-table.slim.json  # 精简干员表（npm run build:operator-table 生成）
 │   └── utils/time.ts               # 时间格式化
@@ -109,6 +114,9 @@ ark-token/
   - `GET /open-api/operator/info`：读 token 校验，返回 V2 格式干员数据
   - `POST /survey/hg/cred-token`：官网 HG Token 换森空岛凭证
   - `POST /survey/skland/qr/create` / `POST /survey/skland/qr/check?scanId=`：扫码登录
+  - `GET /user/open-api/permissions`：第三方权限列表（读 10001 / 写 10002，无需登录）
+  - `GET /auth/user/open-api/tokens` / `POST /auth/user/open-api/token`：第三方 token 列表与生成，
+    需 `Authorization: Authorization<USER_TOKEN>` 会话头（凭证存于 ark.yituliu.cn 的 localStorage，与官网「用户中心 → 第三方 API Token」页一致）
 - 前端 `E:\yituliu\frontend-v2-plus`
   - `src/utils/survey/skland.js`：森空岛签名算法与干员数据换算规则（本项目 `src/core/skland.ts`、`src/core/format.ts` 与其保持一致）
   - `src/static/json/operator/character_table_simple.v2.json`：干员表源数据
@@ -127,13 +135,13 @@ ark-token/
 
 - 只保存在本机 `chrome.storage.local`，不硬编码、不写入日志、不参与任何上报
 - 设置主密码后凭据以 AES-GCM-256（PBKDF2-SHA256 派生，每条信封独立随机 IV）加密落盘，主密码与密钥不落盘；未设置主密码的存量数据保持明文，会在设置主密码时自动迁移
-- 加密覆盖 `skland` / `hgToken` / `yituliu` 三个字段；UID、昵称、区服、同步状态、后端地址等非敏感字段保持明文以便锁定时展示
+- 加密覆盖账号的 `skland` / `hgToken` 字段与设置层的读写 token（`settings.yituliuTokens`）；UID、昵称、区服、同步状态、后端地址等非敏感字段保持明文以便锁定时展示。旧版本挂在账号上的 token 会在读取时自动迁移到设置层
 - 测试用例（`src/**/*.test.ts`）全部使用伪造 token，不含真实凭据
 - 如怀疑泄露，请立即在一图流官网删除对应 API Token，并重新登录森空岛/官网使旧凭证失效
 
 ## 验证记录
 
 - `npm ci`：依赖安装成功（Node ≥ 18）
-- `npm test`：7 个测试文件、69 个用例全部通过（签名算法用 `node:crypto` 独立实现交叉验证；加密用例覆盖加解密往返、错误口令、密文篡改、明文迁移、锁定读写守卫、改密与重置）
+- `npm test`：8 个测试文件、85 个用例全部通过（签名算法用 `node:crypto` 独立实现交叉验证；加密用例覆盖加解密往返、错误口令、密文篡改、明文迁移、锁定读写守卫、改密与重置；旧版账号 token → 设置层迁移；token 自动获取用例覆盖复用/生成/回退/会话失效）
 - `npm run build`：`tsc --noEmit` 无错误，产物输出至 `dist/`，可在 Chrome/Edge 开发者模式加载
 - 真实账号端到端联调：需扫码环境与一图流读写 token，按上文「使用方法」操作验证

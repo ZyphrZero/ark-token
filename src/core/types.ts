@@ -8,7 +8,7 @@ export interface SklandCredential {
   obtainedAt: number
 }
 
-/** 一图流第三方 API token（每账号唯一，官网「用户中心-第三方 API Token」生成） */
+/** 一图流第三方 API token（官网「用户中心-第三方 API Token」生成；一个一图流账号仅一对，所有游戏账号共用） */
 export interface YituliuTokens {
   /** 读 token，scope 10001，用于同步后校验 */
   readToken?: string
@@ -37,7 +37,6 @@ export interface GameAccount {
   skland: SklandCredential
   /** 鹰角官网 token（用于凭证失效时自动刷新），仅官网 token 方式添加时存在 */
   hgToken?: string
-  yituliu: YituliuTokens
   lastSync?: LastSync
 }
 
@@ -46,6 +45,8 @@ export interface ExtensionSettings {
   backendBaseUrl: string
   autoSyncEnabled: boolean
   autoSyncIntervalHours: number
+  /** 一图流读写 token（一个一图流账号一对，全局共享） */
+  yituliuTokens: YituliuTokens
 }
 
 export interface PluginState {

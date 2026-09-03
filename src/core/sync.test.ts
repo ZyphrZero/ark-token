@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
 import { syncAccount } from './sync'
-import type { GameAccount } from './types'
+import type { GameAccount, YituliuTokens } from './types'
 
 const BACKEND = 'https://backend.example.test'
+const TOKENS: YituliuTokens = { readToken: 'e'.repeat(32), writeToken: 'f'.repeat(32) }
 
 function jsonResponse(payload: unknown, status = 200): Response {
   return new Response(JSON.stringify(payload), { status, headers: { 'Content-Type': 'application/json' } })
@@ -17,7 +18,6 @@ function sampleAccount(overrides: Partial<GameAccount> = {}): GameAccount {
     channelName: '官服',
     channelMasterId: 1,
     skland: { cred: 'old-cred', token: 'old-signing-token', obtainedAt: 1 },
-    yituliu: { readToken: 'e'.repeat(32), writeToken: 'f'.repeat(32) },
     ...overrides
   }
 }
@@ -61,7 +61,7 @@ describe('syncAccount', () => {
       throw new Error(`未预期的请求：${urlText}`)
     }
 
-    const outcome = await syncAccount(sampleAccount(), BACKEND, { fetchFn: fetchFn as typeof fetch })
+    const outcome = await syncAccount(sampleAccount(), TOKENS, BACKEND, { fetchFn: fetchFn as typeof fetch })
 
     expect(outcome.account.lastSync?.status).toBe('success')
     expect(outcome.account.lastSync?.operatorCount).toBe(1)
@@ -101,7 +101,7 @@ describe('syncAccount', () => {
     }
 
     const account = sampleAccount({ hgToken: 'hg-token-value' })
-    const outcome = await syncAccount(account, BACKEND, { fetchFn: fetchFn as typeof fetch })
+    const outcome = await syncAccount(account, TOKENS, BACKEND, { fetchFn: fetchFn as typeof fetch })
 
     expect(cultivateCalls).toBe(2)
     expect(outcome.account.skland.cred).toBe('new-cred')
@@ -118,13 +118,12 @@ describe('syncAccount', () => {
       throw new Error(`未预期的请求：${url}`)
     }
 
-    await expect(syncAccount(sampleAccount(), BACKEND, { fetchFn: fetchFn as typeof fetch }))
+    await expect(syncAccount(sampleAccount(), TOKENS, BACKEND, { fetchFn: fetchFn as typeof fetch }))
       .rejects.toThrow(/凭证错误或已失效/)
   })
 
   it('缺少写 token 时直接报错', async () => {
-    const account = sampleAccount({ yituliu: {} })
-    await expect(syncAccount(account, BACKEND, { fetchFn: (async () => {
+    await expect(syncAccount(sampleAccount(), {}, BACKEND, { fetchFn: (async () => {
       throw new Error('不应发起任何请求')
     }) as typeof fetch })).rejects.toThrow(/写 token/)
   })
@@ -138,13 +137,13 @@ describe('syncAccount', () => {
       return jsonResponse({ code: 39007, msg: '上传间隔小于5秒' })
     }
 
-    await expect(syncAccount(sampleAccount(), BACKEND, { fetchFn: fetchFn as typeof fetch, skipVerify: true }))
+    await expect(syncAccount(sampleAccount(), TOKENS, BACKEND, { fetchFn: fetchFn as typeof fetch, skipVerify: true }))
       .rejects.toThrow(/5 秒/)
   })
 
   it('森空岛未返回干员时取消上传', async () => {
     const fetchFn = async (): Promise<Response> => jsonResponse({ code: 0, data: { items: [], characters: [] } })
-    await expect(syncAccount(sampleAccount(), BACKEND, { fetchFn: fetchFn as typeof fetch }))
+    await expect(syncAccount(sampleAccount(), TOKENS, BACKEND, { fetchFn: fetchFn as typeof fetch }))
       .rejects.toThrow(/未返回任何干员/)
   })
 })

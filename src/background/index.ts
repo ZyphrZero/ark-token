@@ -1,6 +1,6 @@
 import { syncAccount } from '../core/sync'
 import { getSecurityStatus, loadState, saveState } from '../storage/store'
-import type { GameAccount } from '../core/types'
+import type { GameAccount, YituliuTokens } from '../core/types'
 
 /**
  * MV3 service worker：
@@ -30,14 +30,14 @@ async function patchAccount(accountId: string, patch: Partial<GameAccount>): Pro
   await saveState(state)
 }
 
-async function runSync(account: GameAccount, backendBaseUrl: string, skipVerify = false): Promise<void> {
+async function runSync(account: GameAccount, yituliuTokens: YituliuTokens, backendBaseUrl: string, skipVerify = false): Promise<void> {
   if (inFlight.has(account.id)) {
     return
   }
   inFlight.add(account.id)
   try {
     await patchAccount(account.id, { lastSync: { time: Date.now(), status: 'syncing' } })
-    const outcome = await syncAccount(account, backendBaseUrl, { skipVerify })
+    const outcome = await syncAccount(account, yituliuTokens, backendBaseUrl, { skipVerify })
     await patchAccount(account.id, {
       skland: outcome.account.skland,
       lastSync: outcome.account.lastSync
@@ -60,7 +60,7 @@ async function syncById(accountId: string): Promise<string> {
   if (!account) {
     return '账号不存在'
   }
-  await runSync(account, state.settings.backendBaseUrl)
+  await runSync(account, state.settings.yituliuTokens, state.settings.backendBaseUrl)
   return 'ok'
 }
 
@@ -71,7 +71,7 @@ async function syncAll(): Promise<boolean> {
   }
   const state = await loadState()
   for (const account of state.accounts) {
-    await runSync(account, state.settings.backendBaseUrl)
+    await runSync(account, state.settings.yituliuTokens, state.settings.backendBaseUrl)
   }
   return true
 }

@@ -280,7 +280,6 @@ function BindingPicker({ wizardState, onFinished, onError }: {
         channelName: binding.channelName,
         skland: wizardState.credential,
         hgToken: wizardState.hgToken,
-        yituliu: existing?.yituliu ?? {},
         lastSync: existing?.lastSync
       }
       const nextState = await upsertAccount(account)
@@ -294,7 +293,7 @@ function BindingPicker({ wizardState, onFinished, onError }: {
   return (
     <div>
       <h3>选择要添加的明日方舟账号</h3>
-      <p className="hint">勾选的每个账号都会加入插件账号列表；同一账号重复添加会更新其凭证，一图流 token 保持不变。</p>
+      <p className="hint">勾选的每个账号都会加入插件账号列表；同一账号重复添加会更新其凭证。一图流读写 token 在「设置」中全局配置，与账号无关。</p>
       <div style={{ marginTop: 10 }}>
         {bindings.map(binding => (
           <label className="binding-row" key={binding.uid}>
@@ -376,7 +375,7 @@ export default function AddAccountWizard({ onFinished }: { onFinished: () => voi
           wizardState={wizardState}
           onError={handleError}
           onFinished={addedCount => {
-            setFeedback({ kind: 'ok', text: `已添加 ${addedCount} 个账号。下一步：在「账号管理」中为每个账号填写一图流读写 token。` })
+            setFeedback({ kind: 'ok', text: `已添加 ${addedCount} 个账号。下一步：到「设置」中点击「自动获取读写 token」（需浏览器已登录一图流），获取不到时再手动生成填写。` })
             setWizardState(null)
             window.setTimeout(onFinished, 1200)
           }}

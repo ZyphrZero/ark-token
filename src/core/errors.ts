@@ -55,6 +55,8 @@ export class PluginLockedError extends Error {
 /** 一图流错误码到用户可读提示的映射（后端 ResultCode） */
 export function describeYituliuError(code: number, msg: string): string {
   switch (code) {
+    case 20001:
+      return '一图流账号未登录或登录已过期：请在浏览器中打开一图流官网重新登录后再试，或手动生成 token'
     case 20027:
       return '一图流 token 无效或已过期，请在官网重新生成'
     case 20010:

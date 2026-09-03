@@ -31,8 +31,11 @@ import {
  * chrome.storage.local 存取封装。
  * 所有数据只保存在浏览器本地；token 属敏感凭据，不写入日志、不上报。
  *
- * 设置主密码后，账号的 skland / hgToken / yituliu 三个字段以 AES-GCM 信封落盘，
- * 其余字段（uid、昵称、区服、同步状态、设置）保持明文，便于锁定时展示账号列表。
+ * 一图流读写 token 存放在设置层（settings.yituliuTokens，全局共享，一个一图流账号一对）；
+ * 历史版本曾挂在每个账号上，读取时自动迁移合并。
+ *
+ * 设置主密码后，账号的 skland / hgToken 字段与 settings.yituliuTokens 以 AES-GCM 信封落盘，
+ * 其余字段（uid、昵称、区服、同步状态、其他设置）保持明文，便于锁定时展示账号列表。
  * 解锁密钥只存 chrome.storage.session（内存），锁定期间禁止写存储，防止脱敏数据覆盖密文。
  *
  * StorageArea / SessionArea 接口与 chrome.storage 结构兼容，测试中可注入内存实现。
@@ -50,7 +53,8 @@ export const DEFAULT_BACKEND_BASE_URL = 'https://backend.yituliu.cn'
 export const DEFAULT_SETTINGS: ExtensionSettings = {
   backendBaseUrl: DEFAULT_BACKEND_BASE_URL,
   autoSyncEnabled: false,
-  autoSyncIntervalHours: 24
+  autoSyncIntervalHours: 24,
+  yituliuTokens: {}
 }
 
 export function defaultStorageArea(): StorageArea {
@@ -63,7 +67,10 @@ const VERIFIER_PLAINTEXT = 'ark-token-verifier-v1'
 /** PBKDF2 只能提高爆破成本，足够长的主密码才是根本 */
 const MIN_PASSPHRASE_LENGTH = 8
 
-/** 磁盘上的账号形态：开启加密后 skland / hgToken / yituliu 为加密信封 */
+/** 磁盘上的设置形态：开启加密后 yituliuTokens 为加密信封 */
+type PersistedSettings = Omit<ExtensionSettings, 'yituliuTokens'> & { yituliuTokens?: unknown }
+
+/** 磁盘上的账号形态：开启加密后 skland / hgToken 为加密信封；yituliu 为旧版遗留（读取时迁移） */
 interface PersistedAccount {
   id: string
   uid: string
@@ -72,14 +79,14 @@ interface PersistedAccount {
   channelName: string
   skland: unknown
   hgToken?: unknown
-  yituliu: unknown
+  yituliu?: unknown
   lastSync?: GameAccount['lastSync']
 }
 
 interface PersistedState {
   accounts: PersistedAccount[]
   activeAccountId: string | null
-  settings: ExtensionSettings
+  settings: PersistedSettings
   security?: SecurityConfig
 }
 
@@ -89,7 +96,7 @@ function normalizePersisted(raw: unknown): PersistedState {
     return { accounts: [], activeAccountId: null, settings: { ...DEFAULT_SETTINGS } }
   }
   const partial = raw as Partial<PersistedState>
-  const settings = { ...DEFAULT_SETTINGS, ...(partial.settings ?? {}) }
+  const settings: PersistedSettings = { ...DEFAULT_SETTINGS, ...(partial.settings ?? {}) }
   const accounts = Array.isArray(partial.accounts) ? [...partial.accounts] : []
   const activeAccountId =
     partial.activeAccountId && accounts.some(account => account.id === partial.activeAccountId)
@@ -114,33 +121,93 @@ function writeRawState(persisted: PersistedState, area: StorageArea): Promise<vo
   })
 }
 
-/** 加密三个敏感字段；已是信封的字段保持原样（幂等） */
+/** 加密账号敏感字段；旧版挂在账号上的 yituliu token 不再落盘（读取时已迁移到设置层） */
 async function encodeAccount(account: PersistedAccount, key: CryptoKey): Promise<PersistedAccount> {
-  const encoded: PersistedAccount = { ...account }
-  if (!isEncryptedEnvelope(account.skland)) {
-    encoded.skland = await encryptJson(key, account.skland)
+  const { yituliu: _legacyYituliu, ...rest } = account
+  const encoded = rest as PersistedAccount
+  if (!isEncryptedEnvelope(encoded.skland)) {
+    encoded.skland = await encryptJson(key, encoded.skland)
   }
-  if (account.hgToken !== undefined && !isEncryptedEnvelope(account.hgToken)) {
-    encoded.hgToken = await encryptJson(key, account.hgToken)
-  }
-  if (!isEncryptedEnvelope(account.yituliu)) {
-    encoded.yituliu = await encryptJson(key, account.yituliu)
+  if (encoded.hgToken !== undefined && !isEncryptedEnvelope(encoded.hgToken)) {
+    encoded.hgToken = await encryptJson(key, encoded.hgToken)
   }
   return encoded
 }
 
-async function decodeAccount(account: PersistedAccount, key: CryptoKey): Promise<GameAccount> {
-  const decoded = { ...account } as GameAccount
-  if (isEncryptedEnvelope(account.skland)) {
-    decoded.skland = await decryptJson<SklandCredential>(key, account.skland)
+/** 解出的内存账号与旧版遗留在账号上的 token（供迁移合并） */
+interface DecodedAccount {
+  account: GameAccount
+  legacyTokens?: YituliuTokens
+}
+
+function extractLegacyTokens(yituliu: unknown): YituliuTokens | undefined {
+  if (!yituliu || typeof yituliu !== 'object') {
+    return undefined
   }
-  if (account.hgToken !== undefined && isEncryptedEnvelope(account.hgToken)) {
-    decoded.hgToken = await decryptJson<string>(key, account.hgToken)
+  const tokens = yituliu as Partial<YituliuTokens>
+  if (!tokens.readToken && !tokens.writeToken) {
+    return undefined
   }
-  if (isEncryptedEnvelope(account.yituliu)) {
-    decoded.yituliu = await decryptJson<YituliuTokens>(key, account.yituliu)
+  return {
+    readToken: typeof tokens.readToken === 'string' ? tokens.readToken : undefined,
+    writeToken: typeof tokens.writeToken === 'string' ? tokens.writeToken : undefined
+  }
+}
+
+async function decodeAccount(account: PersistedAccount, key: CryptoKey): Promise<DecodedAccount> {
+  const { yituliu, ...rest } = account
+  const decoded = rest as unknown as GameAccount
+  if (isEncryptedEnvelope(decoded.skland)) {
+    decoded.skland = await decryptJson<SklandCredential>(key, decoded.skland)
+  }
+  if (decoded.hgToken !== undefined && isEncryptedEnvelope(decoded.hgToken)) {
+    decoded.hgToken = await decryptJson<string>(key, decoded.hgToken)
+  }
+  const legacyTokens = isEncryptedEnvelope(yituliu)
+    ? extractLegacyTokens(await decryptJson<YituliuTokens>(key, yituliu))
+    : extractLegacyTokens(yituliu)
+  return { account: decoded, legacyTokens }
+}
+
+/** 未设置主密码时的账号解码：凭据即明文，仅需剥离旧版 token 字段 */
+function decodePlainAccount(account: PersistedAccount): DecodedAccount {
+  const { yituliu, ...rest } = account
+  return { account: rest as unknown as GameAccount, legacyTokens: extractLegacyTokens(yituliu) }
+}
+
+/** 加密设置层的一图流 token */
+async function encodeSettings(settings: ExtensionSettings, key: CryptoKey): Promise<PersistedSettings> {
+  const { yituliuTokens, ...rest } = settings
+  return { ...rest, yituliuTokens: await encryptJson(key, yituliuTokens ?? {}) }
+}
+
+/** 解密设置层的一图流 token；未加密或空值按明文/空处理 */
+async function decodeSettings(settings: PersistedSettings, key: CryptoKey): Promise<ExtensionSettings> {
+  const { yituliuTokens, ...rest } = settings
+  const decoded: ExtensionSettings = {
+    ...(rest as Omit<ExtensionSettings, 'yituliuTokens'>),
+    yituliuTokens: {}
+  }
+  if (isEncryptedEnvelope(yituliuTokens)) {
+    decoded.yituliuTokens = await decryptJson<YituliuTokens>(key, yituliuTokens)
+  } else if (yituliuTokens && typeof yituliuTokens === 'object') {
+    decoded.yituliuTokens = yituliuTokens as YituliuTokens
   }
   return decoded
+}
+
+/** 旧版数据迁移：各账号上的读写 token 合并进设置层（设置层已有值优先，取首个非空） */
+function mergeLegacyTokens(base: YituliuTokens, legacyList: (YituliuTokens | undefined)[]): YituliuTokens {
+  const merged = { ...base }
+  for (const legacy of legacyList) {
+    if (!merged.readToken && legacy?.readToken) {
+      merged.readToken = legacy.readToken
+    }
+    if (!merged.writeToken && legacy?.writeToken) {
+      merged.writeToken = legacy.writeToken
+    }
+  }
+  return merged
 }
 
 /** 锁定时的脱敏占位：凭据置空，账号基础信息保留以展示列表 */
@@ -152,7 +219,6 @@ function stripAccount(account: PersistedAccount): GameAccount {
     channelMasterId: account.channelMasterId,
     channelName: account.channelName,
     skland: { cred: '', token: '', obtainedAt: 0 },
-    yituliu: {},
     lastSync: account.lastSync
   }
 }
@@ -162,14 +228,36 @@ async function decodeState(raw: unknown, session: SessionArea | undefined): Prom
   const persisted = normalizePersisted(raw)
   if (!persisted.security) {
     // 未设置主密码：兼容旧数据，凭据即明文
-    return persisted as PluginState
+    const decoded = persisted.accounts.map(decodePlainAccount)
+    const settingsTokens = persisted.settings.yituliuTokens as YituliuTokens | undefined
+    return {
+      accounts: decoded.map(item => item.account),
+      activeAccountId: persisted.activeAccountId,
+      settings: {
+        ...(persisted.settings as Omit<ExtensionSettings, 'yituliuTokens'>),
+        yituliuTokens: mergeLegacyTokens(settingsTokens ?? {}, decoded.map(item => item.legacyTokens))
+      }
+    }
   }
   const key = await loadSessionKey(session)
   if (!key) {
-    return { ...persisted, accounts: persisted.accounts.map(stripAccount) }
+    return {
+      ...persisted,
+      accounts: persisted.accounts.map(stripAccount),
+      settings: { ...(persisted.settings as Omit<ExtensionSettings, 'yituliuTokens'>), yituliuTokens: {} }
+    }
   }
-  const accounts = await Promise.all(persisted.accounts.map(account => decodeAccount(account, key)))
-  return { ...persisted, accounts }
+  const decoded = await Promise.all(persisted.accounts.map(account => decodeAccount(account, key)))
+  const settings = await decodeSettings(persisted.settings, key)
+  return {
+    accounts: decoded.map(item => item.account),
+    activeAccountId: persisted.activeAccountId,
+    settings: {
+      ...settings,
+      yituliuTokens: mergeLegacyTokens(settings.yituliuTokens, decoded.map(item => item.legacyTokens))
+    },
+    security: persisted.security
+  }
 }
 
 /** 内存状态 → 磁盘数据：配置了主密码就加密敏感字段；锁定时禁止写入防止脱敏数据覆盖密文 */
@@ -186,6 +274,7 @@ async function encodeState(state: PluginState, session: SessionArea | undefined)
     }
     persisted.security = state.security
     persisted.accounts = await Promise.all(state.accounts.map(account => encodeAccount(account, key)))
+    persisted.settings = await encodeSettings(state.settings, key)
   }
   return persisted
 }
@@ -356,7 +445,7 @@ export async function setupSecurity(passphrase: string, options: SecurityOptions
   const persisted: PersistedState = {
     accounts: await Promise.all(current.accounts.map(account => encodeAccount(account, key))),
     activeAccountId: current.activeAccountId,
-    settings: current.settings,
+    settings: await encodeSettings(current.settings, key),
     security
   }
   await writeRawState(persisted, area)
@@ -394,12 +483,13 @@ export async function changeSecurityPassphrase(
     throw new SecurityError('尚未设置主密码')
   }
   const oldKey = await verifyPassphrase(normalizePassphrase(oldPassphrase), persisted.security)
-  const accounts = await Promise.all(persisted.accounts.map(account => decodeAccount(account, oldKey)))
+  const decoded = await Promise.all(persisted.accounts.map(account => decodeAccount(account, oldKey)))
+  const settings = await decodeSettings(persisted.settings, oldKey)
   const { security, key: newKey } = await buildSecurityConfig(normalizedNew, iterations)
   const next: PersistedState = {
-    accounts: await Promise.all(accounts.map(account => encodeAccount(account, newKey))),
+    accounts: await Promise.all(decoded.map(item => encodeAccount(item.account, newKey))),
     activeAccountId: persisted.activeAccountId,
-    settings: persisted.settings,
+    settings: await encodeSettings(settings, newKey),
     security
   }
   await writeRawState(next, area)
@@ -409,7 +499,7 @@ export async function changeSecurityPassphrase(
 
 /**
  * 忘记主密码的唯一兜底：凭据已无法解密，清空所有账号并移除安全配置（保留其他设置）。
- * 账号可重新添加，一图流 token 需重新填写。
+ * 账号可重新添加，一图流 token 密文已不可解，一并清空需重新获取。
  */
 export async function resetSecurity(options: SecurityOptions = {}): Promise<PluginState> {
   const { area, session } = resolveSecurityOptions(options)
@@ -417,7 +507,7 @@ export async function resetSecurity(options: SecurityOptions = {}): Promise<Plug
   const next: PersistedState = {
     accounts: [],
     activeAccountId: null,
-    settings: current.settings
+    settings: { ...current.settings, yituliuTokens: {} }
   }
   await writeRawState(next, area)
   await clearSessionKey(session)

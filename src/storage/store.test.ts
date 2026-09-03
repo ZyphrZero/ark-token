@@ -31,8 +31,7 @@ function makeAccount(id: string, uid: string): GameAccount {
     nickName: `博士${id}`,
     channelName: '官服',
     channelMasterId: 1,
-    skland: { cred: `cred-${id}`, token: `token-${id}`, obtainedAt: 1 },
-    yituliu: { writeToken: 'f'.repeat(32) }
+    skland: { cred: `cred-${id}`, token: `token-${id}`, obtainedAt: 1 }
   }
 }
 
@@ -100,6 +99,68 @@ describe('store 状态读写', () => {
     const broken = memoryStorage({ [STORAGE_KEY]: 'not-an-object' })
     const state = await loadState(broken)
     expect(state.accounts).toEqual([])
+  })
+})
+
+describe('旧版数据迁移：账号上的读写 token 合并到设置层', () => {
+  /** 旧版内存/落盘形态：读写 token 挂在每个账号上 */
+  function legacyAccount(id: string, uid: string, tokens: Record<string, string>): Record<string, unknown> {
+    return { ...makeAccount(id, uid), yituliu: tokens } as unknown as Record<string, unknown>
+  }
+
+  function persistedAccounts(storage: StorageArea & { raw(): Record<string, unknown> }): Record<string, unknown>[] {
+    return (storage.raw()[STORAGE_KEY] as { accounts: Record<string, unknown>[] }).accounts
+  }
+
+  it('明文旧数据：读取即迁移并从账号上剥离', async () => {
+    const disk = inspectableStorage({
+      [STORAGE_KEY]: {
+        accounts: [legacyAccount('a1', '111', { writeToken: 'f'.repeat(32), readToken: 'e'.repeat(32) })],
+        activeAccountId: 'a1',
+        settings: { ...DEFAULT_SETTINGS }
+      }
+    })
+    const state = await loadState(disk)
+    expect(state.settings.yituliuTokens).toEqual({ readToken: 'e'.repeat(32), writeToken: 'f'.repeat(32) })
+    expect(state.accounts[0]).not.toHaveProperty('yituliu')
+
+    await saveState(state, disk)
+    expect(persistedAccounts(disk)[0]).not.toHaveProperty('yituliu')
+  })
+
+  it('多个账号各持部分 token 时分别合并（读/写取首个非空），设置层已有值优先', async () => {
+    const disk = inspectableStorage({
+      [STORAGE_KEY]: {
+        accounts: [
+          legacyAccount('a1', '111', { writeToken: 'f'.repeat(32) }),
+          legacyAccount('a2', '222', { readToken: 'e'.repeat(32), writeToken: 'old-write' })
+        ],
+        activeAccountId: 'a1',
+        settings: { ...DEFAULT_SETTINGS, yituliuTokens: { readToken: 'kept-read' } }
+      }
+    })
+    const state = await loadState(disk)
+    expect(state.settings.yituliuTokens).toEqual({ readToken: 'kept-read', writeToken: 'f'.repeat(32) })
+  })
+
+  it('加密模式下旧格式账号：解锁读取后迁移，写回不再携带旧字段', async () => {
+    const disk = inspectableStorage()
+    const session = memorySession()
+    await setupSecurity('主密码测试8888', { area: disk, session, iterations: LOW_ITERATIONS })
+    await upsertAccount(makeAccount('a1', '111'), disk, session)
+
+    // 模拟旧版本落盘：往已加密账号上补一个 yituliu 字段
+    const persisted = disk.raw()[STORAGE_KEY] as { accounts: Record<string, unknown>[] }
+    persisted.accounts[0].yituliu = { writeToken: 'f'.repeat(32) }
+
+    const state = await loadState(disk, session)
+    expect(state.settings.yituliuTokens).toEqual({ writeToken: 'f'.repeat(32) })
+    expect(state.accounts[0]).not.toHaveProperty('yituliu')
+
+    await saveState(state, disk, session)
+    expect(persistedAccounts(disk)[0]).not.toHaveProperty('yituliu')
+    // 再读一次仍完整（信封解密 + 迁移幂等）
+    expect((await loadState(disk, session)).settings.yituliuTokens).toEqual({ writeToken: 'f'.repeat(32) })
   })
 })
 
@@ -186,6 +247,7 @@ describe('主密码加密', () => {
 
   it('设置后磁盘上不存在任何明文凭据，内存读回为明文', async () => {
     await upsertAccount(makeAccount('a1', '111'), area)
+    await updateSettings({ yituliuTokens: { writeToken: 'f'.repeat(32) } }, area)
     const disk = inspectableStorage()
     // 把已写入的明文状态拷到可检磁盘上再开启加密，模拟老用户迁移
     disk.set({ [STORAGE_KEY]: await new Promise<unknown>(resolve => area.get(items => resolve(items[STORAGE_KEY]))) })
@@ -200,7 +262,7 @@ describe('主密码加密', () => {
 
     const state = await loadState(disk, session)
     expect(state.accounts[0].skland.cred).toBe('cred-a1')
-    expect(state.accounts[0].yituliu.writeToken).toBe('f'.repeat(32))
+    expect(state.settings.yituliuTokens.writeToken).toBe('f'.repeat(32))
     expect(state.security?.version).toBe(1)
     await expect(getSecurityStatus({ area: disk, session })).resolves.toEqual({ configured: true, unlocked: true })
   })
@@ -210,11 +272,12 @@ describe('主密码加密', () => {
     const session = memorySession()
     await setupSecurity('主密码测试8888', { area: disk, session, iterations: LOW_ITERATIONS })
     await upsertAccount(makeAccount('a1', '111'), disk, session)
+    await updateSettings({ yituliuTokens: { writeToken: 'f'.repeat(32) } }, disk, session)
     await lockSecurity({ area: disk, session })
 
     const locked = await loadState(disk, session)
     expect(locked.accounts[0].skland.cred).toBe('')
-    expect(locked.accounts[0].yituliu.writeToken).toBeUndefined()
+    expect(locked.settings.yituliuTokens.writeToken).toBeUndefined()
     expect(locked.accounts[0].uid).toBe('111')
     await expect(getSecurityStatus({ area: disk, session })).resolves.toEqual({ configured: true, unlocked: false })
 
@@ -273,19 +336,21 @@ describe('主密码加密', () => {
     expect(reopened.activeAccountId).toBe(before.activeAccountId)
   })
 
-  it('重置安全配置清空账号并回到明文模式，其他设置保留', async () => {
+  it('重置安全配置清空账号并回到明文模式，其他设置保留、token 密文一并清空', async () => {
     const disk = inspectableStorage()
     const session = memorySession()
     await setupSecurity('主密码测试8888', { area: disk, session, iterations: LOW_ITERATIONS })
     await upsertAccount(makeAccount('a1', '111'), disk, session)
-    await updateSettings({ autoSyncEnabled: true }, disk, session)
+    await updateSettings({ autoSyncEnabled: true, yituliuTokens: { writeToken: 'f'.repeat(32) } }, disk, session)
 
     const state = await resetSecurity({ area: disk, session })
     expect(state.accounts).toEqual([])
     expect(state.security).toBeUndefined()
     expect(state.settings.autoSyncEnabled).toBe(true)
+    expect(state.settings.yituliuTokens).toEqual({})
     expect(await getSecurityStatus({ area: disk, session })).toEqual({ configured: false, unlocked: true })
     expect(JSON.stringify(disk.raw())).not.toContain('cred-a1')
+    expect(JSON.stringify(disk.raw())).not.toContain('f'.repeat(32))
   })
 
   it('subscribeState 推送的是按解锁状态解密后的状态', async () => {

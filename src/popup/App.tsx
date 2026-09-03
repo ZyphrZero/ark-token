@@ -19,9 +19,11 @@ function openOptions(hash: '' | '#add' | '#settings' = ''): void {
   void chrome.tabs.create({ url })
 }
 
-function AccountCard({ account, active, onActivate, onSync }: {
+function AccountCard({ account, active, canSync, onActivate, onSync }: {
   account: GameAccount
   active: boolean
+  /** 一图流写 token 已在「设置」中配置 */
+  canSync: boolean
   onActivate: () => void
   onSync: () => void
 }) {
@@ -66,7 +68,7 @@ function AccountCard({ account, active, onActivate, onSync }: {
       </div>
       <div className={`account-status ${statusClass}`}>{statusText}</div>
       <div className="account-actions">
-        {account.yituliu.writeToken ? (
+        {canSync ? (
           <button
             className="btn btn-primary btn-sm"
             disabled={syncing}
@@ -82,7 +84,7 @@ function AccountCard({ account, active, onActivate, onSync }: {
             className="btn btn-warn btn-sm"
             onClick={event => {
               event.stopPropagation()
-              openOptions()
+              openOptions('#settings')
             }}
           >
             未配置写 token，去设置
@@ -164,6 +166,7 @@ export default function App() {
                   key={account.id}
                   account={account}
                   active={account.id === state?.activeAccountId}
+                  canSync={Boolean(state?.settings.yituliuTokens.writeToken)}
                   onActivate={() => handleActivate(account.id)}
                   onSync={() => handleSync(account.id)}
                 />
