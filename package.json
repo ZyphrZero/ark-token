@@ -1,5 +1,5 @@
 {
-  "name": "yituliu-token",
+  "name": "ark-token",
   "description": "一图流多账号浏览器插件：森空岛数据拉取 + 一图流读写 token 自动更新",
   "private": true,
   "version": "0.1.0",

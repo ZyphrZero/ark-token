@@ -1,12 +1,12 @@
 {
   "manifest_version": 3,
-  "name": "一图流多账号助手",
+  "name": "ark-token",
   "version": "0.1.0",
-  "description": "管理多个明日方舟账号：从森空岛拉取最新干员与账号数据，通过一图流读写 token 一键更新。",
+  "description": "一图流多账号助手：管理多个明日方舟账号，从森空岛拉取最新干员与账号数据，通过一图流读写 token 一键更新。",
   "minimum_chrome_version": "110",
   "action": {
     "default_popup": "src/popup/index.html",
-    "default_title": "一图流多账号助手"
+    "default_title": "ark-token"
   },
   "options_page": "src/options/index.html",
   "background": {

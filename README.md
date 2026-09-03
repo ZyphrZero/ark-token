@@ -1,4 +1,4 @@
-# 一图流多账号助手（浏览器插件）
+# ark-token（一图流多账号浏览器插件）
 
 面向 [明日方舟一图流](https://ark.yituliu.cn/) 的 Chrome/Edge 浏览器插件（Manifest V3，React + Vite + TypeScript）。
 
@@ -45,7 +45,7 @@ npm run build   # 类型检查 + 打包到 dist/
 ## 目录说明
 
 ```
-yituliu-token/
+ark-token/
 ├── AGENTS.md                       # 仓库开发规范（勿删改）
 ├── manifest.json                   # MV3 清单（popup / options / service worker / 权限）
 ├── assets-source/
