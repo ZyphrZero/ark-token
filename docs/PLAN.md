@@ -60,3 +60,19 @@
 ## 迁移记录
 
 - 2026-09-03：项目从 `E:\yituliu\yituliu-token` 迁移至本仓库（`E:\yituliu\ark-token`），迁移后重新安装依赖、跑测试与构建验证。
+
+## 状态面板迁移设计（2026-09-03，移植自 rhodes-headquarters）
+
+将 P.R.R.H（`E:\yituliu\rhodes-headquarters`，WXT + Vue3 插件）的游戏状态面板迁移进本项目（React 重写 UI，类型与计算逻辑近乎原样移植）。
+
+**数据流**：面板刷新与一图流同步解耦。面板只拉森空岛 `GET /api/v1/game/player/info?uid=`（复用 `requestSkland` 签名封装），写入独立缓存键 `chrome.storage.local['yituliu-plugin-info-cache']`（结构 `{[accountId]: {data, fetchedAt}}`，明文游戏状态、不含凭据，锁定时仍可展示）；理智/公招/无人机等实时数值由前端按时间戳推算（`src/core/status/` 纯函数，入参 nowMs），定时刷新仅纠偏与重排通知。
+
+**新增模块**：`core/skland-info.ts`（player/info 类型裁剪版）、`core/status/{sanity,recruit,building}.ts`（含各自单测）、`storage/infoCache.ts`、`background/infoRefresh.ts`（消息 `refreshInfo`/`applyInfoRefresh`、alarm `yituliu-info-refresh`、通知 alarm 前缀 `yituliu-notify-{accountId}:`，仅对 state=2 且未来完成的公招标位排通知）、`popup/panel/`（StatusHeader/AccountSwitcher/SanitySection/IslandSection(recruit+building)/MissionSection/PanelFooter）。
+
+**关键移植算法**：理智每 6 分钟 1 点锚定 `lastApAddTime`；公招 state 0/1/2/3 状态机（2 按 finishTs 分 recruiting/completed），通知 3 分钟窗口合并取较晚时刻；无人机 `value + round(elapsedSec/360)` 封顶；发电量 `2^(lv-1)*60 + (2^(lv-1)-1)*10`；制造库存 `weight + floor(运行分钟 / (配方分钟 / speed)) * 配方重量`（14 条配方表）；心情 `ap/86400`（ap≤0 且 index≠-1 视为 100%）。
+
+**设置扩展**（`ExtensionSettings`，旧数据缺字段读默认值）：`infoRefreshEnabled`(true) / `infoRefreshIntervalMinutes`(30) / `refreshAllAccounts`(false) / `recruitNotifyEnabled`(true) / `sanityNotifyEnabled`(false)。manifest 新增 `notifications` 权限与图标。
+
+**保留不动**：`sync`/`applyAutoSync`/`ping` 消息、`yituliu-auto-sync` alarm、runSync/patchAccount、主密码加密与锁定边界（锁定时刷新静默跳过/手动提示，同 sync 语义）。删除账号（AccountManager）与安全重置（SecurityPanel.resetSecurity）时联动清理 infoCache。
+
+**验证**：`npm test`（11 文件 117 用例，新增 32 个状态面板用例）→ `npm run build`（tsc + vite 产物含字体/图标资源）。

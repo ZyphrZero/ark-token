@@ -2,6 +2,7 @@ import HmacSHA256 from 'crypto-js/hmac-sha256'
 import MD5 from 'crypto-js/md5'
 
 import { SklandError } from './errors'
+import type { SklandBindingInfo } from './skland-info'
 import type { SklandBinding, SklandChar } from './types'
 
 /**
@@ -15,6 +16,7 @@ import type { SklandBinding, SklandChar } from './types'
 const SKLAND_DOMAIN = 'https://zonai.skland.com'
 const PLAYER_BINDING_PATH = '/api/v1/game/player/binding'
 const CULTIVATE_PLAYER_PATH = '/api/v1/game/cultivate/player'
+const PLAYER_INFO_PATH = '/api/v1/game/player/info'
 
 /** 参与签名与请求头的 dId 值：一图流前端固定填一段 Firefox UA 字符串 */
 const SIGN_D_ID = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/118.0'
@@ -83,10 +85,21 @@ async function requestSkland<T>(
   }
   const envelope = (await response.json()) as SklandEnvelope<T>
   if (envelope.code !== 0) {
-    const message = envelope.message ?? envelope.msg ?? '未知错误'
-    throw new SklandError(`森空岛凭证错误或已失效（${envelope.code}：${message}）`, envelope.code)
+    throw new SklandError(describeSklandError(envelope.code, envelope.message ?? envelope.msg ?? '未知错误'), envelope.code)
   }
   return envelope.data as T
+}
+
+/**
+ * 森空岛错误码 → 面向用户的提示。
+ * 10000/10003 是签名时间戳校验失败（服务端时间窗约 1~2 分钟）：本机时钟偏差过大时所有请求都会失败，
+ * 与凭证无关，提示校准系统时间而不是误导用户重新扫码。
+ */
+function describeSklandError(code: number, message: string): string {
+  if (code === 10000 || code === 10003) {
+    return `森空岛签名校验未通过（${code}：${message}）。请检查本机系统时间是否准确（建议开启网络时间同步）后重试`
+  }
+  return `森空岛凭证错误或已失效（${code}：${message}）`
 }
 
 interface RawBindingApp {
@@ -151,4 +164,22 @@ export async function fetchCultivateData(
     ),
     characters: data.characters ?? []
   }
+}
+
+/** 获取指定 UID 的账号状态数据（理智/公招/基建/任务进度，状态面板数据来源） */
+export async function fetchSklandPlayerInfo(
+  uid: string,
+  cred: string,
+  token: string,
+  fetchFn: FetchLike = globalThis.fetch
+): Promise<SklandBindingInfo> {
+  const params = `uid=${uid}`
+  return requestSkland<SklandBindingInfo>(
+    `${SKLAND_DOMAIN}${PLAYER_INFO_PATH}?${params}`,
+    PLAYER_INFO_PATH,
+    params,
+    cred,
+    token,
+    fetchFn
+  )
 }

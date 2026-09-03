@@ -47,6 +47,16 @@ export interface ExtensionSettings {
   autoSyncIntervalHours: number
   /** 一图流读写 token（一个一图流账号一对，全局共享） */
   yituliuTokens: YituliuTokens
+  /** 状态面板：定时拉取森空岛 player/info 刷新本地缓存（与一图流上传同步无关） */
+  infoRefreshEnabled: boolean
+  /** 面板数据刷新间隔（分钟） */
+  infoRefreshIntervalMinutes: number
+  /** 刷新全部账号（通知多账号时开启）；关闭时仅刷新当前激活账号 */
+  refreshAllAccounts: boolean
+  /** 公招完成桌面通知 */
+  recruitNotifyEnabled: boolean
+  /** 理智完全恢复桌面通知 */
+  sanityNotifyEnabled: boolean
 }
 
 export interface PluginState {

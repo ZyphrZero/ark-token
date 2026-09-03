@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { SecurityError } from '../core/errors'
 import { changeSecurityPassphrase, getSecurityStatus, lockSecurity, resetSecurity, type SecurityStatus } from '../storage/store'
+import { clearInfoCache } from '../storage/infoCache'
 import SetupScreen from './SetupScreen'
 
 /** 设置页的安全面板：未设置主密码时提供开启入口，已设置时管理锁定/改密/重置 */
@@ -73,6 +74,8 @@ export default function SecurityPanel({ onSecurityChange }: { onSecurityChange?:
     setConfirmingReset(false)
     await run(async () => {
       await resetSecurity()
+      // 账号已全部清除，状态面板缓存一并清空
+      await clearInfoCache()
     }, '已重置：全部账号与主密码已清除，请重新添加账号')
   }
 

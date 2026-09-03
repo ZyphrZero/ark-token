@@ -7,11 +7,18 @@ import type { ExtensionSettings } from '../core/types'
 import { readYituliuSession } from './yituliuSession'
 
 const INTERVAL_OPTIONS = [6, 12, 24, 48]
+const INFO_INTERVAL_OPTIONS = [10, 15, 30, 60]
 const YITULIU_TOKEN_PAGE = 'https://ark.yituliu.cn/account/home'
 
 function applyAutoSyncAlarm(): Promise<{ ok: boolean }> {
   return new Promise(resolve => {
     chrome.runtime.sendMessage({ type: 'applyAutoSync' }, response => resolve(response ?? { ok: true }))
+  })
+}
+
+function applyInfoRefreshAlarm(): Promise<{ ok: boolean }> {
+  return new Promise(resolve => {
+    chrome.runtime.sendMessage({ type: 'applyInfoRefresh' }, response => resolve(response ?? { ok: true }))
   })
 }
 
@@ -174,6 +181,7 @@ export default function SettingsPanel() {
     }
     await updateSettings(normalized)
     await applyAutoSyncAlarm()
+    await applyInfoRefreshAlarm()
     setSettings(normalized)
     setFeedback({ kind: 'ok', text: '设置已保存' + (normalized.autoSyncEnabled ? '，定时同步已生效' : '') })
   }
@@ -219,6 +227,72 @@ export default function SettingsPanel() {
             </option>
           ))}
         </select>
+
+        <div className="actions">
+          <button className="btn btn-primary" onClick={() => void save()}>保存设置</button>
+        </div>
+      </div>
+
+      <div className="card">
+        <h2>状态面板与通知</h2>
+        <p className="hint" style={{ marginBottom: 12 }}>
+          状态面板数据来自森空岛 player/info，仅缓存到本地用于展示，与一图流数据上传无关；
+          理智、公招等实时数值由插件按时间戳推算，定时刷新仅用于纠偏与安排桌面通知。
+        </p>
+
+        <div className="check-row">
+          <input
+            id="info-refresh"
+            type="checkbox"
+            checked={settings.infoRefreshEnabled}
+            onChange={event => setSettings({ ...settings, infoRefreshEnabled: event.target.checked })}
+          />
+          <label htmlFor="info-refresh">定时刷新状态面板数据（浏览器运行期间生效）</label>
+        </div>
+
+        <label className="field">面板刷新间隔</label>
+        <select
+          value={settings.infoRefreshIntervalMinutes}
+          disabled={!settings.infoRefreshEnabled}
+          onChange={event => setSettings({ ...settings, infoRefreshIntervalMinutes: Number(event.target.value) })}
+        >
+          {INFO_INTERVAL_OPTIONS.map(minutes => (
+            <option key={minutes} value={minutes}>
+              每 {minutes} 分钟一次
+            </option>
+          ))}
+        </select>
+
+        <div className="check-row">
+          <input
+            id="refresh-all"
+            type="checkbox"
+            checked={settings.refreshAllAccounts}
+            disabled={!settings.infoRefreshEnabled}
+            onChange={event => setSettings({ ...settings, refreshAllAccounts: event.target.checked })}
+          />
+          <label htmlFor="refresh-all">刷新全部账号（关闭时仅刷新当前激活账号；多账号需要通知时建议开启）</label>
+        </div>
+
+        <div className="check-row">
+          <input
+            id="recruit-notify"
+            type="checkbox"
+            checked={settings.recruitNotifyEnabled}
+            onChange={event => setSettings({ ...settings, recruitNotifyEnabled: event.target.checked })}
+          />
+          <label htmlFor="recruit-notify">公开招募完成时发送桌面通知（3 分钟内先后完成的槽位合并为一条）</label>
+        </div>
+
+        <div className="check-row">
+          <input
+            id="sanity-notify"
+            type="checkbox"
+            checked={settings.sanityNotifyEnabled}
+            onChange={event => setSettings({ ...settings, sanityNotifyEnabled: event.target.checked })}
+          />
+          <label htmlFor="sanity-notify">理智完全恢复时发送桌面通知</label>
+        </div>
 
         <div className="actions">
           <button className="btn btn-primary" onClick={() => void save()}>保存设置</button>

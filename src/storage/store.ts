@@ -54,7 +54,12 @@ export const DEFAULT_SETTINGS: ExtensionSettings = {
   backendBaseUrl: DEFAULT_BACKEND_BASE_URL,
   autoSyncEnabled: false,
   autoSyncIntervalHours: 24,
-  yituliuTokens: {}
+  yituliuTokens: {},
+  infoRefreshEnabled: true,
+  infoRefreshIntervalMinutes: 30,
+  refreshAllAccounts: false,
+  recruitNotifyEnabled: true,
+  sanityNotifyEnabled: false
 }
 
 export function defaultStorageArea(): StorageArea {

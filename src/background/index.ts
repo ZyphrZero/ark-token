@@ -1,11 +1,13 @@
 import { syncAccount } from '../core/sync'
 import { getSecurityStatus, loadState, saveState } from '../storage/store'
 import type { GameAccount, YituliuTokens } from '../core/types'
+import { applyInfoRefreshAlarm, handleInfoAlarm, refreshInfoById } from './infoRefresh'
 
 /**
  * MV3 service worker：
  * - 处理弹窗/管理页发来的同步请求（在后台执行，弹窗关闭也能继续）
  * - 按 settings 维护 chrome.alarms 定时自动同步
+ * - 状态面板数据定时刷新与公招/理智桌面通知（见 infoRefresh.ts）
  */
 
 const AUTO_SYNC_ALARM = 'yituliu-auto-sync'
@@ -92,6 +94,8 @@ export async function applyAutoSyncAlarm(): Promise<void> {
 type PopupMessage =
   | { type: 'sync'; accountId?: string }
   | { type: 'applyAutoSync' }
+  | { type: 'refreshInfo'; accountId?: string }
+  | { type: 'applyInfoRefresh' }
   | { type: 'ping' }
 
 chrome.runtime.onMessage.addListener((message: PopupMessage, _sender, sendResponse) => {
@@ -114,6 +118,13 @@ chrome.runtime.onMessage.addListener((message: PopupMessage, _sender, sendRespon
           await applyAutoSyncAlarm()
           sendResponse({ ok: true })
           break
+        case 'refreshInfo':
+          sendResponse(await refreshInfoById(message.accountId))
+          break
+        case 'applyInfoRefresh':
+          await applyInfoRefreshAlarm()
+          sendResponse({ ok: true })
+          break
         default:
           sendResponse({ ok: false, message: '未知消息类型' })
       }
@@ -127,15 +138,23 @@ chrome.runtime.onMessage.addListener((message: PopupMessage, _sender, sendRespon
 })
 
 chrome.alarms.onAlarm.addListener(alarm => {
-  if (alarm.name === AUTO_SYNC_ALARM) {
-    void syncAll()
-  }
+  void (async () => {
+    // 面板刷新与通知 alarm 先行分发；未命中再走一图流定时同步
+    if (await handleInfoAlarm(alarm)) {
+      return
+    }
+    if (alarm.name === AUTO_SYNC_ALARM) {
+      void syncAll()
+    }
+  })()
 })
 
 chrome.runtime.onInstalled.addListener(() => {
   void applyAutoSyncAlarm()
+  void applyInfoRefreshAlarm()
 })
 
 chrome.runtime.onStartup.addListener(() => {
   void applyAutoSyncAlarm()
+  void applyInfoRefreshAlarm()
 })

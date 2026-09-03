@@ -5,12 +5,16 @@
 **功能**：
 
 - 管理多个明日方舟账号（扫码登录 / 官网 HG Token / 森空岛凭证三种方式添加），点击切换当前账号
+- **状态面板**：弹窗即完整面板——博士信息头、理智实时恢复倒计时、公开招募 4 槽位状态与倒计时、基建（无人机/制造站库存/贸易站订单/宿舍心情/发电量/会客室线索/训练室）、剿灭/保全/日常周常任务进度；数据来自森空岛 `player/info`，仅缓存本机展示，实时数值按时间戳前端推算
+- **桌面通知**：公招招募完成（3 分钟内先后完成的槽位合并为一条）、理智完全恢复时发送系统通知；可按需在设置中开关
 - 一键（或定时）从森空岛拉取最新干员练度与仓库材料，通过一图流**写 token** 上传到 `POST /open-api/operator/upload`
 - 配置**读 token** 后，同步完成自动调用 `GET /open-api/operator/info` 校验远端数据
 - **自动获取读写 token**：浏览器已登录一图流官网时，从标签页读取会话并复用/生成第三方 API Token，免去手动复制；读写 token 全局一对，在「设置」中配置、所有游戏账号共用
 - 凭证失效时，若账号存有官网 HG Token 会自动刷新森空岛凭证并重试
 - 所有 token / 凭证只保存在本机 `chrome.storage.local`，不写入日志、不上报
 - **主密码加密**：森空岛凭证、HG Token、读写 token 以 AES-GCM 加密落盘，主密码本身不保存，防止浏览器数据文件被第三方软件读取后直接还原凭据
+
+> 状态面板的视觉与计算逻辑移植自 [rhodes-headquarters](../rhodes-headquarters)（罗德岛远程指挥部 P.R.R.H），在此感谢。
 
 ## 使用方法
 
@@ -63,31 +67,46 @@ ark-token/
 ├── assets-source/
 │   └── character_table_simple.v2.json   # 干员表源数据（复制自 frontend-v2-plus，不打包）
 ├── scripts/
-│   └── build-operator-table.mjs    # 从源表生成精简干员表（星级 + 模组类型映射）
+│   ├── build-operator-table.mjs    # 从源表生成精简干员表（星级 + 模组类型映射）
+│   ├── preview-server.cjs          # 本地静态服务器（视觉预览 dist/ 用）
+│   ├── make-popup-mock.mjs         # 构建后注入 chrome mock 生成 dist/src/popup/mock.html（配合 preview-server 预览面板，假数据）
+│   └── popup-mock-chrome.js        # mock.html 注入的 chrome API 模拟（仅本地预览，不含真实凭据）
 ├── src/
 │   ├── core/                       # 纯逻辑层（不依赖 DOM / chrome API，可直接单测）
 │   │   ├── types.ts                # GameAccount、SecurityConfig、PlayerInfoPayload 等数据模型
+│   │   ├── skland-info.ts          # 森空岛 player/info 状态数据类型（理智/公招/基建/任务进度，裁剪版）
 │   │   ├── errors.ts               # 错误类型与错误码 → 中文提示映射
 │   │   ├── crypto.ts               # 凭据加密（AES-GCM-256 + PBKDF2，WebCrypto）
-│   │   ├── skland.ts               # 森空岛签名（HMAC-SHA256+MD5）与数据 API
+│   │   ├── skland.ts               # 森空岛签名（HMAC-SHA256+MD5）与数据 API（binding/cultivate/player info）
 │   │   ├── hgAuth.ts               # 官网 HG Token 换凭证（浏览器直连，失败可降级走后端）与输入解析
 │   │   ├── qrLogin.ts              # 森空岛扫码登录（创建二维码 + 轮询）
 │   │   ├── yituliuApi.ts           # 一图流 open-api 上传 / 读取封装
 │   │   ├── yituliuAccountApi.ts    # 一图流账号会话 API（自动获取读写 token：复用/生成）
 │   │   ├── format.ts               # 森空岛干员数据 → 上传格式换算（依赖精简干员表）
-│   │   └── sync.ts                 # 单账号同步编排（凭证失效自动刷新重试）
+│   │   ├── sync.ts                 # 单账号同步编排（凭证失效自动刷新重试）
+│   │   └── status/                 # 状态面板实时推算（纯函数：入参 nowMs，不依赖响应式系统）
+│   │       ├── sanity.ts           # 理智恢复（每 6 分钟 1 点，锚定 lastApAddTime）
+│   │       ├── recruit.ts          # 公招槽位状态机 + 完成通知合并（3 分钟窗口）
+│   │       └── building.ts         # 无人机恢复/发电量公式/制造配方表与库存估算/进驻干员心情
 │   ├── storage/
 │   │   ├── store.ts                # chrome.storage.local 封装（账号增删改 / 激活切换 / 设置与全局 token / 主密码加解密边界与解锁 / 旧版账号 token 迁移）
+│   │   ├── infoCache.ts            # 状态面板数据缓存（yituliu-plugin-info-cache，明文游戏状态、不含凭据）
 │   │   └── sessionKey.ts           # 解锁密钥会话缓存（chrome.storage.session，仅内存、随浏览器关闭清空）
 │   ├── background/
-│   │   └── index.ts                # service worker：同步消息路由 + chrome.alarms 定时同步（锁定时跳过）
+│   │   ├── index.ts                # service worker：同步/面板刷新消息路由 + chrome.alarms 定时同步与面板刷新（锁定时跳过）
+│   │   └── infoRefresh.ts          # 面板数据定时刷新 + 公招/理智桌面通知调度（通知 alarm 前缀 yituliu-notify-）
 │   ├── security/                   # 安全相关界面（锁定屏 / 主密码设置 / 安全面板，popup 与 options 共用）
-│   ├── popup/                      # 弹窗界面（账号卡片、切换、单账号/全部同步）
-│   ├── options/                    # 管理页（账号管理 / 添加向导 / 设置）
+│   ├── popup/                      # 弹窗状态面板（博士信息头/理智/公招+基建 Tabs/任务进度/账号切换侧滑面板）
+│   │   ├── panel/                  # 面板区块组件（recruit/ 公招、building/ 基建）
+│   │   ├── useNow.ts               # 实时时钟 hook（驱动倒计时，tick 内不发请求）
+│   │   ├── icons.tsx               # 内联 SVG 图标
+│   │   ├── panelActions.ts         # 弹窗 → 后台消息与页面跳转辅助
+│   │   └── assets/                 # 字体（Bender/Akrobat）、图标 SVG、区块标题底纹（移植自 rhodes-headquarters）
+│   ├── options/                    # 管理页（账号管理 / 添加向导 / 设置，含状态面板与通知设置）
 │   │   └── yituliuSession.ts       # 从一图流标签页读取登录会话（chrome.scripting 胶水）
 │   ├── assets/
 │   │   └── operator-table.slim.json  # 精简干员表（npm run build:operator-table 生成）
-│   └── utils/time.ts               # 时间格式化
+│   └── utils/time.ts               # 时间/时长格式化
 └── dist/                           # 构建产物（加载已解压扩展时选这个目录）
 ```
 
@@ -100,6 +119,17 @@ ark-token/
 | `npm run build` | `tsc --noEmit` 类型检查 + 生产构建到 `dist/` |
 | `npm test` / `npm run test:watch` | 运行 / 监听 vitest 单元测试 |
 | `npm run build:operator-table` | 重新生成精简干员表（游戏出新干员后使用） |
+
+### 本地预览面板（无需加载扩展）
+
+`npm run build` 后执行：
+
+```bash
+node scripts/make-popup-mock.mjs   # 生成注入 chrome mock 与假数据的 dist/src/popup/mock.html
+node scripts/preview-server.cjs    # 在 http://127.0.0.1:8791 提供静态服务
+```
+
+浏览器打开 `http://127.0.0.1:8791/src/popup/mock.html` 即可预览弹窗面板（理智/公招/基建等区块），mock 数据全部为假数据。
 
 ### 更新干员表
 
@@ -124,10 +154,12 @@ ark-token/
 ## 已知限制
 
 - 定时自动同步依赖浏览器处于运行状态（`chrome.alarms`），间隔最小按小时计
-- 设置主密码后，浏览器重启到重新解锁期间定时同步会静默跳过，手动同步会提示先解锁
+- 状态面板刷新与通知同样依赖浏览器运行；理智/公招/无人机的实时数值由前端按时间戳推算，浏览器休眠期间数值不更新，重新打开弹窗或刷新后纠偏
+- 设置主密码后，浏览器重启到重新解锁期间定时同步与面板刷新会静默跳过，手动操作会提示先解锁；锁定时面板仍可查看缓存数据
 - 一图流后端对同一账号 5 秒内只允许上传一次（错误码 39007），插件会提示稍后再试
 - 官网 HG Token 在官网退出登录后失效；提示「需要进行设备验证」时，需在森空岛 APP 关闭「新设备登录身份验证」
 - 上传报文中的 `itemList`（仓库材料）会随请求一起发送（与一图流官网导入行为一致）；当前后端 open-api 路径仅持久化干员数据
+- 面板字体（Bender / Akrobat）为明日方舟风格字体，移植自 rhodes-headquarters，本地/个人使用无碍；若上架商店需替换为可商用字体
 
 ## 安全说明
 
@@ -142,6 +174,6 @@ ark-token/
 ## 验证记录
 
 - `npm ci`：依赖安装成功（Node ≥ 18）
-- `npm test`：8 个测试文件、85 个用例全部通过（签名算法用 `node:crypto` 独立实现交叉验证；加密用例覆盖加解密往返、错误口令、密文篡改、明文迁移、锁定读写守卫、改密与重置；旧版账号 token → 设置层迁移；token 自动获取用例覆盖复用/生成/回退/会话失效）
+- `npm test`：11 个测试文件、117 个用例全部通过（签名算法用 `node:crypto` 独立实现交叉验证；加密用例覆盖加解密往返、错误口令、密文篡改、明文迁移、锁定读写守卫、改密与重置；旧版账号 token → 设置层迁移；token 自动获取用例覆盖复用/生成/回退/会话失效；状态面板用例覆盖理智推算边界、公招状态机与通知合并、无人机/制造库存/发电量/心情换算）
 - `npm run build`：`tsc --noEmit` 无错误，产物输出至 `dist/`，可在 Chrome/Edge 开发者模式加载
 - 真实账号端到端联调：需扫码环境与一图流读写 token，按上文「使用方法」操作验证

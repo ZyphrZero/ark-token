@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 
 import { exchangeHgToken } from '../core/hgAuth'
 import { loadState, removeAccount, subscribeState, upsertAccount } from '../storage/store'
+import { removeAccountInfo } from '../storage/infoCache'
 import type { GameAccount, PluginState } from '../core/types'
 import { formatTimeAgo } from '../utils/time'
 
@@ -37,6 +38,8 @@ function AccountEditor({ account, backendBaseUrl, onStateChanged }: AccountEdito
       return
     }
     onStateChanged(await removeAccount(account.id))
+    // 同步清理状态面板缓存（游戏状态数据，不含凭据）
+    await removeAccountInfo(account.id)
   }
 
   const lastSync = account.lastSync
@@ -46,7 +49,7 @@ function AccountEditor({ account, backendBaseUrl, onStateChanged }: AccountEdito
       <div className="title-row">
         <div>
           <span className="name">{account.nickName || '未命名博士'}</span>
-          <span className="meta" style={{ marginLeft: 10, color: '#6b7280', fontSize: 12 }}>
+          <span className="meta" style={{ marginLeft: 10, color: 'var(--muted)', fontSize: 12 }}>
             UID {account.uid} · {account.channelName || '未知区服'}
           </span>
         </div>

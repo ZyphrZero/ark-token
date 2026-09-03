@@ -1,14 +1,35 @@
+/*
+ * 管理页样式：与弹窗面板同一套暗色明日方舟主题（配色令牌一致），
+ * 布局沿用原版，仅替换颜色变量。
+ */
+@import '../popup/assets/fonts/akrobat.css';
+
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
+:root {
+  --foreground: hsl(0 0% 100%);
+  --background: hsl(220 4% 14%);
+  --secondary-background: hsl(223 6% 22%);
+  --border: hsl(223 5% 28%);
+  --list-item: hsl(220 3% 18%);
+  --muted: hsl(220 4% 72%);
+  --primary: hsl(211 57% 58%);
+  --primary-strong: hsl(211 57% 66%);
+  --danger: #f56c6c;
+  --ok: #67c23a;
+  --info: #5ab8f9;
+  --warn: #e6a23c;
+}
+
 body {
-  font-family: 'Segoe UI', 'Microsoft YaHei', system-ui, sans-serif;
+  font-family: 'Akrobat', 'Microsoft YaHei', 'Segoe UI', system-ui, sans-serif;
   font-size: 14px;
-  color: #24292f;
-  background: #f6f8fa;
+  color: var(--foreground);
+  background: var(--background);
 }
 
 .options {
@@ -26,18 +47,18 @@ body {
 
 .options-header h1 {
   font-size: 20px;
-  color: #1f4468;
+  color: var(--foreground);
 }
 
 .options-header a {
-  color: #2c5f8a;
+  color: var(--primary-strong);
   font-size: 13px;
 }
 
 .tabs {
   display: flex;
   gap: 4px;
-  border-bottom: 1px solid #d0d7de;
+  border-bottom: 1px solid var(--border);
   margin-bottom: 20px;
 }
 
@@ -46,16 +67,17 @@ body {
   background: transparent;
   padding: 10px 16px;
   font-size: 14px;
-  color: #57606a;
+  font-family: inherit;
+  color: var(--muted);
   cursor: pointer;
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
 }
 
 .tab.active {
-  color: #1f4468;
+  color: var(--foreground);
   font-weight: 600;
-  border-bottom-color: #2c5f8a;
+  border-bottom-color: var(--primary);
 }
 
 .options-body {
@@ -65,8 +87,8 @@ body {
 }
 
 .card {
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--list-item);
+  border: 1px solid var(--border);
   border-radius: 10px;
   padding: 18px;
 }
@@ -74,7 +96,7 @@ body {
 .card h2 {
   font-size: 16px;
   margin-bottom: 12px;
-  color: #1f4468;
+  color: var(--foreground);
 }
 
 .card h3 {
@@ -83,14 +105,14 @@ body {
 }
 
 .hint {
-  color: #6b7280;
+  color: var(--muted);
   font-size: 12px;
   line-height: 1.7;
 }
 
 .hint code {
-  background: #f3f4f6;
-  border: 1px solid #e5e7eb;
+  background: var(--secondary-background);
+  border: 1px solid var(--border);
   border-radius: 4px;
   padding: 1px 5px;
   font-size: 11px;
@@ -110,19 +132,20 @@ input[type='url'],
 textarea,
 select {
   width: 100%;
-  border: 1px solid #d0d7de;
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 8px 10px;
   font-size: 13px;
   font-family: inherit;
-  background: #fff;
+  color: var(--foreground);
+  background: var(--background);
 }
 
 input:focus,
 textarea:focus,
 select:focus {
-  outline: 2px solid rgba(44, 95, 138, 0.35);
-  border-color: #2c5f8a;
+  outline: 2px solid rgba(106, 154, 194, 0.35);
+  border-color: var(--primary);
 }
 
 textarea {
@@ -132,18 +155,19 @@ textarea {
 }
 
 .btn {
-  border: 1px solid #d0d7de;
-  background: #f6f8fa;
-  color: #24292f;
+  border: 1px solid var(--border);
+  background: var(--secondary-background);
+  color: var(--foreground);
   border-radius: 8px;
   padding: 8px 16px;
   font-size: 13px;
+  font-family: inherit;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background 0.15s, border-color 0.15s;
 }
 
 .btn:hover:not(:disabled) {
-  background: #eef1f4;
+  border-color: var(--primary);
 }
 
 .btn:disabled {
@@ -152,22 +176,23 @@ textarea {
 }
 
 .btn-primary {
-  background: #2c5f8a;
-  border-color: #2c5f8a;
+  background: var(--primary);
+  border-color: var(--primary);
   color: #fff;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #3a76a8;
+  background: var(--primary-strong);
 }
 
 .btn-danger {
-  color: #cf222e;
-  border-color: #e6b3b7;
+  color: var(--danger);
+  border-color: var(--danger);
+  background: transparent;
 }
 
 .btn-danger:hover:not(:disabled) {
-  background: #fdf0f0;
+  background: rgba(245, 108, 108, 0.12);
 }
 
 .btn-sm {
@@ -190,9 +215,9 @@ textarea {
   word-break: break-all;
 }
 
-.message.ok { background: #dafbe1; color: #116329; }
-.message.err { background: #ffebe9; color: #cf222e; }
-.message.info { background: #ddf4ff; color: #0969da; }
+.message.ok { background: rgba(103, 194, 58, 0.12); color: var(--ok); }
+.message.err { background: rgba(245, 108, 108, 0.12); color: var(--danger); }
+.message.info { background: rgba(90, 184, 249, 0.12); color: var(--info); }
 
 .method-picker {
   display: flex;
@@ -205,16 +230,18 @@ textarea {
   gap: 12px;
   align-items: flex-start;
   text-align: left;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border);
   border-radius: 10px;
   padding: 14px;
-  background: #fff;
+  background: var(--list-item);
+  color: inherit;
+  font-family: inherit;
   cursor: pointer;
   font-size: 14px;
 }
 
 .method-option:hover {
-  border-color: #93b5d4;
+  border-color: var(--primary);
 }
 
 .method-option input {
@@ -223,7 +250,7 @@ textarea {
 
 .method-option .desc {
   display: block;
-  color: #6b7280;
+  color: var(--muted);
   font-size: 12px;
   margin-top: 3px;
   line-height: 1.6;
@@ -238,7 +265,7 @@ textarea {
 }
 
 .qr-box img {
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border);
   border-radius: 8px;
   background: #fff;
 }
@@ -248,7 +275,7 @@ textarea {
   align-items: center;
   gap: 12px;
   padding: 10px 8px;
-  border-bottom: 1px solid #f0f1f3;
+  border-bottom: 1px solid var(--border);
 }
 
 .binding-row:last-child {
@@ -261,15 +288,15 @@ textarea {
 }
 
 .binding-row .meta {
-  color: #6b7280;
+  color: var(--muted);
   font-size: 12px;
 }
 
 .account-block {
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border);
   border-radius: 10px;
   padding: 16px;
-  background: #fff;
+  background: var(--list-item);
 }
 
 .account-block .title-row {
@@ -300,16 +327,16 @@ textarea {
   font-size: 11px;
   padding: 2px 8px;
   border-radius: 10px;
-  background: #f0f1f3;
-  color: #57606a;
+  background: var(--secondary-background);
+  color: var(--muted);
 }
 
-.badge.ok { background: #dafbe1; color: #116329; }
-.badge.err { background: #ffebe9; color: #cf222e; }
+.badge.ok { background: rgba(103, 194, 58, 0.15); color: var(--ok); }
+.badge.err { background: rgba(245, 108, 108, 0.15); color: var(--danger); }
 
 .last-sync {
   font-size: 12px;
-  color: #6b7280;
+  color: var(--muted);
   margin-top: 6px;
 }
 
@@ -321,9 +348,9 @@ textarea {
 }
 
 .warning-box {
-  background: #fff8c5;
-  border: 1px solid #d4a72c;
-  color: #7d4e00;
+  background: rgba(230, 162, 60, 0.12);
+  border: 1px solid var(--warn);
+  color: var(--warn);
   border-radius: 8px;
   padding: 10px 12px;
   font-size: 12px;
@@ -332,20 +359,21 @@ textarea {
 
 /* 锁定屏 */
 .lock-screen {
-  background: #fff;
-  border: 1px solid #d0d7de;
+  background: var(--list-item);
+  border: 1px solid var(--border);
   border-radius: 10px;
   padding: 20px 24px;
   max-width: 520px;
+  margin: 48px auto;
 }
 
 .lock-screen h2 {
   margin: 0 0 10px;
-  color: #1f4468;
+  color: var(--foreground);
 }
 
 .lock-hint {
-  color: #6b7280;
+  color: var(--muted);
   font-size: 13px;
   line-height: 1.7;
   margin: 0 0 12px;
@@ -355,14 +383,17 @@ textarea {
   width: 100%;
   box-sizing: border-box;
   padding: 8px 12px;
-  border: 1px solid #d0d7de;
+  border: 1px solid var(--border);
   border-radius: 8px;
   font-size: 14px;
+  font-family: inherit;
+  color: var(--foreground);
+  background: var(--background);
 }
 
 .lock-input:focus {
   outline: none;
-  border-color: #2c5f8a;
+  border-color: var(--primary);
 }
 
 .lock-actions {
@@ -373,8 +404,8 @@ textarea {
   margin-top: 10px;
   padding: 8px 10px;
   border-radius: 8px;
-  background: #ffebe9;
-  color: #cf222e;
+  background: rgba(245, 108, 108, 0.12);
+  color: var(--danger);
   font-size: 13px;
 }
 
@@ -382,5 +413,5 @@ textarea {
 .security-form {
   margin-top: 10px;
   padding-top: 10px;
-  border-top: 1px dashed #d0d7de;
+  border-top: 1px dashed var(--border);
 }
