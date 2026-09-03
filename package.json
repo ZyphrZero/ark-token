@@ -1,0 +1,33 @@
+{
+  "name": "yituliu-token",
+  "description": "一图流多账号浏览器插件：森空岛数据拉取 + 一图流读写 token 自动更新",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "build:operator-table": "node scripts/build-operator-table.mjs"
+  },
+  "dependencies": {
+    "crypto-js": "^4.2.0",
+    "qrcode": "^1.5.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@crxjs/vite-plugin": "^2.0.0-beta.32",
+    "@types/chrome": "^0.2.8",
+    "@types/crypto-js": "^4.2.2",
+    "@types/node": "^20.14.0",
+    "@types/qrcode": "^1.5.5",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.8",
+    "vitest": "^2.0.5"
+  }
+}
