@@ -11,6 +11,7 @@
 - 配置**读 token** 后，同步完成自动调用 `GET /open-api/operator/info` 校验远端数据
 - **自动获取读写 token**：浏览器已登录一图流官网时，从标签页读取会话并复用/生成第三方 API Token，免去手动复制；读写 token 全局一对，在「设置」中配置、所有游戏账号共用
 - 凭证失效时，若账号存有官网 HG Token 会自动刷新森空岛凭证并重试
+- **助战检索 API 封装**：按干员练度检索助战玩家，并可使用目标玩家的游戏 UID 发送好友申请
 - 所有 token / 凭证只保存在本机 `chrome.storage.local`，不写入日志、不上报
 - **主密码加密**：森空岛凭证、HG Token、读写 token 以 AES-GCM 加密落盘，主密码本身不保存，防止浏览器数据文件被第三方软件读取后直接还原凭据
 
@@ -37,7 +38,14 @@ npm run build   # 类型检查 + 打包到 dist/
    - **官网 HG Token**：登录 [ak.hypergryph.com](https://ak.hypergryph.com/user/home) 后，把访问 `web-api.hypergryph.com/account/info/hg` 得到的 JSON 粘贴进来；浏览器已登录官网时可「一键读取」
    - **森空岛凭证**：与一图流网站导入教程一致，登录森空岛网页后在控制台执行
      `copy(localStorage.getItem('SK_OAUTH_CRED_KEY')+','+localStorage.getItem('SK_TOKEN_CACHE_KEY'))`，粘贴复制结果
-3. 勾选要添加的明日方舟账号（一个凭证可绑定多个游戏账号）
+4. 助战检索 API 使用当前账号已有的森空岛凭证，不需要额外配置一图流 token。`src/core/sklandAssist.ts` 提供：
+   - `fetchAssistInfo`：获取干员目录和等级上限
+   - `fetchAssistUserInfo`：按游戏 UID 获取游戏身份
+   - `searchAssist`：按干员、等级、技能和模组检索助战玩家
+   - `addFriendByUid`：使用 `{ uid, targetUid }` 发送好友申请
+
+   `targetUid` 必须是对方的明日方舟游戏 UID；不能直接使用昵称，也不能把搜索结果中的森空岛平台 `userId` 当作 `targetUid`。这些函数位于纯核心层，默认单元测试使用 mock fetch，尚未接入弹窗或后台消息路由。
+5. 勾选要添加的明日方舟账号（一个凭证可绑定多个游戏账号）
 
 ### 配置一图流读写 token
 
@@ -78,6 +86,7 @@ ark-token/
 │   │   ├── errors.ts               # 错误类型与错误码 → 中文提示映射
 │   │   ├── crypto.ts               # 凭据加密（AES-GCM-256 + PBKDF2，WebCrypto）
 │   │   ├── skland.ts               # 森空岛签名（HMAC-SHA256+MD5）与数据 API（binding/cultivate/player info）
+│   │   ├── sklandAssist.ts          # 助战目录/检索与按游戏 UID 添加好友 API
 │   │   ├── hgAuth.ts               # 官网 HG Token 换凭证（浏览器直连，失败可降级走后端）与输入解析
 │   │   ├── qrLogin.ts              # 森空岛扫码登录（创建二维码 + 轮询）
 │   │   ├── yituliuApi.ts           # 一图流 open-api 上传 / 读取封装
@@ -145,6 +154,12 @@ node scripts/preview-server.cjs    # 在 http://127.0.0.1:8791 提供静态服�
   - `POST /survey/hg/cred-token`：官网 HG Token 换森空岛凭证
   - `POST /survey/skland/qr/create` / `POST /survey/skland/qr/check?scanId=`：扫码登录
   - `GET /user/open-api/permissions`：第三方权限列表（读 10001 / 写 10002，无需登录）
+  - `GET /api/v1/game/assist/info`：获取助战检索干员目录（响应 `data.content` 为 Base64 JSON）
+  - `GET /api/v1/game/assist/user-info?uid=`：查询指定游戏 UID 的身份信息
+  - `POST /api/v1/game/assist/search`：提交 `{ uid, charId, level, skill, equip }` 检索助战
+  - `POST /api/v1/game/friend`：提交 `{ uid, targetUid }` 按游戏 UID 添加好友
+  - 助战 API 使用与现有森空岛数据 API 相同的签名和当前账号 `cred/token`；不把凭证、签名或助战原始响应写入日志或测试 fixture
+
   - `GET /auth/user/open-api/tokens` / `POST /auth/user/open-api/token`：第三方 token 列表与生成，
     需 `Authorization: Authorization<USER_TOKEN>` 会话头（凭证存于 ark.yituliu.cn 的 localStorage，与官网「用户中心 → 第三方 API Token」页一致）
 - 前端 `E:\yituliu\frontend-v2-plus`

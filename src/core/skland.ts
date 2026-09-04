@@ -98,7 +98,7 @@ async function requestSkland<T>(
  * 10000/10003 是签名时间戳校验失败（服务端时间窗约 1~2 分钟）：本机时钟偏差过大时所有请求都会失败，
  * 与凭证无关，提示校准系统时间而不是误导用户重新扫码。
  */
-function describeSklandError(code: number, message: string): string {
+export function describeSklandError(code: number, message: string): string {
   if (code === 10000 || code === 10003) {
     return `森空岛签名校验未通过（${code}：${message}）。请检查本机系统时间是否准确（建议开启网络时间同步）后重试`
   }
