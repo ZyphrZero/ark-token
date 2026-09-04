@@ -7,7 +7,7 @@ const NOW = 1_700_000_000_000
 const NOW_SEC = Math.floor(NOW / 1000)
 const TOKEN = 'test-signing-secret'
 
-/** 用 node:crypto 独立实现签名算法（与 crypto-js 实现互为对照） */
+/** 用 node:crypto 独立实现签名算法（与浏览器端实现互为对照） */
 function expectedSign(path: string, params: string, timestamp: string, token: string): string {
   const headers = `{"platform":"3","timestamp":"${timestamp}","dId":"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/118.0","vName":"1.2.0"}`
   const text = path + params + timestamp + headers

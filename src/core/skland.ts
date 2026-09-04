@@ -1,5 +1,7 @@
-import HmacSHA256 from 'crypto-js/hmac-sha256'
-import MD5 from 'crypto-js/md5'
+import { hmac } from '@noble/hashes/hmac'
+import { md5 } from '@noble/hashes/legacy'
+import { sha256 } from '@noble/hashes/sha256'
+import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils'
 
 import { SklandError } from './errors'
 import type { SklandBindingInfo } from './skland-info'
@@ -41,7 +43,8 @@ export function getSign(path: string, params: string | null | undefined, token: 
   }
   const normalizedParams = params ? params : ''
   const text = path + normalizedParams + timestamp + JSON.stringify(headers)
-  const sign = MD5(HmacSHA256(text, token).toString()).toString()
+  const hmacHex = bytesToHex(hmac(sha256, utf8ToBytes(token), utf8ToBytes(text)))
+  const sign = bytesToHex(md5(utf8ToBytes(hmacHex)))
   return { timestamp, sign }
 }
 

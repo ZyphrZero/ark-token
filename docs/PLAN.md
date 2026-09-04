@@ -9,7 +9,7 @@
 ## 技术选型
 
 - React 18 + TypeScript + Vite + @crxjs/vite-plugin（MV3 插件标准组合，支持热更新）
-- crypto-js：HMAC-SHA256 + MD5，与一图流前端签名算法完全一致
+- @noble/hashes：HMAC-SHA256 + MD5，与一图流前端签名算法完全一致
 - qrcode：弹窗/设置页内渲染登录二维码
 - vitest：单元测试；不引入 UI 组件库，手写轻量样式
 
