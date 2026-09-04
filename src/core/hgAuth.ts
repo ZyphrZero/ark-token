@@ -48,21 +48,69 @@ export function parseHgTokenInput(text: string): string {
 
 /** 解析用户粘贴的森空岛凭证输入（cred,token 逗号串，与一图流官网教程一致） */
 export function parseSklandCredentialInput(text: string): { cred: string; token: string } {
-  const normalized = text.replace(/\s+/g, '').replace(/["']/g, '')
-  if (!normalized.includes(',')) {
-    throw new AuthFlowError('输入格式不正确：应是一段中间包含逗号的凭证（cred,token）')
+  const input = text.trim()
+  if (!input) {
+    throw new AuthFlowError('请粘贴当前森空岛网页重新复制的完整凭证（cred,token）')
   }
-  const [cred, token] = normalized.split(',')
-  const isMissing = (value: string | undefined) =>
-    !value || value === 'null' || value === 'undefined'
-  if (isMissing(cred) || isMissing(token)) {
-    // copy(null+','+null) 得到的就是 "null,null"：说明浏览器里没有那两个存储键
-    throw new AuthFlowError(
-      '复制到的内容不含有效凭证（是 null/undefined）：通常是尚未登录森空岛网页版（www.skland.com），' +
-        '或命令没有在森空岛页面的控制台执行；也可能森空岛更新后改变了存储方式。推荐改用「扫码登录」添加账号。'
-    )
+
+  const missingMessage =
+    '复制到的内容不含有效凭证（是 null/undefined）：通常是尚未登录森空岛网页版（www.skland.com），' +
+    '或命令没有在森空岛页面的控制台执行；请重新登录后复制完整的 cred,token。'
+  const invalidMessage =
+    '输入格式不正确：请粘贴当前森空岛网页重新复制的完整凭证（cred,token），不要混用 Android 凭证、Cookie 或 sign'
+
+  const isMissing = (value: unknown): value is null | undefined =>
+    value === null || value === undefined || value === '' || value === 'null' || value === 'undefined'
+  const normalizePart = (value: unknown): string => {
+    if (typeof value !== 'string') {
+      throw new AuthFlowError(invalidMessage)
+    }
+    const trimmed = value.trim()
+    const unquoted =
+      trimmed.length >= 2 &&
+      ((trimmed.startsWith('"') && trimmed.endsWith('"')) || (trimmed.startsWith("'") && trimmed.endsWith("'")))
+        ? trimmed.slice(1, -1).trim()
+        : trimmed
+    if (isMissing(unquoted)) {
+      throw new AuthFlowError(missingMessage)
+    }
+    return unquoted
   }
-  return { cred, token }
+  const makeCredential = (cred: unknown, token: unknown): { cred: string; token: string } => {
+    if (isMissing(cred) || isMissing(token)) {
+      throw new AuthFlowError(missingMessage)
+    }
+    return { cred: normalizePart(cred), token: normalizePart(token) }
+  }
+
+  if (input.startsWith('{') || input.startsWith('[')) {
+    try {
+      const parsed: unknown = JSON.parse(input)
+      if (Array.isArray(parsed) && parsed.length === 2) {
+        return makeCredential(parsed[0], parsed[1])
+      }
+      if (parsed && typeof parsed === 'object') {
+        const candidate = parsed as { cred?: unknown; token?: unknown; data?: { cred?: unknown; token?: unknown } }
+        if ('cred' in candidate || 'token' in candidate) {
+          return makeCredential(candidate.cred, candidate.token)
+        }
+        if (candidate.data && ('cred' in candidate.data || 'token' in candidate.data)) {
+          return makeCredential(candidate.data.cred, candidate.data.token)
+        }
+      }
+    } catch (error) {
+      if (error instanceof AuthFlowError) {
+        throw error
+      }
+    }
+    throw new AuthFlowError(invalidMessage)
+  }
+
+  const parts = input.split(',')
+  if (parts.length !== 2) {
+    throw new AuthFlowError(invalidMessage)
+  }
+  return makeCredential(parts[0], parts[1])
 }
 
 /** 走一图流后端接口换取凭证 */

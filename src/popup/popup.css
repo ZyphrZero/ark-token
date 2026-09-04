@@ -173,6 +173,12 @@ body {
   text-overflow: ellipsis;
 }
 
+.status-header .status-header-actions {
+  display: inline-flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
 .status-header .switcher-trigger {
   border: none;
   border-radius: 999px;
@@ -702,7 +708,251 @@ body {
   }
 }
 
-/* ============ 账号切换侧滑面板（Figma 165:4994：容器270宽 x=80 起） ============ */
+/* ============ 助战检索页 ============ */
+
+.assist-page {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.assist-page-header {
+  height: 48px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+  padding: 0 2px 6px;
+}
+
+.assist-page-header .icon-btn {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.assist-page-header h2 {
+  font-size: 16px;
+  line-height: 18px;
+}
+
+.assist-page-header > div > span {
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.assist-account-label {
+  margin-left: auto;
+  max-width: 108px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 10px;
+}
+
+.assist-page-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 8px 0 4px;
+}
+
+.assist-identity,
+.assist-results-heading {
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 10px;
+  margin-bottom: 6px;
+}
+
+.assist-filter {
+  border: 1px solid var(--border);
+  background: var(--list-item);
+  padding: 8px;
+  margin-bottom: 8px;
+}
+
+.assist-filter-title {
+  font-weight: 700;
+  font-size: 13px;
+  margin-bottom: 5px;
+}
+
+.assist-field {
+  display: block;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 10px;
+  margin-top: 5px;
+}
+
+.assist-field select {
+  margin-top: 2px;
+  padding: 5px 6px;
+  font-size: 11px;
+}
+
+.assist-filter-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.assist-search-button {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.assist-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 120px;
+  padding: 16px;
+  color: rgba(255, 255, 255, 0.65);
+  text-align: center;
+  font-size: 12px;
+}
+
+.assist-result-card {
+  border: 1px solid var(--border);
+  background: var(--list-item);
+  padding: 7px;
+  margin-bottom: 6px;
+}
+
+.assist-player-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.assist-player-avatar {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  object-fit: cover;
+  border: 1px solid var(--border);
+  background: var(--background);
+}
+
+.assist-player-meta {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.assist-player-meta strong {
+  color: var(--foreground);
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.assist-player-meta span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.assist-player-header .btn {
+  flex-shrink: 0;
+  padding: 4px 6px;
+  font-size: 10px;
+}
+
+.assist-operators {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 6px;
+}
+
+.assist-operator {
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border-top: 1px solid rgba(68, 70, 75, 0.7);
+  padding-top: 3px;
+}
+
+.assist-operator-art {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  object-fit: cover;
+  object-position: top center;
+  border: 1px solid var(--border);
+  background: var(--background);
+}
+
+.assist-operator-meta {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.assist-operator-meta strong {
+  color: var(--foreground);
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.assist-operator-icons {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.assist-icon-stack {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 8px;
+}
+
+.assist-skill-icon,
+.assist-equip-icon {
+  width: 22px;
+  height: 22px;
+  object-fit: cover;
+  border: 1px solid var(--border);
+  background: var(--background);
+}
+
+.assist-image-placeholder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.45);
+  background: var(--background);
+  overflow: hidden;
+  font-size: 11px;
+}
+
+.assist-operator-empty {
+  min-height: 30px;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 10px;
+}
+
 
 .switcher-overlay {
   position: absolute;
@@ -877,7 +1127,54 @@ body {
   gap: 6px;
 }
 
-/* ============ 空态 / 引导 ============ */
+/* ============ 好友申请 ============ */
+
+.friend-form {
+  flex-shrink: 0;
+  border-top: 1px solid var(--border);
+  padding: 8px;
+  background: var(--background);
+}
+
+.friend-form-title {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.friend-form-source {
+  margin: 3px 0 6px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.friend-form input {
+  width: 100%;
+  margin-bottom: 6px;
+}
+
+.friend-form .btn {
+  width: 100%;
+}
+
+.friend-form .message {
+  margin: 6px 0 0;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 
 .panel-empty {
   flex: 1;

@@ -4,6 +4,7 @@ import { getSecurityStatus, loadState, setActiveAccount, subscribeState, type Se
 import { loadInfoCache, subscribeInfoCache, type InfoCache } from '../storage/infoCache'
 import type { PluginState } from '../core/types'
 import UnlockScreen from '../security/UnlockScreen'
+import AssistSearchPage from './assist/AssistSearchPage'
 import AccountSwitcher from './panel/AccountSwitcher'
 import IslandSection from './panel/IslandSection'
 import MissionSection from './panel/MissionSection'
@@ -23,6 +24,7 @@ export default function App() {
   const [security, setSecurity] = useState<SecurityStatus | null>(null)
   const [cache, setCache] = useState<InfoCache | null>(null)
   const [switcherOpen, setSwitcherOpen] = useState(false)
+  const [assistOpen, setAssistOpen] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
   const [refreshNote, setRefreshNote] = useState<string | null>(null)
 
@@ -82,57 +84,67 @@ export default function App() {
             </div>
           )}
 
-          <main className="panel-main">
-            {accounts.length === 0 ? (
-              <div className="panel-empty">
-                <div className="empty-title">暂无账号</div>
-                <p className="empty-sub">
-                  添加森空岛账号后，即可在此查看理智、公招、基建等状态，
-                  并把干员练度同步到一图流。
-                </p>
-                <button className="btn btn-primary" onClick={() => openOptions('#add')}>
-                  ＋ 添加第一个账号
-                </button>
-              </div>
-            ) : !info ? (
-              <div className="panel-empty">
-                <div className="empty-title">还没有面板数据</div>
-                <p className="empty-sub">点击下方刷新按钮，从森空岛拉取当前账号的状态数据</p>
-                <button className="btn btn-primary" disabled={refreshing} onClick={() => void handleRefresh()}>
-                  {refreshing ? '拉取中…' : '立即刷新'}
-                </button>
-                {refreshNote && <p className="empty-sub">{refreshNote}</p>}
-              </div>
-            ) : (
-              <>
-                <StatusHeader status={info.status} onOpenSwitcher={() => setSwitcherOpen(true)} />
-                <SanitySection ap={info.status.ap} />
-                <IslandSection info={info} />
-                <MissionSection info={info} />
-              </>
-            )}
-          </main>
+          {assistOpen && activeAccount ? (
+            <AssistSearchPage account={activeAccount} onBack={() => setAssistOpen(false)} />
+          ) : (
+            <>
+              <main className="panel-main">
+                {accounts.length === 0 ? (
+                  <div className="panel-empty">
+                    <div className="empty-title">暂无账号</div>
+                    <p className="empty-sub">
+                      添加森空岛账号后，即可在此查看理智、公招、基建等状态，
+                      并把干员练度同步到一图流。
+                    </p>
+                    <button className="btn btn-primary" onClick={() => openOptions('#add')}>
+                      ＋ 添加第一个账号
+                    </button>
+                  </div>
+                ) : !info ? (
+                  <div className="panel-empty">
+                    <div className="empty-title">还没有面板数据</div>
+                    <p className="empty-sub">点击下方刷新按钮，从森空岛拉取当前账号的状态数据</p>
+                    <button className="btn btn-primary" disabled={refreshing} onClick={() => void handleRefresh()}>
+                      {refreshing ? '拉取中…' : '立即刷新'}
+                    </button>
+                    {refreshNote && <p className="empty-sub">{refreshNote}</p>}
+                  </div>
+                ) : (
+                  <>
+                    <StatusHeader
+                      status={info.status}
+                      onOpenSwitcher={() => setSwitcherOpen(true)}
+                      onOpenAssist={() => setAssistOpen(true)}
+                    />
+                    <SanitySection ap={info.status.ap} />
+                    <IslandSection info={info} />
+                    <MissionSection info={info} />
+                  </>
+                )}
+              </main>
 
-          {activeAccount && (
-            <PanelFooter
-              fetchedAt={activeEntry?.fetchedAt}
-              refreshing={refreshing}
-              onRefresh={() => void handleRefresh()}
-              canSync={Boolean(state?.settings.yituliuTokens.writeToken)}
-              syncing={syncing}
-              onSync={handleSync}
-              lastSync={activeAccount.lastSync}
-              note={accounts.length > 0 && !info ? null : refreshNote}
-            />
-          )}
+              {activeAccount && (
+                <PanelFooter
+                  fetchedAt={activeEntry?.fetchedAt}
+                  refreshing={refreshing}
+                  onRefresh={() => void handleRefresh()}
+                  canSync={Boolean(state?.settings.yituliuTokens.writeToken)}
+                  syncing={syncing}
+                  onSync={handleSync}
+                  lastSync={activeAccount.lastSync}
+                  note={accounts.length > 0 && !info ? null : refreshNote}
+                />
+              )}
 
-          {switcherOpen && (
-            <AccountSwitcher
-              accounts={accounts}
-              activeAccountId={state?.activeAccountId ?? null}
-              onActivate={handleActivate}
-              onClose={() => setSwitcherOpen(false)}
-            />
+              {switcherOpen && (
+                <AccountSwitcher
+                  accounts={accounts}
+                  activeAccountId={state?.activeAccountId ?? null}
+                  onActivate={handleActivate}
+                  onClose={() => setSwitcherOpen(false)}
+                />
+              )}
+            </>
           )}
         </>
       )}

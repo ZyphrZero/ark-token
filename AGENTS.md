@@ -14,7 +14,8 @@
 
 ## Figma设计原型
 
-https://www.figma.com/design/as0oOsTLNjdxzxx5BKb6Sx/%E7%BD%97%E5%BE%B7%E5%B2%9B%E8%BF%9C%E7%A8%8B%E6%8C%87%E6%8C%A5%E9%83%A8--Copy-?node-id=12-150&p=f&t=qQaGQxJQN6NuDqbk-0
+UI原型请参考Figma原型进行设计：
+`https://www.figma.com/design/as0oOsTLNjdxzxx5BKb6Sx/%E7%BD%97%E5%BE%B7%E5%B2%9B%E8%BF%9C%E7%A8%8B%E6%8C%87%E6%8C%A5%E9%83%A8--Copy-?node-id=12-150&p=f&t=qQaGQxJQN6NuDqbk-0`
 
 ## 构建、测试与本地开发
 

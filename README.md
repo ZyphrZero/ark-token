@@ -11,7 +11,7 @@
 - 配置**读 token** 后，同步完成自动调用 `GET /open-api/operator/info` 校验远端数据
 - **自动获取读写 token**：浏览器已登录一图流官网时，从标签页读取会话并复用/生成第三方 API Token，免去手动复制；读写 token 全局一对，在「设置」中配置、所有游戏账号共用
 - 凭证失效时，若账号存有官网 HG Token 会自动刷新森空岛凭证并重试
-- **助战检索 API 封装**：按干员练度检索助战玩家，并可使用目标玩家的游戏 UID 发送好友申请
+- **助战检索页面**：在弹窗博士信息头点击「助战检索」，可按干员、精英化、等级、技能、技能等级、模组和模组等级筛选助战，并查看玩家与助战干员图标；结果支持按游戏 UID 添加好友
 - 所有 token / 凭证只保存在本机 `chrome.storage.local`，不写入日志、不上报
 - **主密码加密**：森空岛凭证、HG Token、读写 token 以 AES-GCM 加密落盘，主密码本身不保存，防止浏览器数据文件被第三方软件读取后直接还原凭据
 
@@ -38,14 +38,24 @@ npm run build   # 类型检查 + 打包到 dist/
    - **官网 HG Token**：登录 [ak.hypergryph.com](https://ak.hypergryph.com/user/home) 后，把访问 `web-api.hypergryph.com/account/info/hg` 得到的 JSON 粘贴进来；浏览器已登录官网时可「一键读取」
    - **森空岛凭证**：与一图流网站导入教程一致，登录森空岛网页后在控制台执行
      `copy(localStorage.getItem('SK_OAUTH_CRED_KEY')+','+localStorage.getItem('SK_TOKEN_CACHE_KEY'))`，粘贴复制结果
-4. 助战检索 API 使用当前账号已有的森空岛凭证，不需要额外配置一图流 token。`src/core/sklandAssist.ts` 提供：
-   - `fetchAssistInfo`：获取干员目录和等级上限
-   - `fetchAssistUserInfo`：按游戏 UID 获取游戏身份
-   - `searchAssist`：按干员、等级、技能和模组检索助战玩家
-   - `addFriendByUid`：使用 `{ uid, targetUid }` 发送好友申请
+3. 勾选要添加的明日方舟账号（一个凭证可绑定多个游戏账号）
 
-   `targetUid` 必须是对方的明日方舟游戏 UID；不能直接使用昵称，也不能把搜索结果中的森空岛平台 `userId` 当作 `targetUid`。这些函数位于纯核心层，默认单元测试使用 mock fetch，尚未接入弹窗或后台消息路由。
-5. 勾选要添加的明日方舟账号（一个凭证可绑定多个游戏账号）
+添加完成后，打开插件弹窗并点击顶部账号切换按钮，可在账号切换卡片的「添加好友」区域输入目标玩家的游戏 UID，向该 UID 发送好友申请。后台会使用当前选中的账号凭证；昵称和森空岛平台 `userId` 不能代替目标游戏 UID。
+
+### 助战检索与好友申请
+
+在插件弹窗的博士信息头点击「助战检索」进入独立页面。页面会加载森空岛实时助战目录，可按干员、精英化阶段、等级、技能、技能等级、模组和模组等级筛选；检索结果会展示玩家信息、助战干员头像/立绘、技能图标、模组图标和潜能等数据。图片来自森空岛 CDN，网络异常或资源下线时会自动显示文字占位。
+
+结果卡片中的「添加好友」使用对方的明日方舟游戏 UID 发送申请；`userId` 是森空岛平台 ID，不能代替游戏 UID。好友申请由后台使用当前账号凭证执行，凭证不会传给页面。
+
+底层 API 位于 `src/core/sklandAssist.ts`：
+
+- `fetchAssistInfo`：获取干员目录和等级上限
+- `fetchAssistUserInfo`：按游戏 UID 获取游戏身份
+- `searchAssist`：按干员、等级、技能和模组检索助战玩家
+- `addFriendByUid`：使用 `{ uid, targetUid }` 发送好友申请
+
+助战 API 使用当前账号已有的森空岛凭证，不需要额外配置一图流 token；`src/core/sklandAssist.ts` 提供底层接口，弹窗页面通过后台消息调用。
 
 ### 配置一图流读写 token
 
@@ -86,7 +96,7 @@ ark-token/
 │   │   ├── errors.ts               # 错误类型与错误码 → 中文提示映射
 │   │   ├── crypto.ts               # 凭据加密（AES-GCM-256 + PBKDF2，WebCrypto）
 │   │   ├── skland.ts               # 森空岛签名（HMAC-SHA256+MD5）与数据 API（binding/cultivate/player info）
-│   │   ├── sklandAssist.ts          # 助战目录/检索与按游戏 UID 添加好友 API
+│   │   ├── sklandAssist.ts           # 助战目录/检索、结果展示数据与按游戏 UID 添加好友 API
 │   │   ├── hgAuth.ts               # 官网 HG Token 换凭证（浏览器直连，失败可降级走后端）与输入解析
 │   │   ├── qrLogin.ts              # 森空岛扫码登录（创建二维码 + 轮询）
 │   │   ├── yituliuApi.ts           # 一图流 open-api 上传 / 读取封装
@@ -102,11 +112,12 @@ ark-token/
 │   │   ├── infoCache.ts            # 状态面板数据缓存（yituliu-plugin-info-cache，明文游戏状态、不含凭据）
 │   │   └── sessionKey.ts           # 解锁密钥会话缓存（chrome.storage.session，仅内存、随浏览器关闭清空）
 │   ├── background/
-│   │   ├── index.ts                # service worker：同步/面板刷新消息路由 + chrome.alarms 定时同步与面板刷新（锁定时跳过）
+│   │   ├── index.ts                # service worker：同步/面板刷新/助战消息路由 + chrome.alarms 定时同步与面板刷新（锁定时跳过）
 │   │   └── infoRefresh.ts          # 面板数据定时刷新 + 公招/理智桌面通知调度（通知 alarm 前缀 yituliu-notify-）
 │   ├── security/                   # 安全相关界面（锁定屏 / 主密码设置 / 安全面板，popup 与 options 共用）
-│   ├── popup/                      # 弹窗状态面板（博士信息头/理智/公招+基建 Tabs/任务进度/账号切换侧滑面板）
+│   ├── popup/                      # 弹窗状态面板与助战检索页
 │   │   ├── panel/                  # 面板区块组件（recruit/ 公招、building/ 基建）
+│   │   ├── assist/                 # 助战检索页面与 CDN 图片 URL helper
 │   │   ├── useNow.ts               # 实时时钟 hook（驱动倒计时，tick 内不发请求）
 │   │   ├── icons.tsx               # 内联 SVG 图标
 │   │   ├── panelActions.ts         # 弹窗 → 后台消息与页面跳转辅助
