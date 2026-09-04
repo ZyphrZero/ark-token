@@ -80,7 +80,7 @@ export default function AccountSwitcher({ accounts, activeAccountId, onActivate,
                   </span>
                   <span className="switcher-sub">
                     <span>角色区服：{account.channelName || '未知区服'}</span>
-                    <span className="uid font-bender">UID: {account.uid}</span>
+                    <span className="uid">UID: {account.uid}</span>
                   </span>
                 </span>
                 <img className="switcher-arrow" src={listArrow} alt="" />

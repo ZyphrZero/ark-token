@@ -55,9 +55,9 @@ export function parseSklandCredentialInput(text: string): { cred: string; token:
 
   const missingMessage =
     '复制到的内容不含有效凭证（是 null/undefined）：通常是尚未登录森空岛网页版（www.skland.com），' +
-    '或命令没有在森空岛页面的控制台执行；请重新登录后复制完整的 cred,token。'
+    '或命令没有在森空岛页面的控制台执行；请重新登录后复制完整的 cred,token，或改用扫码登录。'
   const invalidMessage =
-    '输入格式不正确：请粘贴当前森空岛网页重新复制的完整凭证（cred,token），不要混用 Android 凭证、Cookie 或 sign'
+    '输入格式不正确：请粘贴当前森空岛网页重新复制的完整凭证（cred,token，包含一个逗号），不要混用 Android 凭证、Cookie 或 sign'
 
   const isMissing = (value: unknown): value is null | undefined =>
     value === null || value === undefined || value === '' || value === 'null' || value === 'undefined'

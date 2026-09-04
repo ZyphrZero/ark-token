@@ -1,7 +1,7 @@
-import sanityBolt from '../assets/sanity-bolt.svg'
+import sanityBolt from '../assets/icons/sanity.svg'
 import type { SklandActionPoint } from '../../core/skland-info'
 import { computeSanity } from '../../core/status/sanity'
-import { formatClockTime, formatDuration, formatMinutesSeconds } from '../../utils/time'
+import { formatDuration, formatMinutesSeconds, formatRecoveryTime } from '../../utils/time'
 import { useNow } from '../useNow'
 import SectionTitle from './SectionTitle'
 
@@ -28,7 +28,7 @@ export default function SanitySection({ ap }: { ap: SklandActionPoint }) {
         </div>
         <div className="sanity-row">
           <span>预计恢复时间:</span>
-          <span>{full ? '-' : formatClockTime(sanity.completeRecoveryAtMs ?? 0, now)}</span>
+          <span>{full ? '-' : formatRecoveryTime(sanity.completeRecoveryAtMs ?? 0, now)}</span>
         </div>
       </div>
     </section>

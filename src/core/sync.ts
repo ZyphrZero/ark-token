@@ -1,6 +1,5 @@
-import { SklandError } from './errors'
 import { exchangeHgToken } from './hgAuth'
-import { fetchCultivateData, type FetchLike } from './skland'
+import { fetchCultivateData, isSklandCredentialExpired, type FetchLike } from './skland'
 import { buildUploadPayload } from './format'
 import { fetchOperatorInfo, uploadOperatorData } from './yituliuApi'
 import type { GameAccount, LastSync, YituliuTokens } from './types'
@@ -34,7 +33,7 @@ async function fetchCultivateWithCredential(
     const cultivate = await fetchCultivateData(account.uid, account.skland.cred, account.skland.token, fetchFn)
     return { cultivate, refreshed: null }
   } catch (error) {
-    const credentialExpired = error instanceof SklandError
+    const credentialExpired = isSklandCredentialExpired(error)
     if (!credentialExpired || !account.hgToken) {
       throw error
     }

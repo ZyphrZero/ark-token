@@ -10,7 +10,6 @@ import {
   toBase64
 } from '../core/crypto'
 import type {
-  EncryptedEnvelope,
   ExtensionSettings,
   GameAccount,
   PluginState,
@@ -315,6 +314,23 @@ export async function upsertAccount(
   if (!state.activeAccountId) {
     state.activeAccountId = account.id
   }
+  await saveState(state, area, session)
+  return state
+}
+
+/** 重新读取最新状态后，仅更新指定账号的森空岛凭证，避免旧页面快照覆盖其他字段。 */
+export async function patchAccountCredential(
+  accountId: string,
+  skland: SklandCredential,
+  area: StorageArea = defaultStorageArea(),
+  session: SessionArea | undefined = defaultSessionArea()
+): Promise<PluginState> {
+  const state = await loadState(area, session)
+  const account = state.accounts.find(item => item.id === accountId)
+  if (!account) {
+    return state
+  }
+  account.skland = skland
   await saveState(state, area, session)
   return state
 }

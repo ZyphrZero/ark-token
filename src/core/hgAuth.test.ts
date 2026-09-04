@@ -53,6 +53,26 @@ describe('parseSklandCredentialInput 森空岛凭证解析', () => {
     expect(() => parseSklandCredentialInput('null,undefined')).toThrow(/扫码登录/)
     expect(() => parseSklandCredentialInput('undefined,undefined')).toThrow(/扫码登录/)
   })
+
+  it('拒绝多余逗号，避免静默截断凭证', () => {
+    expect(() => parseSklandCredentialInput('cred-abc,token-xyz,extra')).toThrow(/完整凭证/)
+  })
+
+  it('支持 JSON 数组和对象形式的凭证', () => {
+    expect(parseSklandCredentialInput('["cred-abc","token-xyz"]')).toEqual({
+      cred: 'cred-abc',
+      token: 'token-xyz'
+    })
+    expect(parseSklandCredentialInput(JSON.stringify({ data: { cred: 'cred-abc', token: 'token-xyz' } }))).toEqual({
+      cred: 'cred-abc',
+      token: 'token-xyz'
+    })
+  })
+
+  it('拒绝缺少字段或非字符串字段的 JSON', () => {
+    expect(() => parseSklandCredentialInput('{"cred":"cred-abc"}')).toThrow(/凭证/)
+    expect(() => parseSklandCredentialInput('{"cred":123,"token":"token-xyz"}')).toThrow(/完整凭证/)
+  })
 })
 
 const GRANT_URL = 'https://as.hypergryph.com/user/oauth2/v2/grant'

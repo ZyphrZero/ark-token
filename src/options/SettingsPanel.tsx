@@ -30,13 +30,13 @@ function describeTokenSource(source: TokenSource): string {
 }
 
 /** 一图流读写 token：全局一对，自动获取优先，失败提示手动生成 */
-function YituliuTokenCard({ settings, onFeedback }: {
+function YituliuTokenCard({ settings }: {
   settings: ExtensionSettings
-  onFeedback: (feedback: { kind: 'ok' | 'err'; text: string }) => void
 }) {
   const [readToken, setReadToken] = useState(settings.yituliuTokens.readToken ?? '')
   const [writeToken, setWriteToken] = useState(settings.yituliuTokens.writeToken ?? '')
   const [busy, setBusy] = useState(false)
+  const [feedback, setFeedback] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null)
 
   // 存储侧 token 变化（如其他页面保存）时同步到输入框；手动编辑期间不受影响
   useEffect(() => {
@@ -53,7 +53,7 @@ function YituliuTokenCard({ settings, onFeedback }: {
     })
     setReadToken(nextRead)
     setWriteToken(nextWrite)
-    onFeedback({ kind: 'ok', text: okText })
+    setFeedback({ kind: 'ok', text: okText })
   }
 
   async function saveTokens() {
@@ -63,7 +63,7 @@ function YituliuTokenCard({ settings, onFeedback }: {
       const trimmedWrite = writeToken.trim()
       await persistTokens(trimmedRead, trimmedWrite, '一图流 token 已保存')
     } catch (error) {
-      onFeedback({ kind: 'err', text: `保存失败：${error instanceof Error ? error.message : String(error)}` })
+      setFeedback({ kind: 'err', text: `保存失败：${error instanceof Error ? error.message : String(error)}` })
     } finally {
       setBusy(false)
     }
@@ -77,7 +77,7 @@ function YituliuTokenCard({ settings, onFeedback }: {
       const nextRead = resolved.readToken ?? readToken.trim()
       const nextWrite = resolved.writeToken ?? writeToken.trim()
       if (!nextRead && !nextWrite) {
-        onFeedback({
+        setFeedback({
           kind: 'err',
           text: `自动获取失败：${resolved.errors.join('；')}。请到官网「用户中心 → 第三方 API Token」手动生成后粘贴`
         })
@@ -95,7 +95,7 @@ function YituliuTokenCard({ settings, onFeedback }: {
         : ''
       await persistTokens(nextRead, nextWrite, `已自动获取并保存：${obtained.join('、')}${suffix}`)
     } catch (error) {
-      onFeedback({
+      setFeedback({
         kind: 'err',
         text: `自动获取失败：${error instanceof Error ? error.message : String(error)}。可到官网「用户中心 → 第三方 API Token」手动生成后粘贴`
       })
@@ -107,15 +107,15 @@ function YituliuTokenCard({ settings, onFeedback }: {
   async function testReadToken() {
     const trimmed = readToken.trim()
     if (!trimmed) {
-      onFeedback({ kind: 'err', text: '请先填写读 token 再测试' })
+      setFeedback({ kind: 'err', text: '请先填写读 token 再测试' })
       return
     }
     setBusy(true)
     try {
       const operators = await fetchOperatorInfo(trimmed, settings.backendBaseUrl)
-      onFeedback({ kind: 'ok', text: `读 token 有效：一图流已保存 ${operators.length} 名干员数据` })
+      setFeedback({ kind: 'ok', text: `读 token 有效：一图流已保存 ${operators.length} 名干员数据` })
     } catch (error) {
-      onFeedback({ kind: 'err', text: error instanceof Error ? error.message : String(error) })
+      setFeedback({ kind: 'err', text: error instanceof Error ? error.message : String(error) })
     } finally {
       setBusy(false)
     }
@@ -147,6 +147,8 @@ function YituliuTokenCard({ settings, onFeedback }: {
         <button className="btn" disabled={busy} onClick={() => void testReadToken()}>测试读 token</button>
       </div>
 
+      {feedback && <div className={`message ${feedback.kind}`}>{feedback.text}</div>}
+
       <p className="hint" style={{ marginTop: 10 }}>
         「自动获取」需要在浏览器中已登录一图流（ark.yituliu.cn），会复用官网已生成的 token，缺失时自动生成。
         获取不到时再到一图流官网
@@ -159,7 +161,7 @@ function YituliuTokenCard({ settings, onFeedback }: {
 
 export default function SettingsPanel() {
   const [settings, setSettings] = useState<ExtensionSettings | null>(null)
-  const [feedback, setFeedback] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null)
+  const [feedback, setFeedback] = useState<{ section: 'sync' | 'info'; kind: 'ok' | 'err'; text: string } | null>(null)
 
   useEffect(() => {
     void loadState().then(state => setSettings(state.settings))
@@ -170,7 +172,7 @@ export default function SettingsPanel() {
     return <div className="card">加载中…</div>
   }
 
-  async function save() {
+  async function save(section: 'sync' | 'info') {
     if (!settings) {
       return
     }
@@ -183,12 +185,12 @@ export default function SettingsPanel() {
     await applyAutoSyncAlarm()
     await applyInfoRefreshAlarm()
     setSettings(normalized)
-    setFeedback({ kind: 'ok', text: '设置已保存' + (normalized.autoSyncEnabled ? '，定时同步已生效' : '') })
+    setFeedback({ section, kind: 'ok', text: '设置已保存' + (normalized.autoSyncEnabled ? '，定时同步已生效' : '') })
   }
 
   return (
     <>
-      <YituliuTokenCard settings={settings} onFeedback={setFeedback} />
+      <YituliuTokenCard settings={settings} />
 
       <div className="card">
         <h2>设置</h2>
@@ -229,8 +231,10 @@ export default function SettingsPanel() {
         </select>
 
         <div className="actions">
-          <button className="btn btn-primary" onClick={() => void save()}>保存设置</button>
+          <button className="btn btn-primary" onClick={() => void save('sync')}>保存设置</button>
         </div>
+
+        {feedback?.section === 'sync' && <div className={`message ${feedback.kind}`}>{feedback.text}</div>}
       </div>
 
       <div className="card">
@@ -295,11 +299,11 @@ export default function SettingsPanel() {
         </div>
 
         <div className="actions">
-          <button className="btn btn-primary" onClick={() => void save()}>保存设置</button>
+          <button className="btn btn-primary" onClick={() => void save('info')}>保存设置</button>
         </div>
-      </div>
 
-      {feedback && <div className={`message ${feedback.kind}`}>{feedback.text}</div>}
+        {feedback?.section === 'info' && <div className={`message ${feedback.kind}`}>{feedback.text}</div>}
+      </div>
     </>
   )
 }

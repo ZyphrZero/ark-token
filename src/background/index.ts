@@ -1,5 +1,6 @@
 import {
   addFriendByUid,
+  authorizeAssistSupport,
   fetchAssistInfo,
   fetchAssistUserInfo,
   searchAssist,
@@ -8,8 +9,8 @@ import {
   type AssistSearchResult,
   type AssistUserInfo
 } from '../core/sklandAssist'
-import { SklandError } from '../core/errors'
 import { exchangeHgToken } from '../core/hgAuth'
+import { isSklandCredentialExpired } from '../core/skland'
 import { syncAccount } from '../core/sync'
 import { getSecurityStatus, loadState, saveState } from '../storage/store'
 import type { GameAccount, YituliuTokens } from '../core/types'
@@ -102,7 +103,7 @@ async function withAssistCredential<T>(
   try {
     return await operation(account.skland)
   } catch (error) {
-    if (!(error instanceof SklandError) || !account.hgToken) {
+    if (!isSklandCredentialExpired(error) || !account.hgToken) {
       throw error
     }
     const refreshed = await exchangeHgToken(account.hgToken, backendBaseUrl)
@@ -200,6 +201,32 @@ async function searchAssistById(
   }
 }
 
+/** 官方“身份认证”等价操作：开启明日方舟游戏关系公开开关，使 assist/user-info 的 isAuth 变为 true */
+async function authorizeAssistById(accountId: string): Promise<{ ok: boolean; message?: string }> {
+  const selected = await getAssistAccount(accountId)
+  if (!selected.account) {
+    return { ok: false, message: selected.error }
+  }
+  const state = await loadState()
+  const key = `authorize:${accountId}`
+  if (assistInFlight.has(key)) {
+    return { ok: false, message: '授权请求正在处理，请稍候' }
+  }
+  assistInFlight.add(key)
+  try {
+    await withAssistCredential(
+      selected.account,
+      credential => authorizeAssistSupport(credential.cred, credential.token),
+      state.settings.backendBaseUrl
+    )
+    return { ok: true, message: '已开启游戏关系，正在刷新助战身份' }
+  } catch (error) {
+    return { ok: false, message: error instanceof Error ? error.message : String(error) }
+  } finally {
+    assistInFlight.delete(key)
+  }
+}
+
 async function addFriendById(accountId: string, targetUid: string): Promise<{ ok: boolean; message?: string }> {
   const locked = await lockedMessage('添加好友')
   if (locked) {
@@ -259,6 +286,7 @@ type PopupMessage =
   | { type: 'assistInfo'; accountId: string }
   | { type: 'assistUserInfo'; accountId: string }
   | { type: 'searchAssist'; accountId: string; request: Omit<AssistSearchRequest, 'uid'> }
+  | { type: 'assistAuthorize'; accountId: string }
   | { type: 'applyAutoSync' }
   | { type: 'refreshInfo'; accountId?: string }
   | { type: 'applyInfoRefresh' }
@@ -292,6 +320,9 @@ chrome.runtime.onMessage.addListener((message: PopupMessage, _sender, sendRespon
         case 'searchAssist':
           sendResponse(await searchAssistById(message.accountId, message.request))
           break
+        case 'assistAuthorize':
+          sendResponse(await authorizeAssistById(message.accountId))
+          break
         case 'applyAutoSync':
           await applyAutoSyncAlarm()
           sendResponse({ ok: true })
@@ -324,7 +355,7 @@ chrome.alarms.onAlarm.addListener(alarm => {
     if (alarm.name === AUTO_SYNC_ALARM) {
       void syncAll()
     }
-  })
+  })()
 })
 
 chrome.runtime.onInstalled.addListener(() => {

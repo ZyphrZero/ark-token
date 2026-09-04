@@ -15,7 +15,7 @@
 - 所有 token / 凭证只保存在本机 `chrome.storage.local`，不写入日志、不上报
 - **主密码加密**：森空岛凭证、HG Token、读写 token 以 AES-GCM 加密落盘，主密码本身不保存，防止浏览器数据文件被第三方软件读取后直接还原凭据
 
-> 状态面板的视觉与计算逻辑移植自 [rhodes-headquarters](../rhodes-headquarters)（罗德岛远程指挥部 P.R.R.H），在此感谢。
+> 状态面板的视觉与计算逻辑移植自 [rhodes-headquarters](https://github.com/AEtherside/rhodes-headquarters)（罗德岛远程指挥部 P.R.R.H），在此感谢。
 
 ## 使用方法
 
@@ -54,8 +54,25 @@ npm run build   # 类型检查 + 打包到 dist/
 - `fetchAssistUserInfo`：按游戏 UID 获取游戏身份
 - `searchAssist`：按干员、等级、技能和模组检索助战玩家
 - `addFriendByUid`：使用 `{ uid, targetUid }` 发送好友申请
+- `authorizeAssistSupport`：开启明日方舟「游戏关系」（官方"身份认证"，isAuth=false 时检索前需要）
 
 助战 API 使用当前账号已有的森空岛凭证，不需要额外配置一图流 token；`src/core/sklandAssist.ts` 提供底层接口，弹窗页面通过后台消息调用。
+
+#### 开箱即用封装（`src/core/assist/`）
+
+筛选规则、默认值、级联与图标 URL 已封装为可复用模块，其他开发者只需从 `src/core/assist` 导入即可获得完整能力（含官方语义的默认筛选与联动，无需了解请求细节）：
+
+```ts
+import { createAssistSearchSession } from '../core/assist'
+
+// cred/token 为森空岛凭证；autoAuthorize 可在未开启游戏关系时自动授权
+const session = await createAssistSearchSession(uid, cred, token, { autoAuthorize: true })
+
+const filter = session.createFilter(session.characters[0].id) // 官方默认：最高精英化/第一技能/证章
+const result = await session.search(filter)                   // 组装请求并检索（单次 4 条）
+```
+
+也可单独使用纯函数：`filterAssistCharacters`（排序+过滤）、`createDefaultFilter` / `applyEvolvePhaseChange`（默认值与级联）、`getSkillRequirementOptions` 等选项生成、`buildAssistSearchRequest`（请求组装）、`assistCharacterUrl` 等图标 URL。规则来源与逆向依据见 `docs/ANALYSIS.md`。
 
 ### 配置一图流读写 token
 
@@ -96,7 +113,13 @@ ark-token/
 │   │   ├── errors.ts               # 错误类型与错误码 → 中文提示映射
 │   │   ├── crypto.ts               # 凭据加密（AES-GCM-256 + PBKDF2，WebCrypto）
 │   │   ├── skland.ts               # 森空岛签名（HMAC-SHA256+MD5）与数据 API（binding/cultivate/player info）
-│   │   ├── sklandAssist.ts           # 助战目录/检索、结果展示数据与按游戏 UID 添加好友 API
+│   │   ├── sklandAssist.ts           # 助战目录/检索、结果展示数据与按游戏 UID 添加好友 API（底层网络封装）
+│   │   ├── assist/                   # 助战检索开箱即用模块（供其他界面/开发者复用，入口 `src/core/assist/index.ts`）
+│   │   │   ├── index.ts              # 汇总导出 + createAssistSearchSession 一站式会话（拉目录/校验身份/默认筛选/检索/授权）
+│   │   │   ├── filter.ts             # 筛选规则纯函数：干员排序与过滤、默认筛选（官方 select()）、精英化级联（官方 setFilter()）、选项档位、请求组装
+│   │   │   ├── assets.ts             # 官方 CDN 图片/图标 URL 构造（干员头像、技能/模组/职业/潜能/精英化图标）
+│   │   │   ├── filter.test.ts        # 筛选规则单测
+│   │   │   └── index.test.ts         # 会话门面单测
 │   │   ├── hgAuth.ts               # 官网 HG Token 换凭证（浏览器直连，失败可降级走后端）与输入解析
 │   │   ├── qrLogin.ts              # 森空岛扫码登录（创建二维码 + 轮询）
 │   │   ├── yituliuApi.ts           # 一图流 open-api 上传 / 读取封装
@@ -106,7 +129,7 @@ ark-token/
 │   │   └── status/                 # 状态面板实时推算（纯函数：入参 nowMs，不依赖响应式系统）
 │   │       ├── sanity.ts           # 理智恢复（每 6 分钟 1 点，锚定 lastApAddTime）
 │   │       ├── recruit.ts          # 公招槽位状态机 + 完成通知合并（3 分钟窗口）
-│   │       └── building.ts         # 无人机恢复/发电量公式/制造配方表与库存估算/进驻干员心情
+│   │       └── building.ts         # 无人机恢复/发电量公式/制造配方表与库存估算/进驻干员心情（按设施外推当前疲劳值，语义见 docs/BUILDING_MOOD_API.md）
 │   ├── storage/
 │   │   ├── store.ts                # chrome.storage.local 封装（账号增删改 / 激活切换 / 设置与全局 token / 主密码加解密边界与解锁 / 旧版账号 token 迁移）
 │   │   ├── infoCache.ts            # 状态面板数据缓存（yituliu-plugin-info-cache，明文游戏状态、不含凭据）
@@ -117,7 +140,7 @@ ark-token/
 │   ├── security/                   # 安全相关界面（锁定屏 / 主密码设置 / 安全面板，popup 与 options 共用）
 │   ├── popup/                      # 弹窗状态面板与助战检索页
 │   │   ├── panel/                  # 面板区块组件（recruit/ 公招、building/ 基建）
-│   │   ├── assist/                 # 助战检索页面与 CDN 图片 URL helper
+│   │   ├── assist/                 # 助战检索页面（业务规则复用 src/core/assist/，本目录只保留表单与渲染）
 │   │   ├── useNow.ts               # 实时时钟 hook（驱动倒计时，tick 内不发请求）
 │   │   ├── icons.tsx               # 内联 SVG 图标
 │   │   ├── panelActions.ts         # 弹窗 → 后台消息与页面跳转辅助
@@ -170,6 +193,7 @@ node scripts/preview-server.cjs    # 在 http://127.0.0.1:8791 提供静态服�
   - `POST /api/v1/game/assist/search`：提交 `{ uid, charId, level, skill, equip }` 检索助战
   - `POST /api/v1/game/friend`：提交 `{ uid, targetUid }` 按游戏 UID 添加好友
   - 助战 API 使用与现有森空岛数据 API 相同的签名和当前账号 `cred/token`；不把凭证、签名或助战原始响应写入日志或测试 fixture
+  - 如果森空岛 Web 端重新登录后凭证变化，请在「账号管理」对应账号卡片粘贴当前网页重新复制的 `cred,token`，点击「验证并更新凭证」；验证成功后才会替换本地凭证，失败不会覆盖旧凭证。不要混用 Android 会话的 `cred`、Web 端 `token`、Cookie 或 `sign`。
 
   - `GET /auth/user/open-api/tokens` / `POST /auth/user/open-api/token`：第三方 token 列表与生成，
     需 `Authorization: Authorization<USER_TOKEN>` 会话头（凭证存于 ark.yituliu.cn 的 localStorage，与官网「用户中心 → 第三方 API Token」页一致）

@@ -56,7 +56,12 @@ export interface SklandRoutine {
   weekly: { current: number; total: number }
 }
 
-/** 基建进驻干员（ap 为心情剩余秒数，满值 86400） */
+/**
+ * 基建进驻干员。
+ * ap 为心情值，单位 0.01 秒，满值 8_640_000（= 24 点心情，1 点 = 360_000）；
+ * lastApAddTime 为快照对应的服务器时间（unix 秒），当前心情需按设施速率外推，
+ * 见 core/status/building.ts。
+ */
 export interface SklandResidentCharacter {
   charId: string
   ap: number
@@ -143,8 +148,8 @@ export interface SklandBuildingMeeting extends SklandBuildingRoom {
 export interface SklandBuildingTraining {
   slotId: string
   level: number
-  trainee: { charId: string; ap: number; targetSkill: number } | null
-  trainer: { charId: string; ap: number } | null
+  trainee: { charId: string; ap: number; lastApAddTime?: number; targetSkill: number } | null
+  trainer: { charId: string; ap: number; lastApAddTime?: number } | null
   remainPoint: number
   speed: number
   lastUpdateTime: number
@@ -162,6 +167,8 @@ export interface SklandBuilding {
   training: SklandBuildingTraining | null
   meeting: SklandBuildingMeeting | null
   labor: SklandLabor
+  /** 服务端标记的疲劳干员（快照时刻心情极低的干员），App 客户端会在此基础上按设施外推合并计数 */
+  tiredChars?: SklandResidentCharacter[]
 }
 
 /** player/info 中面板渲染所需的干员条目（用于基建进驻干员头像） */

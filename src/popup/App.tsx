@@ -75,15 +75,6 @@ export default function App() {
         </main>
       ) : (
         <>
-          {!security.configured && accounts.length > 0 && (
-            <div className="security-hint">
-              🔒 凭据尚未加密保护
-              <button className="link-btn" onClick={() => openOptions('#settings')}>
-                去设置主密码
-              </button>
-            </div>
-          )}
-
           {assistOpen && activeAccount ? (
             <AssistSearchPage account={activeAccount} onBack={() => setAssistOpen(false)} />
           ) : (
@@ -122,6 +113,16 @@ export default function App() {
                   </>
                 )}
               </main>
+
+              {/* 未设主密码的安全提示：放底栏上方，不占用主内容区的高度预算 */}
+              {!security.configured && accounts.length > 0 && (
+                <div className="security-hint">
+                  🔒 凭据尚未加密保护
+                  <button className="link-btn" onClick={() => openOptions('#settings')}>
+                    去设置主密码
+                  </button>
+                </div>
+              )}
 
               {activeAccount && (
                 <PanelFooter

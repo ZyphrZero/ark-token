@@ -6,9 +6,11 @@
 
 本项目源码、测试、构建配置位于本仓库（根目录 `E:\yituliu\ark-token`），已按 README 中的目录说明组织。实现所依据的接口、数据结构、调用约定位于以下相邻仓库；处理本项目任务时可以并且应当对这些仓库进行只读检索和核对：
 
+- 移动端apk dump抓包数据：`./skland_dump`
 - 后端：`E:\yituliu\BackEndV3`
 - 前端：`E:\yituliu\frontend-v2-plus`
 - 相关接口文档：`E:\yituliu\ark-token\docs`
+- 模拟器抓包环境手册：`E:\yituliu\ark-token\docs\EMULATOR_CAPTURE_SETUP.md`（MuMu 模拟器经 Reqable 代理抓包森空岛 App 的完整配置、证书注入、截图与 UI 操作方法、已知坑；涉及模拟器操作时先读此文档）
 
 本项目根目录 `E:\yituliu\ark-token` 是本任务唯一允许写入和修改的范围。分析阶段可以读取、搜索和比对上述后端、前端仓库，但不得修改、提交、删除其中的文件或安装依赖；如确需改变前后端，必须先取得用户明确授权。不得删除、重命名或弱化本文件中记录的代码路径，也不得在实现本项目功能时擅自删除现有接口、路由、调用链或兼容路径。若新增模块，请同步补充本项目 README 中的目录说明。
 

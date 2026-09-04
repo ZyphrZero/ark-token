@@ -1,7 +1,7 @@
 import { createHash, createHmac } from 'node:crypto'
 import { describe, expect, it } from 'vitest'
 
-import { buildSklandHeaders, fetchCultivateData, fetchSklandBinding, fetchSklandPlayerInfo, getSign } from './skland'
+import { buildSklandHeaders, fetchCultivateData, fetchSklandBinding, fetchSklandPlayerInfo, getSign, isSklandCredentialExpired } from './skland'
 
 const NOW = 1_700_000_000_000
 const NOW_SEC = Math.floor(NOW / 1000)
@@ -157,5 +157,16 @@ describe('fetchSklandPlayerInfo', () => {
     const fetchFn2 = async () => jsonResponse({ code: 10000, message: '请求异常' })
     await expect(fetchSklandBinding('cred', TOKEN, fetchFn2 as typeof fetch))
       .rejects.toThrow(/签名校验未通过.*系统时间/)
+  })
+})
+
+describe('凭证失效错误判定', () => {
+  it('只将明确的鉴权错误码视为凭证失效', async () => {
+    const { SklandError } = await import('./errors')
+    expect(isSklandCredentialExpired(new SklandError('未登录', 10002))).toBe(true)
+    expect(isSklandCredentialExpired(new SklandError('凭证过期', 10000003))).toBe(true)
+    expect(isSklandCredentialExpired(new SklandError('时间错误', 10003))).toBe(false)
+    expect(isSklandCredentialExpired(new SklandError('未知', 500))).toBe(false)
+    expect(isSklandCredentialExpired(new Error('not skland'))).toBe(false)
   })
 })

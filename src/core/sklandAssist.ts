@@ -7,6 +7,7 @@ const ASSIST_INFO_PATH = '/api/v1/game/assist/info'
 const ASSIST_USER_INFO_PATH = '/api/v1/game/assist/user-info'
 const ASSIST_SEARCH_PATH = '/api/v1/game/assist/search'
 const FRIEND_PATH = '/api/v1/game/friend'
+const USER_PRIVACY_PATH = '/api/v1/user/privacy'
 
 export interface AssistSkill {
   id: string
@@ -26,6 +27,8 @@ export interface AssistCharacter {
   name: string
   rarity: number
   profession: string
+  /** 服务端标记的新干员（官方页仅用于头像 NEW 角标；插件将其置顶分组展示） */
+  isNew?: boolean
   skills: AssistSkill[]
   equips: AssistEquip[]
   [key: string]: unknown
@@ -60,11 +63,13 @@ export interface AssistUserInfo {
 
 export interface AssistSearchLevel {
   evolvePhase: number
+  /** 模式值而非等级数字：0=不限、1=所选精英化满级、2=精二 ≥N 级（N 官方按星级硬编码：6★60/5★50/4★40） */
   level: number
 }
 
 export interface AssistSearchSkill {
   id: string
+  /** 0=不限、1=RANK 7、2~4=专精 1~3（与官方 support 页取值一致） */
   level: number
 }
 
@@ -119,23 +124,61 @@ export interface AssistSearchResult {
   list: AssistSearchPlayer[]
 }
 
-export interface FriendRequestResult {
+/** 森空岛写接口的通用应答（无业务 data，仅 code/message/timestamp） */
+export interface SklandAck {
   code: number
   message?: string
   msg?: string
   timestamp?: string
 }
 
-interface SklandEnvelope<T> {
-  code: number
+export type FriendRequestResult = SklandAck
+
+type JsonRecord = Record<string, unknown>
+type PayloadValidator<T> = (value: unknown) => value is T
+
+interface ParsedEnvelope {
+  root: unknown
+  data: unknown
+  code?: number
   message?: string
   msg?: string
   timestamp?: string
-  data?: T
 }
 
-interface EncodedContent {
-  content?: string
+function isRecord(value: unknown): value is JsonRecord {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function describeShape(value: unknown): string {
+  if (value === null) {
+    return 'null'
+  }
+  if (Array.isArray(value)) {
+    return 'array'
+  }
+  if (isRecord(value)) {
+    const keys = Object.keys(value).slice(0, 8)
+    return keys.length > 0 ? `object(${keys.join(',')})` : 'object(empty)'
+  }
+  return typeof value
+}
+
+function isAssistInfoPayload(value: unknown): value is AssistInfo {
+  return isRecord(value) && Array.isArray(value.characters) && Array.isArray(value.levelMax)
+}
+
+function isAssistUserInfoPayload(value: unknown): value is AssistUserInfo {
+  return (
+    isRecord(value) &&
+    typeof value.gameNickname === 'string' &&
+    typeof value.isOfficial === 'boolean' &&
+    typeof value.isAuth === 'boolean'
+  )
+}
+
+function isAssistSearchPayload(value: unknown): value is AssistSearchResult {
+  return isRecord(value) && Array.isArray(value.list)
 }
 
 function assertNonEmpty(value: string, name: string): void {
@@ -145,12 +188,14 @@ function assertNonEmpty(value: string, name: string): void {
 }
 
 function decodeBase64Json<T>(content: string, endpoint: string): T {
-  if (!content || !/^[A-Za-z0-9+/]*={0,2}$/.test(content) || content.length % 4 === 1) {
+  const normalized = content.replace(/-/g, '+').replace(/_/g, '/')
+  if (!normalized || !/^[A-Za-z0-9+/]*={0,2}$/.test(normalized) || normalized.length % 4 === 1) {
     throw new SklandError(`森空岛接口响应无效（${endpoint}：content 不是有效的 Base64）`)
   }
 
   try {
-    const binary = atob(content)
+    const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=')
+    const binary = atob(padded)
     const bytes = Uint8Array.from(binary, character => character.charCodeAt(0))
     const text = new TextDecoder().decode(bytes)
     return JSON.parse(text) as T
@@ -159,12 +204,26 @@ function decodeBase64Json<T>(content: string, endpoint: string): T {
   }
 }
 
+function parseEnvelopeRoot(value: unknown): ParsedEnvelope {
+  if (!isRecord(value)) {
+    return { root: value, data: value }
+  }
+  return {
+    root: value,
+    data: value.data,
+    code: typeof value.code === 'number' ? value.code : undefined,
+    message: typeof value.message === 'string' ? value.message : undefined,
+    msg: typeof value.msg === 'string' ? value.msg : undefined,
+    timestamp: typeof value.timestamp === 'string' ? value.timestamp : undefined
+  }
+}
+
 interface RequestOptions {
   method: 'GET' | 'POST'
   body?: string
 }
 
-async function requestAssistEnvelope<T>(
+async function requestAssistEnvelope(
   url: string,
   path: string,
   params: string | null,
@@ -173,7 +232,7 @@ async function requestAssistEnvelope<T>(
   fetchFn: FetchLike,
   nowMs: number,
   options: RequestOptions
-): Promise<SklandEnvelope<T>> {
+): Promise<ParsedEnvelope> {
   const headers: Record<string, string> = buildSklandHeaders(path, params, cred, token, nowMs)
   if (options.body !== undefined) {
     headers['Content-Type'] = 'application/json'
@@ -189,14 +248,22 @@ async function requestAssistEnvelope<T>(
     throw new SklandError(`森空岛接口请求失败（HTTP ${response.status}）`)
   }
 
-  const envelope = (await response.json()) as SklandEnvelope<T>
-  if (envelope.code !== 0) {
-    throw new SklandError(describeSklandError(envelope.code, envelope.message ?? envelope.msg ?? '未知错误'), envelope.code)
+  const raw = await response.json()
+  const parsed = parseEnvelopeRoot(raw)
+  if (parsed.code !== undefined && parsed.code !== 0) {
+    throw new SklandError(describeSklandError(parsed.code, parsed.message ?? parsed.msg ?? '未知错误'), parsed.code)
   }
-  return envelope
+  return {
+    root: raw,
+    data: parsed.data,
+    code: parsed.code,
+    message: parsed.message,
+    msg: parsed.msg,
+    timestamp: parsed.timestamp
+  }
 }
 
-async function requestAssist<T>(
+async function requestAssist(
   url: string,
   path: string,
   params: string | null,
@@ -205,9 +272,8 @@ async function requestAssist<T>(
   fetchFn: FetchLike,
   nowMs: number,
   options: RequestOptions
-): Promise<T> {
-  const envelope = await requestAssistEnvelope<T>(url, path, params, cred, token, fetchFn, nowMs, options)
-  return envelope.data as T
+): Promise<ParsedEnvelope> {
+  return requestAssistEnvelope(url, path, params, cred, token, fetchFn, nowMs, options)
 }
 
 async function requestEncoded<T>(
@@ -218,13 +284,57 @@ async function requestEncoded<T>(
   token: string,
   fetchFn: FetchLike,
   nowMs: number,
-  options: RequestOptions
+  options: RequestOptions,
+  validate: PayloadValidator<T>
 ): Promise<T> {
-  const data = await requestAssist<EncodedContent>(url, path, params, cred, token, fetchFn, nowMs, options)
-  if (!data || typeof data.content !== 'string') {
-    throw new SklandError(`森空岛接口响应无效（${path}：缺少 Base64 content）`)
+  const parsed = await requestAssist(url, path, params, cred, token, fetchFn, nowMs, options)
+  const candidates: unknown[] = [parsed.data, parsed.root]
+  if (isRecord(parsed.data)) {
+    candidates.push(parsed.data.data)
   }
-  return decodeBase64Json<T>(data.content, path)
+
+  let contentDecodeError: SklandError | undefined
+  for (const candidate of candidates) {
+    if (typeof candidate === 'string') {
+      try {
+        const decoded = decodeBase64Json<unknown>(candidate, path)
+        if (validate(decoded)) {
+          return decoded
+        }
+      } catch (error) {
+        if (error instanceof SklandError) {
+          contentDecodeError = error
+        }
+      }
+      continue
+    }
+    if (!isRecord(candidate)) {
+      continue
+    }
+    if (typeof candidate.content === 'string') {
+      try {
+        const decoded = decodeBase64Json<unknown>(candidate.content, path)
+        if (validate(decoded)) {
+          return decoded
+        }
+      } catch (error) {
+        if (error instanceof SklandError) {
+          contentDecodeError = error
+        }
+      }
+    }
+    if (validate(candidate)) {
+      return candidate
+    }
+  }
+
+  if (contentDecodeError) {
+    throw contentDecodeError
+  }
+
+  throw new SklandError(
+    `森空岛接口响应无效（${path}：未找到可识别的助战数据，data=${describeShape(parsed.data)}）`
+  )
 }
 
 /** 获取助战检索所需的干员目录和等级上限。 */
@@ -242,7 +352,8 @@ export function fetchAssistInfo(
     token,
     fetchFn,
     nowMs,
-    { method: 'GET' }
+    { method: 'GET' },
+    isAssistInfoPayload
   )
 }
 
@@ -264,7 +375,8 @@ export async function fetchAssistUserInfo(
     token,
     fetchFn,
     nowMs,
-    { method: 'GET' }
+    { method: 'GET' },
+    isAssistUserInfoPayload
   )
 }
 
@@ -286,7 +398,8 @@ export async function searchAssist(
     token,
     fetchFn,
     nowMs,
-    { method: 'POST', body }
+    { method: 'POST', body },
+    isAssistSearchPayload
   )
 }
 
@@ -302,7 +415,7 @@ export async function addFriendByUid(
   assertNonEmpty(uid, 'uid')
   assertNonEmpty(targetUid, 'targetUid')
   const body = JSON.stringify({ uid, targetUid })
-  return requestAssistEnvelope<never>(
+  return requestAssistEnvelope(
     `${SKLAND_DOMAIN}${FRIEND_PATH}`,
     FRIEND_PATH,
     body,
@@ -312,7 +425,35 @@ export async function addFriendByUid(
     nowMs,
     { method: 'POST', body }
   ).then(envelope => ({
-    code: envelope.code,
+    code: envelope.code ?? 0,
+    message: envelope.message,
+    msg: envelope.msg,
+    timestamp: envelope.timestamp
+  }))
+}
+
+/**
+ * 官方 support 页的“身份认证”：开启明日方舟（gameId=1）的游戏关系公开开关。
+ * assist/user-info 的 isAuth 即对应此开关；未开启时官方页引导调用本接口后重新初始化。
+ */
+export function authorizeAssistSupport(
+  cred: string,
+  token: string,
+  fetchFn: FetchLike = globalThis.fetch,
+  nowMs = Date.now()
+): Promise<SklandAck> {
+  const body = JSON.stringify({ games: { privacy: { 1: { gameRelationOn: true } } } })
+  return requestAssistEnvelope(
+    `${SKLAND_DOMAIN}${USER_PRIVACY_PATH}`,
+    USER_PRIVACY_PATH,
+    body,
+    cred,
+    token,
+    fetchFn,
+    nowMs,
+    { method: 'POST', body }
+  ).then(envelope => ({
+    code: envelope.code ?? 0,
     message: envelope.message,
     msg: envelope.msg,
     timestamp: envelope.timestamp

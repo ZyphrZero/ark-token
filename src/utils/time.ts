@@ -35,12 +35,12 @@ export function formatDuration(ms: number): string {
   return `${minutes} 分钟`
 }
 
-/** 毫秒 → 「X 分 Y 秒」（理智下一恢复倒计时用） */
+/** 毫秒 → 「X 分钟 Y 秒」（理智下一恢复倒计时用） */
 export function formatMinutesSeconds(ms: number): string {
   const totalSeconds = Math.max(0, Math.floor(ms / 1000))
   const minutes = Math.floor(totalSeconds / 60)
   const seconds = totalSeconds % 60
-  return `${minutes} 分 ${pad(seconds)} 秒`
+  return `${minutes} 分钟 ${pad(seconds)} 秒`
 }
 
 /** 时间戳 → 「HH:mm」；跨天时显示「MM-dd HH:mm」 */
@@ -49,4 +49,13 @@ export function formatClockTime(timestamp: number, now = Date.now()): string {
   const sameDay = new Date(now).toDateString() === date.toDateString()
   const clock = `${pad(date.getHours())}:${pad(date.getMinutes())}`
   return sameDay ? clock : `${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${clock}`
+}
+
+/** 时间戳 → 「今日/明日 X 时 Y 分」（理智预计恢复时刻用，与设计稿/游戏内文案一致） */
+export function formatRecoveryTime(timestamp: number, now = Date.now()): string {
+  const date = new Date(timestamp)
+  const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
+  const days = Math.round((startOfDay(date) - startOfDay(new Date(now))) / 86_400_000)
+  const prefix = days <= 0 ? '今日' : days === 1 ? '明日' : `${days} 天后`
+  return `${prefix} ${date.getHours()} 时 ${date.getMinutes()} 分`
 }

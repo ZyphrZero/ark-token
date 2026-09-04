@@ -66,3 +66,8 @@ export function sendSearchAssistMessage(
 ): Promise<BackgroundResponse<AssistSearchResult>> {
   return sendAssistMessage<AssistSearchResult>({ type: 'searchAssist', accountId, request })
 }
+
+/** 开启明日方舟游戏关系公开开关（官方助战页的“身份认证”），完成后需重新拉取助战身份 */
+export function sendAssistAuthorizeMessage(accountId: string): Promise<BackgroundResponse> {
+  return sendAssistMessage({ type: 'assistAuthorize', accountId })
+}

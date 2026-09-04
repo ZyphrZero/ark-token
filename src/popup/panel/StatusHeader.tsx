@@ -19,13 +19,13 @@ export default function StatusHeader({ status, onOpenSwitcher, onOpenAssist }: {
       <div className="doctor-meta">
         <div className="doctor-top">
           <div className="doctor-level">
-            <span className="lv-num font-bender">{status.level}</span>
+            <span className="lv-num">{status.level}</span>
             <span className="lv-label">
               <span>Lv.</span>
               <span>博士等级</span>
             </span>
           </div>
-          <span className="doctor-uid font-bender">UID: {status.uid}</span>
+          <span className="doctor-uid">UID: {status.uid}</span>
         </div>
         <div className="doctor-name">Dr. {status.name}</div>
       </div>

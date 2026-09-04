@@ -5,7 +5,18 @@ import type {
   SklandBuildingManufacture,
   SklandBuildingTrading
 } from '../../../core/skland-info'
-import { computeDroneCount, estimateManufactureWeight, MANUFACTURE_FORMULAS, powerOutput } from '../../../core/status/building'
+import {
+  computeDroneCount,
+  dormitoryCurrentAp,
+  estimateManufactureWeight,
+  hireWorkCapSec,
+  manufactureWorkCapSec,
+  MANUFACTURE_FORMULAS,
+  meetingWorkCapSec,
+  powerOutput,
+  trainingWorkCapSec,
+  workingCurrentAp
+} from '../../../core/status/building'
 import { LevelMark } from '../../icons'
 import { useNow } from '../../useNow'
 import controlIcon from '../../assets/rooms/control.svg'
@@ -31,7 +42,8 @@ function RoomCard({ title, level, color, icon, info, extra, children }: {
 }) {
   return (
     <div className="room-card">
-      <div className="room-title" style={{ color }}>
+      {/* 设计稿：标题文字白色，颜色只体现在左侧色条与等级刻度 */}
+      <div className="room-title" style={{ borderColor: color }}>
         <span>{title}</span>
         <span className="room-level">
           {Array.from({ length: level }, (_, index) => (
@@ -49,9 +61,11 @@ function RoomCard({ title, level, color, icon, info, extra, children }: {
   )
 }
 
-function ManufactureRoom({ room, now }: { room: SklandBuildingManufacture; now: number }) {
+function ManufactureRoom({ room, nowSec, charMap }: { room: SklandBuildingManufacture; nowSec: number; charMap: Map<string, string> }) {
   const formula = MANUFACTURE_FORMULAS[room.formulaId]
-  const weight = estimateManufactureWeight(room, now)
+  const weight = estimateManufactureWeight(room, nowSec * 1000)
+  // 生产耗尽后干员停止消耗心情，外推不超过配方剩余工时
+  const capSec = manufactureWorkCapSec(room)
   return (
     <RoomCard title="制造站" level={room.level} color="#FFD800" icon={manufactureIcon}>
       <div className="room-info">
@@ -60,36 +74,55 @@ function ManufactureRoom({ room, now }: { room: SklandBuildingManufacture; now: 
         </div>
         <div style={{ color: '#ffd800' }}>{formula?.name ?? '未知配方'}</div>
       </div>
+      {room.chars.map(resident => (
+        <ResidentCharacter
+          key={resident.charId}
+          resident={resident}
+          charMap={charMap}
+          currentAp={workingCurrentAp(resident, nowSec, capSec)}
+        />
+      ))}
     </RoomCard>
   )
 }
 
-function TradingRoom({ room }: { room: SklandBuildingTrading }) {
+function TradingRoom({ room, nowSec, charMap }: { room: SklandBuildingTrading; nowSec: number; charMap: Map<string, string> }) {
   return (
-    <RoomCard title="贸易站" level={room.level} color="#5ab8f9" icon={tradingIcon}>
+    // 设计稿（Figma 502:903）：贸易站色条 #2bf，订单数/策略文字 #25abdf
+    <RoomCard title="贸易站" level={room.level} color="#2bf" icon={tradingIcon}>
       <div className="room-info">
         <div className="room-info-row">
-          <span className="font-bender" style={{ color: '#5ab8f9' }}>{room.stock.length}<span style={{ color: '#fff' }}>/{room.stockLimit}</span></span>
+          <span className="font-bender" style={{ color: '#25abdf' }}>{room.stock.length}<span style={{ color: '#fff' }}>/{room.stockLimit}</span></span>
         </div>
-        <div style={{ color: '#5ab8f9' }}>{room.strategy === 'O_DIAMOND' ? '开采协力' : '龙门商法'}</div>
+        <div style={{ color: '#25abdf' }}>{room.strategy === 'O_DIAMOND' ? '开采协力' : '龙门商法'}</div>
       </div>
+      {room.chars.map(resident => (
+        <ResidentCharacter
+          key={resident.charId}
+          resident={resident}
+          charMap={charMap}
+          currentAp={workingCurrentAp(resident, nowSec)}
+        />
+      ))}
     </RoomCard>
   )
 }
 
 const CLUE_COUNT = 7
 
-function MeetingRoom({ info }: { info: SklandBindingInfo }) {
+function MeetingRoom({ info, nowSec, charMap }: { info: SklandBindingInfo; nowSec: number; charMap: Map<string, string> }) {
   const meeting = info.building.meeting
   if (!meeting) {
     return null
   }
+  // 搜集线索的干员与线索板并排展示
+  const capSec = meetingWorkCapSec(meeting)
   return (
     <RoomCard title="会客室" level={meeting.level} color="#ffffff" icon={meetingIcon}>
       <div className="room-extra">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 4 }}>
           <span className="meeting-status">{meeting.clue.sharing ? '交流中' : '搜集中'}</span>
-          <span>
+          <span className="font-bender">
             <span style={{ color: '#fd661c' }}>{meeting.clue.own}</span>/10
           </span>
         </div>
@@ -102,6 +135,14 @@ function MeetingRoom({ info }: { info: SklandBindingInfo }) {
           ))}
         </div>
       </div>
+      {meeting.chars.map(resident => (
+        <ResidentCharacter
+          key={resident.charId}
+          resident={resident}
+          charMap={charMap}
+          currentAp={workingCurrentAp(resident, nowSec, capSec)}
+        />
+      ))}
     </RoomCard>
   )
 }
@@ -109,6 +150,7 @@ function MeetingRoom({ info }: { info: SklandBindingInfo }) {
 /** 基建 tab：顶部无人机实时数 + 各设施卡片（制造/贸易/会客/宿舍/人力/训练/发电/中枢） */
 export default function BuildingTab({ info }: { info: SklandBindingInfo }) {
   const now = useNow(1000)
+  const nowSec = Math.floor(now / 1000)
   const building = info.building
   const labor = building?.labor
   const drone = labor ? computeDroneCount(labor, now) : 0
@@ -117,13 +159,13 @@ export default function BuildingTab({ info }: { info: SklandBindingInfo }) {
 
   const rooms: ReactNode[] = []
   for (const room of building?.manufactures ?? []) {
-    rooms.push(<ManufactureRoom key={`manufacture-${room.slotId}`} room={room} now={now} />)
+    rooms.push(<ManufactureRoom key={`manufacture-${room.slotId}`} room={room} nowSec={nowSec} charMap={charMap} />)
   }
   for (const room of building?.tradings ?? []) {
-    rooms.push(<TradingRoom key={`trading-${room.slotId}`} room={room} />)
+    rooms.push(<TradingRoom key={`trading-${room.slotId}`} room={room} nowSec={nowSec} charMap={charMap} />)
   }
   if (building?.meeting) {
-    rooms.push(<MeetingRoom key="meeting" info={info} />)
+    rooms.push(<MeetingRoom key="meeting" info={info} nowSec={nowSec} charMap={charMap} />)
   }
   for (const [index, room] of (building?.dormitories ?? []).entries()) {
     rooms.push(
@@ -131,26 +173,39 @@ export default function BuildingTab({ info }: { info: SklandBindingInfo }) {
         <div className="room-info">
           <div className="room-info-row">
             <span>氛围</span>
-            <span style={{ color: '#9bc142' }}>{room.comfort}</span>
+            <span className="font-bender" style={{ color: '#9bc142' }}>{room.comfort}</span>
           </div>
         </div>
         {room.chars.map(resident => (
-          <ResidentCharacter key={resident.charId} resident={resident} charMap={charMap} />
+          <ResidentCharacter
+            key={resident.charId}
+            resident={resident}
+            charMap={charMap}
+            currentAp={dormitoryCurrentAp(resident, room, nowSec)}
+          />
         ))}
       </RoomCard>
     )
   }
   if (building?.hire) {
+    const hire = building.hire
+    const capSec = hireWorkCapSec(hire, nowSec)
     rooms.push(
-      <RoomCard key="hire" title="人力办公室" level={building.hire.level} color="#ffffff" icon={hireIcon}>
-        {building.hire.chars.map(resident => (
-          <ResidentCharacter key={resident.charId} resident={resident} charMap={charMap} />
+      <RoomCard key="hire" title="人力办公室" level={hire.level} color="#ffffff" icon={hireIcon}>
+        {hire.chars.map(resident => (
+          <ResidentCharacter
+            key={resident.charId}
+            resident={resident}
+            charMap={charMap}
+            currentAp={workingCurrentAp(resident, nowSec, capSec)}
+          />
         ))}
       </RoomCard>
     )
   }
   if (building?.training) {
     const training = building.training
+    const capSec = trainingWorkCapSec(training.remainSecs)
     rooms.push(
       <RoomCard key="training" title="训练室" level={training.level} color="#ffffff" icon={trainingIcon}>
         {[training.trainer, training.trainee].map((person, personIndex) => (
@@ -158,8 +213,14 @@ export default function BuildingTab({ info }: { info: SklandBindingInfo }) {
             ? (
                 <ResidentCharacter
                   key={person.charId + personIndex}
-                  resident={{ charId: person.charId, ap: person.ap, lastApAddTime: 0, index: personIndex }}
+                  resident={{ charId: person.charId, ap: person.ap, lastApAddTime: person.lastApAddTime ?? 0, index: personIndex }}
                   charMap={charMap}
+                  // 教官在专精期间消耗心情；学员无官方外推口径，用快照
+                  currentAp={personIndex === 0 ? workingCurrentAp(
+                    { charId: person.charId, ap: person.ap, lastApAddTime: person.lastApAddTime ?? 0, index: personIndex },
+                    nowSec,
+                    capSec
+                  ) : person.ap}
                 />
               )
             : null
@@ -177,7 +238,12 @@ export default function BuildingTab({ info }: { info: SklandBindingInfo }) {
           </div>
         </div>
         {room.chars.map(resident => (
-          <ResidentCharacter key={resident.charId} resident={resident} charMap={charMap} />
+          <ResidentCharacter
+            key={resident.charId}
+            resident={resident}
+            charMap={charMap}
+            currentAp={workingCurrentAp(resident, nowSec)}
+          />
         ))}
       </RoomCard>
     )
@@ -186,6 +252,7 @@ export default function BuildingTab({ info }: { info: SklandBindingInfo }) {
     rooms.push(
       <RoomCard key="control" title="控制中枢" level={building.control.level} color="#ffffff" icon={controlIcon}>
         {building.control.chars.map(resident => (
+          // 控制中枢无官方消耗速率口径，展示快照心情
           <ResidentCharacter key={resident.charId} resident={resident} charMap={charMap} />
         ))}
       </RoomCard>
@@ -203,8 +270,12 @@ export default function BuildingTab({ info }: { info: SklandBindingInfo }) {
           </span>
         </div>
       )}
-      <div className="building-scroll">
-        <div className="building-list">{rooms}</div>
+      <div className="building-body">
+        <div className="building-scroll">
+          <div className="building-list">{rooms}</div>
+        </div>
+        {/* 设计稿（Figma 502:1985）：列表底部 30px 渐隐遮罩 */}
+        <div className="building-fade" />
       </div>
     </div>
   )

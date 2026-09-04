@@ -13,14 +13,6 @@ import { getSecurityStatus, loadState, upsertAccount } from '../storage/store'
 import SetupScreen from '../security/SetupScreen'
 import type { SklandBinding, SklandCredential } from '../core/types'
 
-type Method = 'qr' | 'hg' | 'cred'
-
-const METHODS: { key: Method; title: string; desc: string }[] = [
-  { key: 'qr', title: '扫码登录（推荐）', desc: '用手机森空岛 APP 扫二维码即可，操作最简单，适合添加多个账号。' },
-  { key: 'hg', title: '官网 HG Token', desc: '登录鹰角官网后把通行凭证粘贴进来；若浏览器已登录官网，也可一键自动读取。凭证失效时可自动刷新。' },
-  { key: 'cred', title: '森空岛凭证粘贴', desc: '与一图流网站的导入教程相同：登录森空岛网页后，在控制台执行命令复制凭证再粘贴。' }
-]
-
 const SKLAND_CONSOLE_CODE = "copy(localStorage.getItem('SK_OAUTH_CRED_KEY')+','+localStorage.getItem('SK_TOKEN_CACHE_KEY'))"
 
 interface WizardState {

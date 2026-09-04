@@ -89,7 +89,7 @@ export async function clearInfoCache(area: StorageArea = defaultInfoCacheArea())
 }
 
 /** 监听缓存变化（面板实时响应后台刷新）；返回取消订阅函数 */
-export function subscribeInfoCache(callback: (cache: InfoCache) => void, area: StorageArea = defaultInfoCacheArea()): () => void {
+export function subscribeInfoCache(callback: (cache: InfoCache) => void): () => void {
   const listener = (changes: Record<string, { newValue?: unknown }>, areaName: string) => {
     if (areaName === 'local' && changes[INFO_CACHE_KEY]) {
       callback(normalizeCache(changes[INFO_CACHE_KEY].newValue))

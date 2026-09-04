@@ -7,11 +7,10 @@
   "action": {
     "default_popup": "src/popup/index.html",
     "default_title": "ark-token",
-    "default_icon": "icon-256.png"
+    "default_icon": "icon.png"
   },
   "icons": {
-    "256": "icon-256.png",
-    "512": "icon-512.png"
+    "128": "icon.png"
   },
   "options_page": "src/options/index.html",
   "background": {

@@ -17,24 +17,26 @@
     ],
     building: {
       labor: { value: 87, maxValue: 200, remainSecs: 0, lastUpdateTime: NOW - 720 },
-      control: { slotId: '0', chars: [{ charId: 'char_002_amiya', ap: 20000, lastApAddTime: 0, index: 0 }], level: 5 },
+      // ap 单位 0.01 秒、满值 8_640_000（24 点心情，1 点 = 360_000），与真实接口一致
+      control: { slotId: '0', chars: [{ charId: 'char_002_amiya', ap: 7_920_000, lastApAddTime: NOW, index: 0 }], level: 5 },
       powers: [
-        { slotId: '1', chars: [], level: 3 },
+        { slotId: '1', chars: [{ charId: 'char_010_chen', ap: 5_040_000, lastApAddTime: NOW - 3600, index: 0 }], level: 3 },
         { slotId: '2', chars: [], level: 2 }
       ],
       manufactures: [
-        { slotId: '3', chars: [{ charId: 'char_010_chen', ap: 80000, lastApAddTime: 0, index: 0 }], level: 3, speed: 1.15, complete: 0, capacity: 96, weight: 24, formulaId: 4, remain: 99, completeWorkTime: 0, lastUpdateTime: NOW - 3600 },
+        { slotId: '3', chars: [{ charId: 'char_010_chen', ap: 6_480_000, lastApAddTime: NOW - 3600, index: 0 }], level: 3, speed: 1.15, complete: 0, capacity: 96, weight: 24, formulaId: 4, remain: 99, completeWorkTime: 0, lastUpdateTime: NOW - 3600 },
         { slotId: '4', chars: [], level: 2, speed: 1, complete: 0, capacity: 60, weight: 10, formulaId: 3, remain: 99, completeWorkTime: 0, lastUpdateTime: NOW - 1200 }
       ],
       tradings: [
-        { slotId: '5', chars: [], level: 3, stock: [{ delivery: [], gain: [], instId: 1, type: 'O_GOLD' }, { delivery: [], gain: [], instId: 2, type: 'O_GOLD' }], stockLimit: 6, strategy: 'O_GOLD', completeWorkTime: 0, lastUpdateTime: NOW }
+        { slotId: '5', chars: [{ charId: 'char_003_kalts', ap: 300_000, lastApAddTime: NOW - 3600, index: 0 }], level: 3, stock: [{ delivery: [], gain: [], instId: 1, type: 'O_GOLD' }, { delivery: [], gain: [], instId: 2, type: 'O_GOLD' }], stockLimit: 6, strategy: 'O_GOLD', completeWorkTime: 0, lastUpdateTime: NOW }
       ],
       dormitories: [
-        { slotId: '6', chars: [{ charId: 'char_003_kalts', ap: 86400, lastApAddTime: 0, index: 0 }], level: 5, comfort: 5000 }
+        { slotId: '6', chars: [{ charId: 'char_003_kalts', ap: 4_320_000, lastApAddTime: NOW - 3600, index: 0 }], level: 5, comfort: 5000 }
       ],
       hire: { slotId: '7', chars: [], level: 3, state: 1, refreshCount: 2, completeWorkTime: 0 },
-      training: { slotId: '8', level: 3, trainee: { charId: 'char_010_chen', ap: 5000, targetSkill: 3 }, trainer: { charId: 'char_002_amiya', ap: 30000 }, remainPoint: 20000, speed: 1, lastUpdateTime: NOW, remainSecs: 3600 },
-      meeting: { slotId: '9', chars: [], level: 3, clue: { board: ['RHINE', 'PENGUIN', 'URSUS'], own: 6, received: 1, dailyReward: false, needReceive: 0, shareCompleteTime: 0, sharing: true }, lastUpdateTime: NOW, completeWorkTime: 0 }
+      training: { slotId: '8', level: 3, trainee: { charId: 'char_010_chen', ap: 5_040_000, lastApAddTime: NOW, targetSkill: 3 }, trainer: { charId: 'char_002_amiya', ap: 8_000_000, lastApAddTime: NOW - 3600 }, remainPoint: 20000, speed: 1, lastUpdateTime: NOW, remainSecs: 3600 },
+      meeting: { slotId: '9', chars: [], level: 3, clue: { board: ['RHINE', 'PENGUIN', 'URSUS'], own: 6, received: 1, dailyReward: false, needReceive: 0, shareCompleteTime: 0, sharing: true }, lastUpdateTime: NOW, completeWorkTime: 0 },
+      tiredChars: []
     },
     campaign: { reward: { current: 1, total: 2 } },
     tower: { reward: { higherItem: { current: 2, total: 4 }, lowerItem: { current: 1, total: 4 } } },

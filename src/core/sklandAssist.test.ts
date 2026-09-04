@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   addFriendByUid,
+  authorizeAssistSupport,
   fetchAssistInfo,
   fetchAssistUserInfo,
   searchAssist
@@ -46,6 +47,33 @@ describe('fetchAssistInfo', () => {
       return jsonResponse({ code: 0, data: { content: encodedContent(info) } })
     }
 
+    await expect(fetchAssistInfo(CRED, TOKEN, fetchFn as typeof fetch, NOW)).resolves.toEqual(info)
+  })
+
+  it('兼容直接业务对象、额外 data 嵌套和裸 Base64 响应', async () => {
+    const info = {
+      characters: [{ id: 'char_002_amiya', name: '阿米娅', rarity: 4, profession: 'CASTER', skills: [], equips: [] }],
+      levelMax: [{ evolvePhase: 2, rarity: 5, maxLevel: 90 }]
+    }
+    const responses: unknown[] = [
+      { code: 0, data: info },
+      { code: 0, data: { data: { content: encodedContent(info) } } },
+      { code: 0, data: encodedContent(info) },
+      { content: encodedContent(info) },
+      encodedContent(info)
+    ]
+
+    for (const payload of responses) {
+      const fetchFn = async () => jsonResponse(payload)
+      await expect(fetchAssistInfo(CRED, TOKEN, fetchFn as typeof fetch, NOW)).resolves.toEqual(info)
+    }
+  })
+
+  it('兼容 URL-safe Base64 内容', async () => {
+    const info = { characters: [], levelMax: [] }
+    const standard = encodedContent(info)
+    const urlSafe = standard.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '')
+    const fetchFn = async () => jsonResponse({ code: 0, data: { content: urlSafe } })
     await expect(fetchAssistInfo(CRED, TOKEN, fetchFn as typeof fetch, NOW)).resolves.toEqual(info)
   })
 })
@@ -160,6 +188,32 @@ describe('addFriendByUid', () => {
   })
 })
 
+describe('authorizeAssistSupport', () => {
+  it('开启明日方舟游戏关系开关，body 精确且参与签名', async () => {
+    const body = JSON.stringify({ games: { privacy: { 1: { gameRelationOn: true } } } })
+    const fetchFn = async (url: RequestInfo | URL, init?: RequestInit) => {
+      expect(String(url)).toBe('https://zonai.skland.com/api/v1/user/privacy')
+      expect(init?.method).toBe('POST')
+      expect(init?.body).toBe(body)
+      const headers = init?.headers as Record<string, string>
+      expect(headers['Content-Type']).toBe('application/json')
+      expect(headers.sign).toBe(expectedSign('/api/v1/user/privacy', body, TOKEN).sign)
+      return jsonResponse({ code: 0, message: 'OK', timestamp: '1700000000' })
+    }
+
+    await expect(authorizeAssistSupport(CRED, TOKEN, fetchFn as typeof fetch, NOW))
+      .resolves.toMatchObject({ code: 0, message: 'OK' })
+  })
+
+  it('业务错误原样失败', async () => {
+    const fetchFn = async () => jsonResponse({ code: 10000003, message: 'token 过期' })
+    await expect(authorizeAssistSupport(CRED, TOKEN, fetchFn as typeof fetch, NOW)).rejects.toMatchObject({
+      name: 'SklandError',
+      sklandCode: 10000003
+    })
+  })
+})
+
 describe('助战接口错误处理', () => {
   it('业务错误保留森空岛错误码', async () => {
     const fetchFn = async () => jsonResponse({ code: 10000003, message: 'token 过期' })
@@ -174,7 +228,7 @@ describe('助战接口错误处理', () => {
     await expect(fetchAssistInfo(CRED, TOKEN, httpErrorFetch as typeof fetch, NOW)).rejects.toThrow('HTTP 503')
 
     const missingContentFetch = async () => jsonResponse({ code: 0, data: {} })
-    await expect(fetchAssistInfo(CRED, TOKEN, missingContentFetch as typeof fetch, NOW)).rejects.toThrow('缺少 Base64 content')
+    await expect(fetchAssistInfo(CRED, TOKEN, missingContentFetch as typeof fetch, NOW)).rejects.toThrow(/未找到可识别的助战数据/)
 
     const invalidContentFetch = async () => jsonResponse({ code: 0, data: { content: 'not base64!' } })
     await expect(fetchAssistInfo(CRED, TOKEN, invalidContentFetch as typeof fetch, NOW)).rejects.toThrow('不是有效的 Base64')
