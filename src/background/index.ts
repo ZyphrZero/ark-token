@@ -8,8 +8,8 @@ import {
   type AssistSearchResult,
   type AssistUserInfo
 } from '../core/sklandAssist'
-import { SklandError } from '../core/errors'
 import { exchangeHgToken } from '../core/hgAuth'
+import { isSklandCredentialExpired } from '../core/skland'
 import { syncAccount } from '../core/sync'
 import { getSecurityStatus, loadState, saveState } from '../storage/store'
 import type { GameAccount, YituliuTokens } from '../core/types'
@@ -102,7 +102,7 @@ async function withAssistCredential<T>(
   try {
     return await operation(account.skland)
   } catch (error) {
-    if (!(error instanceof SklandError) || !account.hgToken) {
+    if (!isSklandCredentialExpired(error) || !account.hgToken) {
       throw error
     }
     const refreshed = await exchangeHgToken(account.hgToken, backendBaseUrl)
@@ -324,7 +324,7 @@ chrome.alarms.onAlarm.addListener(alarm => {
     if (alarm.name === AUTO_SYNC_ALARM) {
       void syncAll()
     }
-  })
+  })()
 })
 
 chrome.runtime.onInstalled.addListener(() => {

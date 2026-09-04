@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 
-import { exchangeHgToken } from '../core/hgAuth'
-import { loadState, removeAccount, subscribeState, upsertAccount } from '../storage/store'
+import { exchangeHgToken, parseSklandCredentialInput } from '../core/hgAuth'
+import { fetchSklandPlayerInfo } from '../core/skland'
+import { loadState, patchAccountCredential, removeAccount, subscribeState, upsertAccount } from '../storage/store'
 import { removeAccountInfo } from '../storage/infoCache'
 import type { GameAccount, PluginState } from '../core/types'
 import { formatTimeAgo } from '../utils/time'
@@ -14,7 +15,24 @@ interface AccountEditorProps {
 
 function AccountEditor({ account, backendBaseUrl, onStateChanged }: AccountEditorProps) {
   const [feedback, setFeedback] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null)
+  const [credentialInput, setCredentialInput] = useState('')
   const [busy, setBusy] = useState(false)
+
+  async function updateSklandCredential() {
+    setBusy(true)
+    setFeedback(null)
+    try {
+      const parsed = parseSklandCredentialInput(credentialInput)
+      await fetchSklandPlayerInfo(account.uid, parsed.cred, parsed.token)
+      onStateChanged(await patchAccountCredential(account.id, { ...parsed, obtainedAt: Date.now() }))
+      setCredentialInput('')
+      setFeedback({ kind: 'ok', text: '森空岛凭证已验证并更新' })
+    } catch (error) {
+      setFeedback({ kind: 'err', text: `更新失败：${error instanceof Error ? error.message : String(error)}` })
+    } finally {
+      setBusy(false)
+    }
+  }
 
   async function refreshSklandCredential() {
     if (!account.hgToken) {
@@ -23,7 +41,7 @@ function AccountEditor({ account, backendBaseUrl, onStateChanged }: AccountEdito
     setBusy(true)
     try {
       const credential = await exchangeHgToken(account.hgToken, backendBaseUrl)
-      onStateChanged(await upsertAccount({ ...account, skland: credential }))
+      onStateChanged(await patchAccountCredential(account.id, credential))
       setFeedback({ kind: 'ok', text: '森空岛凭证已刷新' })
     } catch (error) {
       setFeedback({ kind: 'err', text: `刷新失败：${error instanceof Error ? error.message : String(error)}` })
@@ -70,6 +88,20 @@ function AccountEditor({ account, backendBaseUrl, onStateChanged }: AccountEdito
       )}
 
       <div className="actions">
+        <input
+          className="credential-input"
+          type="text"
+          value={credentialInput}
+          placeholder="粘贴当前网页凭证：cred,token"
+          onChange={event => setCredentialInput(event.target.value)}
+        />
+        <button
+          className="btn"
+          disabled={busy || credentialInput.trim().length === 0}
+          onClick={() => void updateSklandCredential()}
+        >
+          {busy ? '验证中…' : '验证并更新凭证'}
+        </button>
         {account.hgToken && (
           <button className="btn" disabled={busy} onClick={() => void refreshSklandCredential()}>刷新森空岛凭证</button>
         )}

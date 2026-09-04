@@ -48,6 +48,33 @@ describe('fetchAssistInfo', () => {
 
     await expect(fetchAssistInfo(CRED, TOKEN, fetchFn as typeof fetch, NOW)).resolves.toEqual(info)
   })
+
+  it('兼容直接业务对象、额外 data 嵌套和裸 Base64 响应', async () => {
+    const info = {
+      characters: [{ id: 'char_002_amiya', name: '阿米娅', rarity: 4, profession: 'CASTER', skills: [], equips: [] }],
+      levelMax: [{ evolvePhase: 2, rarity: 5, maxLevel: 90 }]
+    }
+    const responses: unknown[] = [
+      { code: 0, data: info },
+      { code: 0, data: { data: { content: encodedContent(info) } } },
+      { code: 0, data: encodedContent(info) },
+      { content: encodedContent(info) },
+      encodedContent(info)
+    ]
+
+    for (const payload of responses) {
+      const fetchFn = async () => jsonResponse(payload)
+      await expect(fetchAssistInfo(CRED, TOKEN, fetchFn as typeof fetch, NOW)).resolves.toEqual(info)
+    }
+  })
+
+  it('兼容 URL-safe Base64 内容', async () => {
+    const info = { characters: [], levelMax: [] }
+    const standard = encodedContent(info)
+    const urlSafe = standard.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '')
+    const fetchFn = async () => jsonResponse({ code: 0, data: { content: urlSafe } })
+    await expect(fetchAssistInfo(CRED, TOKEN, fetchFn as typeof fetch, NOW)).resolves.toEqual(info)
+  })
 })
 
 describe('fetchAssistUserInfo', () => {
@@ -174,7 +201,7 @@ describe('助战接口错误处理', () => {
     await expect(fetchAssistInfo(CRED, TOKEN, httpErrorFetch as typeof fetch, NOW)).rejects.toThrow('HTTP 503')
 
     const missingContentFetch = async () => jsonResponse({ code: 0, data: {} })
-    await expect(fetchAssistInfo(CRED, TOKEN, missingContentFetch as typeof fetch, NOW)).rejects.toThrow('缺少 Base64 content')
+    await expect(fetchAssistInfo(CRED, TOKEN, missingContentFetch as typeof fetch, NOW)).rejects.toThrow(/未找到可识别的助战数据/)
 
     const invalidContentFetch = async () => jsonResponse({ code: 0, data: { content: 'not base64!' } })
     await expect(fetchAssistInfo(CRED, TOKEN, invalidContentFetch as typeof fetch, NOW)).rejects.toThrow('不是有效的 Base64')

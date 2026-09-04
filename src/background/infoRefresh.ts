@@ -1,6 +1,5 @@
-import { SklandError } from '../core/errors'
 import { exchangeHgToken } from '../core/hgAuth'
-import { fetchSklandPlayerInfo } from '../core/skland'
+import { fetchSklandPlayerInfo, isSklandCredentialExpired } from '../core/skland'
 import type { SklandBindingInfo } from '../core/skland-info'
 import { mergeRecruitNotifications } from '../core/status/recruit'
 import type { ExtensionSettings, GameAccount } from '../core/types'
@@ -53,7 +52,7 @@ async function fetchPlayerInfoWithCredential(
     const info = await fetchSklandPlayerInfo(account.uid, account.skland.cred, account.skland.token)
     return { info, refreshed: null }
   } catch (error) {
-    const credentialExpired = error instanceof SklandError
+    const credentialExpired = isSklandCredentialExpired(error)
     if (!credentialExpired || !account.hgToken) {
       throw error
     }

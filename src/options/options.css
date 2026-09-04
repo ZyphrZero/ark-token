@@ -200,6 +200,11 @@ textarea {
   font-size: 12px;
 }
 
+.credential-input {
+  flex: 1 1 320px;
+  min-width: 240px;
+}
+
 .actions {
   display: flex;
   gap: 10px;

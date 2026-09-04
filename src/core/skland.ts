@@ -105,6 +105,14 @@ export function describeSklandError(code: number, message: string): string {
   return `森空岛凭证错误或已失效（${code}：${message}）`
 }
 
+/** 只有明确的登录态失效码才允许自动消耗 HG Token 换取新凭证。 */
+export function isSklandCredentialExpired(error: unknown): boolean {
+  if (!(error instanceof SklandError)) {
+    return false
+  }
+  return error.sklandCode === 10002 || error.sklandCode === 10000003
+}
+
 interface RawBindingApp {
   appCode?: string
   bindingList?: {

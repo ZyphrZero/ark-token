@@ -170,6 +170,7 @@ node scripts/preview-server.cjs    # 在 http://127.0.0.1:8791 提供静态服�
   - `POST /api/v1/game/assist/search`：提交 `{ uid, charId, level, skill, equip }` 检索助战
   - `POST /api/v1/game/friend`：提交 `{ uid, targetUid }` 按游戏 UID 添加好友
   - 助战 API 使用与现有森空岛数据 API 相同的签名和当前账号 `cred/token`；不把凭证、签名或助战原始响应写入日志或测试 fixture
+  - 如果森空岛 Web 端重新登录后凭证变化，请在「账号管理」对应账号卡片粘贴当前网页重新复制的 `cred,token`，点击「验证并更新凭证」；验证成功后才会替换本地凭证，失败不会覆盖旧凭证。不要混用 Android 会话的 `cred`、Web 端 `token`、Cookie 或 `sign`。
 
   - `GET /auth/user/open-api/tokens` / `POST /auth/user/open-api/token`：第三方 token 列表与生成，
     需 `Authorization: Authorization<USER_TOKEN>` 会话头（凭证存于 ark.yituliu.cn 的 localStorage，与官网「用户中心 → 第三方 API Token」页一致）

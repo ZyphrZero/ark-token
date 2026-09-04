@@ -6,6 +6,7 @@ import {
   getSecurityStatus,
   loadState,
   lockSecurity,
+  patchAccountCredential,
   removeAccount,
   resetSecurity,
   saveState,
@@ -183,6 +184,19 @@ describe('账号管理与隔离', () => {
     expect(state.accounts).toHaveLength(2)
     expect(state.accounts.find(account => account.id === 'a1')?.nickName).toBe('改名博士')
     expect(state.accounts.find(account => account.id === 'a2')?.nickName).toBe('博士a2')
+  })
+
+  it('按账号 ID 只更新森空岛凭证并保留其他最新字段', async () => {
+    await upsertAccount({ ...makeAccount('a1', '111'), nickName: '最新昵称', lastSync: { time: 1, status: 'success' } }, area)
+    const updated = await patchAccountCredential('a1', { cred: 'new-cred', token: 'new-token', obtainedAt: 2 }, area)
+    expect(updated.accounts[0]).toMatchObject({
+      id: 'a1',
+      uid: '111',
+      nickName: '最新昵称',
+      skland: { cred: 'new-cred', token: 'new-token', obtainedAt: 2 },
+      lastSync: { time: 1, status: 'success' }
+    })
+    expect((await loadState(area)).accounts[0]?.skland.cred).toBe('new-cred')
   })
 
   it('切换激活账号', async () => {
