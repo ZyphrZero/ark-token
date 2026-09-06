@@ -14,11 +14,6 @@
 
 本项目根目录 `E:\yituliu\ark-token` 是本任务唯一允许写入和修改的范围。分析阶段可以读取、搜索和比对上述后端、前端仓库，但不得修改、提交、删除其中的文件或安装依赖；如确需改变前后端，必须先取得用户明确授权。不得删除、重命名或弱化本文件中记录的代码路径，也不得在实现本项目功能时擅自删除现有接口、路由、调用链或兼容路径。若新增模块，请同步补充本项目 README 中的目录说明。
 
-## Figma设计原型
-
-UI原型请参考Figma原型进行设计：
-`https://www.figma.com/design/as0oOsTLNjdxzxx5BKb6Sx/%E7%BD%97%E5%BE%B7%E5%B2%9B%E8%BF%9C%E7%A8%8B%E6%8C%87%E6%8C%A5%E9%83%A8--Copy-?node-id=12-150&p=f&t=qQaGQxJQN6NuDqbk-0`
-
 ## 构建、测试与本地开发
 
 构建、测试和修改均针对本仓库进行，依据 README 与 `package.json` 中声明的命令执行，例如 `npm ci`、`npm run dev`、`npm run build`、`npm test`、`npm run build:operator-table`，不要假设未声明的命令可用。提交前记录实际执行的命令及结果。
@@ -27,9 +22,16 @@ UI原型请参考Figma原型进行设计：
 
 遵循本项目现有的 formatter、linter、TypeScript/后端配置和目录约定，不要为单个改动引入新的风格。若本项目未规定，JavaScript/TypeScript 使用 2 空格缩进，变量和函数采用 `camelCase`，类与组件采用 `PascalCase`，常量采用 `UPPER_SNAKE_CASE`；保持导入有序，并让命名体现账号、token 和数据更新的职责。
 
+## 森空岛数据语义与分层封装
+
+- 消费森空岛接口字段前，语义必须经真实抓包样本核实，不得凭字段名、参考项目（rhodes-headquarters 等）实现或单一形态样本推测；决定性样本存入 `skland_dump/`（文件内注明抓包时间与语义结论），类型注释与 `docs/` 文档回链样本出处。
+- 已核实且易误读的语义（详见 `docs/BUILDING_MOOD_API.md`）：会客室 `clue.board` 是已置入系列的紧凑列表（置入 1/3/4/7 号位时仅有 4 个元素），不可按槽位下标判断，必须用 `src/core/status/building.ts` 的 `CLUE_SERIES`/`clueBoardSlots()` 按系列名成员判断；`clue.own` 含已置入线索、上限 10；`sharing=true` 不代表线索板集齐 7 条。
+- 森空岛基建快照可能落后游戏内状态数十分钟至数小时（需游戏本体登录/进出基建触发上传），属数据源固有延迟；对比插件显示与游戏截图不一致时，先核对快照 `lastUpdateTime` 再判定插件逻辑是否有误。
+- 分层封装：接口类型集中在 `src/core/skland-info.ts`，领域计算/推导封装为 `src/core/status/` 下的纯函数与常量；视图层（`src/popup` 等）只做渲染与配色，不内联业务判断。数据语义的修正或新增封装必须配套测试（以抓包样本构造 fixture 回归）并同步 `docs/` 对应文档。
+
 ## 测试指南
 
-当前未发现测试。新增逻辑应仅在本项目的测试目录中补充测试，至少覆盖 token 读写、账号隔离、更新失败和重试等边界；测试中不得输出真实 token。沿用本项目既有命名（例如 `*.test.ts` 或 `*_test.go`），优先运行受影响模块的快速测试，再运行完整套件。
+测试位于源码同目录（`*.test.ts`，vitest），新增或修改逻辑应补充覆盖对应边界；与数据语义相关的逻辑须有抓包样本回归用例，测试中不得输出真实 token。沿用本项目既有命名（例如 `*.test.ts` 或 `*_test.go`），优先运行受影响模块的快速测试，再运行完整套件。
 
 ## 安全与配置
 

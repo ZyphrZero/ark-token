@@ -421,6 +421,12 @@ body {
   font-weight: 700;
 }
 
+/* 充能速度加成徽标：与数值同紫色系，弱化字号 */
+.labor-row .drone-bonus {
+  color: #b06fd9;
+  font-size: 11px;
+}
+
 .building-body {
   position: relative;
   flex: 1;
@@ -520,6 +526,19 @@ body {
   width: 100%;
 }
 
+/* 训练室技能名可能超过信息列宽，收缩并省略，完整名与速度加成见 title 提示 */
+.room-info .skill-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.room-info .room-info-row > span:last-child {
+  flex-shrink: 0;
+}
+
 .room-extra {
   flex: 1;
   height: 100%;
@@ -572,9 +591,9 @@ body {
   opacity: 0.45;
 }
 
+/* 已收集槽位的边框/数字颜色由 MeetingRoom 内联样式按系列色指定 */
 .clue-board .clue-slot.own {
   opacity: 1;
-  border-color: var(--foreground);
 }
 
 .resident {

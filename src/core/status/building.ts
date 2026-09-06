@@ -1,14 +1,27 @@
 import type {
+  ClueSeries,
+  SklandBuilding,
   SklandBuildingDormitory,
   SklandBuildingHire,
   SklandBuildingManufacture,
   SklandBuildingMeeting,
+  SklandBuildingTrading,
+  SklandBuildingTraining,
   SklandLabor,
+  SklandMeetingClue,
+  SklandPanelCharacter,
   SklandResidentCharacter
 } from '../skland-info'
+import slimTableJson from '../../assets/operator-table.slim.json'
 
-/** 无人机恢复速率：每 360 秒（6 分钟）恢复 1 架 */
-const DRONE_RECOVERY_SECONDS = 360
+/** 精简干员表（含技能名第三元素，构建口径见 scripts/build-operator-table.mjs） */
+const operatorSlimTable = slimTableJson as unknown as Record<
+  string,
+  [number, Record<string, string> | null, (string[] | null)?]
+>
+
+/** 无人机基准恢复速率：无充能加成时每 360 秒（6 分钟）恢复 1 架 */
+const DRONE_BASE_RECOVERY_SECONDS = 360
 
 /**
  * 心情满值（ap 单位为 0.01 秒）：8_640_000 = 86400 秒 = 24 点心情。
@@ -29,15 +42,52 @@ export function moodPercent(ap: number): number {
 }
 
 /**
- * 无人机数量实时推算。公式与 rhodes-headquarters Labor.vue 一致：
- * value + round(elapsedSec / 360)，封顶 maxValue。
+ * 无人机实际恢复速率（秒/架），由快照自描述：remainSecs 以 lastUpdateTime 为基准、
+ * 覆盖 (maxValue − value) 架的恢复耗时，控制中枢进驻技能的充能加成（如「超频」类
+ * 无人机充能速度 +X%）已含在其中。抓包实测（skland_dump/building_api/drone-rate-sample.json）：
+ * remainSecs=41351、剩余 184 架 → 224.7 秒/架 = 基准 360s ÷ 1.6（+60% 加成），
+ * 且同一轮恢复的两份快照 lastUpdateTime + remainSecs 恒等（锚点核实）。
+ * 快照已满或 remainSecs 缺失（0/-1）时回退基准速率。
+ */
+export function droneRecoverySeconds(labor: SklandLabor): number {
+  const remaining = labor.maxValue - labor.value
+  if (labor.remainSecs > 0 && remaining > 0) {
+    return labor.remainSecs / remaining
+  }
+  return DRONE_BASE_RECOVERY_SECONDS
+}
+
+/**
+ * 无人机充能速度加成百分比（如 60 表示 +60%），基准 360 秒/架。
+ * 单快照无法精确求速率（value 为下取整值，真实剩余架数 R ∈ (D−1, D]，D = maxValue − value，
+ * 速率估计 remainSecs/D 系统性偏高、直接四舍五入会把 +60% 显示成 +61%），故取
+ * 加成区间 (360(D−1)/remainSecs − 1, 360D/remainSecs − 1] 的中点再取整——误差对称，
+ * 三份抓包快照与边界构造均收敛到真实值。
+ * 剩余架数不足 30（区间宽度 > ~5%，临近充满）或快照无法推导（已满 / remainSecs ≤ 0）
+ * 时返回 null，调用方不应显示加成徽标。
+ */
+export function droneSpeedBonusPercent(labor: SklandLabor): number | null {
+  const remaining = labor.maxValue - labor.value
+  if (labor.remainSecs <= 0 || remaining < 30) {
+    return null
+  }
+  const bonusLow = (DRONE_BASE_RECOVERY_SECONDS * (remaining - 1)) / labor.remainSecs - 1
+  const bonusHigh = (DRONE_BASE_RECOVERY_SECONDS * remaining) / labor.remainSecs - 1
+  // + 0 归一化 Math.round 可能产生的 -0
+  return Math.round(((bonusLow + bonusHigh) / 2) * 100) + 0
+}
+
+/**
+ * 无人机数量实时推算：value + round(elapsedSec / 实际速率)，封顶 maxValue。
+ * 速率含中枢充能加成（见 droneRecoverySeconds）；value 为下取整的快照值，
+ * 推算误差不超过 1 架。
  */
 export function computeDroneCount(labor: SklandLabor, nowMs: number): number {
   if (labor.value >= labor.maxValue) {
     return labor.maxValue
   }
   const elapsedSec = Math.max(0, Math.floor(nowMs / 1000) - labor.lastUpdateTime)
-  return Math.min(labor.value + Math.round(elapsedSec / DRONE_RECOVERY_SECONDS), labor.maxValue)
+  return Math.min(labor.value + Math.round(elapsedSec / droneRecoverySeconds(labor)), labor.maxValue)
 }
 
 /** 发电站发电量：2^(lv-1)*60 + (2^(lv-1)-1)*10 */
@@ -142,6 +192,26 @@ export function meetingWorkCapSec(room: SklandBuildingMeeting): number {
   return room.completeWorkTime - room.lastUpdateTime + (9 - room.clue.own) * 43_200
 }
 
+/**
+ * 线索板槽位 1-7 对应的系列，顺序即编号。
+ * 编号口径与游戏数据 clue_data.json 一致（1 莱茵生命 … 7 罗德岛），
+ * board 紧凑列表语义见抓包样本 skland_dump/building_api/meeting-clue-compact-sample.json。
+ */
+export const CLUE_SERIES: readonly ClueSeries[] = ['RHINE', 'PENGUIN', 'BLACKSTEEL', 'URSUS', 'GLASGOW', 'KJERAG', 'RHODES']
+
+/** 自有库上限（含已置入线索），游戏内显示为 N/10 */
+export const CLUE_OWN_MAX = 10
+
+/**
+ * 各槽位（1-7）是否已置入线索。
+ * board 是已置入系列的紧凑列表而非按槽位稀疏数组（实测置入 1/3/4/7 号位时
+ * board = [RHINE, BLACKSTEEL, URSUS, RHODES]），故必须按系列名做成员判断，
+ * 不能用 board[index] 下标判断——那会把置入位置错读为前 N 个槽位。
+ */
+export function clueBoardSlots(clue: SklandMeetingClue): boolean[] {
+  return CLUE_SERIES.map(series => clue.board.includes(series))
+}
+
 /** 人力办公室外推上限（秒）：(now−完成时刻) + (2−已刷新次数)×12 小时；未完成本轮时无上限 */
 export function hireWorkCapSec(room: SklandBuildingHire, nowSec: number): number {
   if (room.completeWorkTime === -1 || room.completeWorkTime > nowSec) {
@@ -153,4 +223,156 @@ export function hireWorkCapSec(room: SklandBuildingHire, nowSec: number): number
 /** 训练室外推上限（秒）：专精剩余秒；空闲（-1）时不消耗 */
 export function trainingWorkCapSec(remainSecs: number): number {
   return remainSecs >= 0 ? remainSecs : 0
+}
+
+/**
+ * 训练完成时刻（unix 秒）；remainSecs 以响应 currentTs 为基准，配对使用同一响应的两个字段。
+ * 实测（skland_dump/building_api/training-remainsecs-sample.json）：
+ * remainSecs ≈ remainPoint/speed − (currentTs − lastUpdateTime)，故
+ * currentTs + remainSecs 与 lastUpdateTime + remainPoint/speed 算得的完成时刻一致（误差 <1 秒）。
+ * remainSecs < 0（空闲）返回 -1。
+ */
+export function trainingCompleteTimeSec(training: SklandBuildingTraining, currentTs: number): number {
+  if (training.remainSecs < 0) {
+    return -1
+  }
+  return currentTs + training.remainSecs
+}
+
+/** 训练速度加成百分比：speed 1.35 → 35 */
+export function trainingSpeedBonusPercent(speed: number): number {
+  return Math.round((speed - 1) * 100)
+}
+
+/** charId → 各槽位技能名表（精简干员表第三元素，槽位顺序与森空岛 chars[].skills[] 一致） */
+export type SkillNameTable = Record<string, readonly string[] | null | undefined>
+
+const skillNameTable: SkillNameTable = Object.fromEntries(
+  Object.entries(operatorSlimTable).map(([charId, entry]) => [charId, entry[2]])
+)
+
+/** 专精等级 → 中文文案（与游戏内「专精一/二/三」一致） */
+export function specializeLevelText(level: number): string {
+  return `专精${['一', '二', '三'][level - 1] ?? level}`
+}
+
+/** 训练室正在专精的技能详情 */
+export interface TrainingSkillInfo {
+  /** 技能槽位（1-3） */
+  slot: number
+  skillId: string
+  /** 技能名；本地表未收录该槽（源表与补充表都缺，极新干员）时为 null */
+  skillName: string | null
+  /** 学员该技能当前专精等级（0-3，player/info chars[].skills[].specializeLevel） */
+  currentLevel: number
+  /** 本次训练目标的专精等级（1-3）= 当前等级 + 1 */
+  targetLevel: number
+}
+
+/**
+ * 训练室正在专精的技能名与目标专精等级。
+ * 数据链在同一 player/info 响应内闭合（抓包核实 skland_dump/building_api/training-skill-sample.json）：
+ * training.trainee.targetSkill 为 **skills 数组下标（0 起，-1 = 空闲）**——同一轮训练
+ * （targetSkill=2）完成后实测 skills[2]（第 3 技能）专精 0→1 而 skills[1] 不变，据此核实；
+ * 训练目标等级 = 该技能当前 specializeLevel + 1；技能名查本地干员表（skills 槽位顺序两边
+ * skillId 逐一对应，下标同义）。
+ */
+export function trainingSkillInfo(
+  training: SklandBuildingTraining,
+  chars: SklandPanelCharacter[] | undefined,
+  nameTable: SkillNameTable = skillNameTable
+): TrainingSkillInfo | null {
+  const trainee = training.trainee
+  const index = trainee?.targetSkill ?? -1
+  if (!trainee || index < 0) {
+    return null
+  }
+  const skill = chars?.find(char => char.charId === trainee.charId)?.skills?.[index]
+  if (!skill) {
+    return null
+  }
+  return {
+    slot: index + 1,
+    skillId: skill.id,
+    skillName: nameTable[trainee.charId]?.[index] ?? null,
+    currentLevel: skill.specializeLevel,
+    targetLevel: skill.specializeLevel + 1
+  }
+}
+
+/** 工作区设施类型（不含宿舍；加工站不在森空岛快照中） */
+export type WorkRoomType = 'control' | 'power' | 'manufacture' | 'trading' | 'hire' | 'training' | 'meeting'
+
+/** 全部设施类型 */
+export type RoomType = WorkRoomType | 'dormitory'
+
+/**
+ * 各设施每级可进驻人数（charCapacity），下标 0 = 1 级。
+ * 来源：游戏数据 building_data.json rooms.*.phases[].maxStationedNum（2026-09-06 核实）；
+ * 已用抓包账号对账：13 间工作区房 + 加工站 1 间 = 游戏「房间数量 14」，容量 31+1 = 32。
+ */
+export const ROOM_CAPACITY: Record<RoomType, readonly number[]> = {
+  control: [1, 2, 3, 4, 5],
+  power: [1, 1, 1],
+  manufacture: [1, 2, 3],
+  trading: [1, 2, 3],
+  hire: [1, 1, 1],
+  training: [2, 2, 2],
+  meeting: [2, 2, 2],
+  dormitory: [5, 5, 5, 5, 5]
+}
+
+/** 指定设施在 level 级的可进驻人数，越界等级按最低/最高级收敛 */
+export function roomCapacity(room: RoomType, level: number): number {
+  const table = ROOM_CAPACITY[room]
+  const clamped = Math.min(Math.max(level, 1), table.length)
+  return table[clamped - 1] ?? 0
+}
+
+/** 基建「工作区情况」概况：进驻干员/进驻上限/房间数量（工作区口径，不含宿舍） */
+export interface BuildingOverview {
+  /** 工作区房间数；森空岛快照不含加工站，建了加工站的基地会比游戏内显示少 1 */
+  rooms: number
+  /** 工作区进驻干员数（训练室教官/学员不在 chars 中，已单独计入） */
+  residents: number
+  /** 工作区进驻上限 */
+  capacity: number
+}
+
+/** 汇总工作区进驻情况；宿舍为非工作区不计入 */
+export function buildingOverview(building: SklandBuilding): BuildingOverview {
+  const counts: { room: WorkRoomType; level: number; residents: number }[] = []
+  if (building.control) {
+    counts.push({ room: 'control', level: building.control.level, residents: building.control.chars.length })
+  }
+  for (const room of building.powers) {
+    counts.push({ room: 'power', level: room.level, residents: room.chars.length })
+  }
+  for (const room of building.manufactures) {
+    counts.push({ room: 'manufacture', level: room.level, residents: room.chars.length })
+  }
+  for (const room of building.tradings) {
+    counts.push({ room: 'trading', level: room.level, residents: room.chars.length })
+  }
+  if (building.hire) {
+    counts.push({ room: 'hire', level: building.hire.level, residents: building.hire.chars.length })
+  }
+  if (building.meeting) {
+    counts.push({ room: 'meeting', level: building.meeting.level, residents: building.meeting.chars.length })
+  }
+  let rooms = counts.length
+  let residents = counts.reduce((sum, c) => sum + c.residents, 0)
+  let capacity = counts.reduce((sum, c) => sum + roomCapacity(c.room, c.level), 0)
+  if (building.training) {
+    // 训练室结构特殊：教官/学员独立于 chars 计数
+    rooms += 1
+    residents += (building.training.trainer ? 1 : 0) + (building.training.trainee ? 1 : 0)
+    capacity += roomCapacity('training', building.training.level)
+  }
+  return { rooms, residents, capacity }
+}
+
+/** 贸易站订单策略名（与游戏内文案一致） */
+export function tradingStrategyName(strategy: SklandBuildingTrading['strategy']): string {
+  return strategy === 'O_DIAMOND' ? '开采协力' : '龙门商法'
 }

@@ -68,7 +68,20 @@ rate = 1.5 + 0.1 × 宿舍等级 + 0.0004 × 氛围(comfort)
 App 首页「干员疲劳 N」= 服务端 tiredChars 数 + 客户端按上述外推判定的疲劳数（去重、
 排除宿舍恢复中的干员、不计控制中枢与训练学员）。
 
-## 五、验证记录
+## 五、会客室线索板（clue）结构语义
+
+抓包核实（样本 `skland_dump/building_api/meeting-clue-compact-sample.json`，Reqable record 2478）：
+
+| 字段 | 语义 |
+|---|---|
+| `board` | **已置入线索板的系列名，紧凑列表**：置入 1/3/4/7 号位时为 `[RHINE, BLACKSTEEL, URSUS, RHODES]`，无占位元素。槽位 i（1-7）是否置入必须按系列名成员判断（编号顺序 `RHINE→PENGUIN→BLACKSTEEL→URSUS→GLASGOW→KJERAG→RHODES`，与游戏数据 `clue_data.json` 一致），**不可用 `board[index]` 下标判断** |
+| `own` | 自有库数量，**含已置入线索**，上限 10（游戏内 N/10 口径） |
+| `sharing` | 线索交流进行中；开启交流**不要求** board 集齐 7 条（实测只置入 4 条仍为 true） |
+
+封装：`src/core/status/building.ts` 的 `CLUE_SERIES` / `CLUE_OWN_MAX` / `clueBoardSlots()`，
+回归测试见 `src/core/status/building.test.ts`（`clueBoardSlots` describe）。
+
+## 六、验证记录
 
 以抓包样本（currentTs=1788543048，快照落后 28.24 小时）按上述公式推算：
 
@@ -77,4 +90,139 @@ App 首页「干员疲劳 N」= 服务端 tiredChars 数 + 客户端按上述外
 - 宿舍 4 间全部恢复满值；
 - 无人机 235/235、制造进度 74/74 亦与 App 显示一致。
 
+### 无人机恢复速率（含充能加成）
+
+`labor.remainSecs` 以 `lastUpdateTime` 为基准、表示恢复至满尚需的秒数，**已包含控制中枢
+进驻技能的无人机充能速度加成**（抓包核实见 `skland_dump/building_api/drone-rate-sample.json`，
++60% 加成账号三快照交叉验证，速率恒 ≈ 224.73 秒/架 = 360/1.6）：
+
+```
+实际速率（秒/架） = remainSecs / (maxValue − value)   // 已满或 remainSecs ≤ 0 时回退基准 360
+当前数量          = value + round(elapsed / 实际速率)  // 封顶 maxValue
+```
+
+注意：与训练室 `remainSecs`（以响应 currentTs 为基准）不同，labor 的锚点是 lastUpdateTime。
+封装见 `droneRecoverySeconds()` / `droneSpeedBonusPercent()` / `computeDroneCount()`
+（`src/core/status/building.ts`）；面板顶部无人机行的「+N%」徽标即充能加成，
+快照无法推导（已满）时不显示。rhodes-headquarters 的固定 360 秒/架口径未含加成，已在本项目修正。
+
+加成百分比的显示口径：`value` 为下取整值（真实剩余架数 R ∈ (D−1, D]，D = maxValue − value），
+速率单快照只能给区间，直接对 `remainSecs/D` 估计值四舍五入会系统性偏高（+60% 账号
+可能显示 +61%）。`droneSpeedBonusPercent` 取加成区间
+`(360(D−1)/remainSecs − 1, 360D/remainSecs − 1]` 的中点再取整，三份抓包快照与
+下取整边界构造均收敛到真实值；剩余架数 < 30（区间过宽，临近充满）时不显示。
+
 回归测试见 `src/core/status/building.test.ts`（"抓包数据回归" describe）。
+
+## 七、工作区概况与房间容量
+
+游戏基建「工作区情况」显示进驻干员 N/M 与房间数量；口径为**工作区**（中枢/发电/制造/贸易/
+人力/训练/会客/加工站），宿舍为非工作区不计入。
+
+每级可进驻人数（charCapacity）来自游戏数据 `building_data.json` 的
+`rooms.*.phases[].maxStationedNum`（2026-09-06 核实）：
+
+| 设施 | 每级容量 |
+|---|---|
+| 控制中枢 | 1/2/3/4/5 |
+| 发电站、人力办公室 | 恒 1 |
+| 制造站、贸易站 | 1/2/3 |
+| 训练室、会客室 | 恒 2 |
+| 宿舍 | 恒 5 |
+| 加工站 | 恒 1 |
+
+**加工站（WORKSHOP）不在森空岛 player/info 快照中**（building 下仅有
+furniture/elevators/corridors 等附加字段）。对账样本
+`skland_dump/building_api/building-overview-sample.json`：快照算得工作区 13 间/28 人/上限 31，
+游戏同刻显示 14 间/28 人/上限 32——房间数与上限各差 1（加工站），进驻数一致。
+
+训练室教官/学员不在 `chars` 数组中，`buildingOverview` 已单独计入。
+封装：`ROOM_CAPACITY` / `roomCapacity()` / `buildingOverview()`，见 `src/core/status/building.ts`。
+
+## 八、其他字段观察
+
+- 贸易站 `stockLimit` 为服务端按技能加成后的值（同账号 3 间 lv3 贸易站出现 10/14/10，
+  14 应为「喀兰之主」类订单上限技能加成）；`stock[].delivery/gain` 为订单交付/收益条目。
+- 游戏内逐干员的「心情消耗/时」「生产力」加成与「剩余时间」倒计时按进驻干员基建技能
+  计算，player/info 的 `building.*.chars` 不含技能数据，**无法从快照推导**，插件不做
+  该口径的展示（曾按快照差分实测速率展示「心情/时」与生产力，与游戏内展示口径不符，
+  已于 2026-09-07 回退，见第十节备查）。
+- 游戏内进驻干员的「剩余时间」倒计时与心情无关（实测同一房间干员心情不同但倒计时
+  相同：16:45:14、14:48:33），应为房间生产完成时刻（`completeWorkTime` 口径）。
+- 快照 `building.elevators/corridors` 为电梯/廊道结构房间（恒 1 级，不参与进驻）。
+
+## 九、训练室（training）字段语义
+
+抓包核实（样本 `skland_dump/building_api/training-remainsecs-sample.json`，Reqable record 2478）：
+
+| 字段 | 语义 |
+|---|---|
+| `trainee.targetSkill` | 正在专精的技能序号（1-3）；空闲时 trainee 对象仍在但为 -1，未进驻为 null |
+| `remainPoint` | 剩余训练点数（未按速度折算），-1 = 空闲 |
+| `speed` | 训练速度倍率（1 + 加成），1.35 即 +35% |
+| `remainSecs` | 剩余秒数，**以响应 `currentTs` 为基准**（非 `lastUpdateTime`），-1 = 空闲 |
+
+关键算式（实测，误差 <1 秒）：
+
+```
+remainSecs ≈ remainPoint / speed − (currentTs − lastUpdateTime)
+完成时刻 = currentTs + remainSecs = lastUpdateTime + remainPoint / speed
+```
+
+消费时必须用同一响应的 `currentTs` 配对 `remainSecs`；封装见
+`trainingCompleteTimeSec()` / `trainingSpeedBonusPercent()`（`src/core/status/building.ts`）。
+
+技能名称与专精等级（专精一/二/三）**可以**推导：`player/info` 的 `chars[]` 完整结构含
+`skills: [{ id, specializeLevel }]`（槽位顺序 1-3，抓包核实见
+`skland_dump/building_api/training-skill-sample.json`），数据链在同一响应内闭合：
+
+```
+training.trainee.targetSkill 为 chars[].skills 数组的 0 起下标（-1 = 空闲）
+  → chars[] 中学员 skills[targetSkill]
+训练目标专精等级 = specializeLevel + 1
+技能名 = 本地干员表该干员同下标技能名（skills[].skillId 两边逐一对应）
+```
+
+> 索引口径由双快照核实（`skland_dump/building_api/training-skill-sample.json`）：
+> targetSkill=2 的训练完成后，skills[2]（第 3 技能）专精 0→1 而 skills[1] 不变，
+> 证明是 0 起下标而非 1 起槽位号；曾按 1 起解读导致技能定位错误，已修正。
+
+封装见 `trainingSkillInfo()` / `specializeLevelText()`（`src/core/status/building.ts`）。
+技能名表来自精简干员表第三元素（`scripts/build-operator-table.mjs` 生成）：源表
+`character_table_simple.v2.json` 的 `skills[].skillName` 为主；源表未收录的新干员由
+`assets-source/skill-name-extra.v1.json` 补充（提取自 ArknightsGameData 的
+character_table + skill_table：TIER_1+ 干员，`{ [charId]: [rarity, [技能名...]] }`，
+技能名取 skill_table `levels` 末级 name）。极新干员两表都缺时技能名回退为「技能N」。
+
+## 十、心情消耗速率差分实测（备查，未接入插件）
+
+> 本节记录的是**抓包数据分析结论**（样本 `skland_dump/building_api/mood-rate-sample.json`，
+> 两次 player/info 快照间隔 1802 秒），供后续参考。据此实现的「心情/时」「生产力」展示与
+> 实测速率外推与游戏内展示口径不符，已于 2026-09-07 整体回退，封装代码已移除。
+
+### 关键机制：ap 是懒结算值
+
+`chars[].ap` 是 `lastApAddTime` 时刻的结算值（非响应 `currentTs` 时刻），真实当前值 =
+`ap − 速率 × (now − lastApAddTime)`。因此**同一干员跨两次快照**：
+
+```
+速率（ap 单位/秒） = (ap₁ − ap₂) / (lastApAddTime₂ − lastApAddTime₁)
+点/时 = 速率 / 100
+```
+
+### 实测结论
+
+- **速率跟人不跟房间**：换班把干员从 slot_7 平移到 slot_25 后速率不变（0.65/0.95/0.55
+  点/时均复现），差分按 charId 追踪即可，无需房间配对。
+- 实测速率全部落在 **0.05 的整数倍**（0.55/0.65/0.75/0.95/0 点/时）；**0 是合法值**
+  （存在心情消耗归零的进驻技能，如 char_101_sora 组，ap 长期不变）。
+- 同房间不同干员速率可以不同（贸易站 0.95/0.55/0.65 并存）。
+- 快照不含速率字段（`chars[].skills` 为战斗技能），差分是唯一的快照内推导途径。
+
+### 回退原因与注意事项
+
+- 差分速率是干员在**抓包间隔内**的真实消耗，但展示时点与快照时点之间干员可能已换班/
+  进出宿舍，历史速率与新位置脱节；快照 `speed` 与游戏房间生产力明细的对应关系也未核实
+  （游戏明细为逐干员贡献 1 + Σ技能加成，房间与快照 slot 的映射会因换班漂移）。
+- 若将来重新引入，须先解决上述口径漂移问题，且不得按「心情耗尽倒计时」解读游戏内
+  逐干员「剩余时间」（那是房间生产完成时刻，见第八节）。

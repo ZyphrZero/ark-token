@@ -6,17 +6,26 @@ import type {
   SklandBuildingTrading
 } from '../../../core/skland-info'
 import {
+  CLUE_OWN_MAX,
+  clueBoardSlots,
   computeDroneCount,
   dormitoryCurrentAp,
+  droneSpeedBonusPercent,
   estimateManufactureWeight,
   hireWorkCapSec,
   manufactureWorkCapSec,
   MANUFACTURE_FORMULAS,
   meetingWorkCapSec,
   powerOutput,
+  specializeLevelText,
+  trainingCompleteTimeSec,
+  trainingSkillInfo,
+  trainingSpeedBonusPercent,
+  tradingStrategyName,
   trainingWorkCapSec,
   workingCurrentAp
 } from '../../../core/status/building'
+import { formatDuration } from '../../../utils/time'
 import { LevelMark } from '../../icons'
 import { useNow } from '../../useNow'
 import controlIcon from '../../assets/rooms/control.svg'
@@ -94,7 +103,7 @@ function TradingRoom({ room, nowSec, charMap }: { room: SklandBuildingTrading; n
         <div className="room-info-row">
           <span className="font-bender" style={{ color: '#25abdf' }}>{room.stock.length}<span style={{ color: '#fff' }}>/{room.stockLimit}</span></span>
         </div>
-        <div style={{ color: '#25abdf' }}>{room.strategy === 'O_DIAMOND' ? '开采协力' : '龙门商法'}</div>
+        <div style={{ color: '#25abdf' }}>{tradingStrategyName(room.strategy)}</div>
       </div>
       {room.chars.map(resident => (
         <ResidentCharacter
@@ -108,7 +117,8 @@ function TradingRoom({ room, nowSec, charMap }: { room: SklandBuildingTrading; n
   )
 }
 
-const CLUE_COUNT = 7
+/** 各线索系列的标记色，按游戏内线索图样主题色提亮以适配深色背景；顺序对应槽位 1-7 */
+const CLUE_COLORS = ['#9fce6a', '#5a8fe0', '#7c8cb8', '#e05a5a', '#fdd400', '#c79a6b', '#78b5bf']
 
 function MeetingRoom({ info, nowSec, charMap }: { info: SklandBindingInfo; nowSec: number; charMap: Map<string, string> }) {
   const meeting = info.building.meeting
@@ -117,22 +127,32 @@ function MeetingRoom({ info, nowSec, charMap }: { info: SklandBindingInfo; nowSe
   }
   // 搜集线索的干员与线索板并排展示
   const capSec = meetingWorkCapSec(meeting)
+  const slots = clueBoardSlots(meeting.clue)
   return (
     <RoomCard title="会客室" level={meeting.level} color="#ffffff" icon={meetingIcon}>
       <div className="room-extra">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 4 }}>
           <span className="meeting-status">{meeting.clue.sharing ? '交流中' : '搜集中'}</span>
           <span className="font-bender">
-            <span style={{ color: '#fd661c' }}>{meeting.clue.own}</span>/10
+            <span style={{ color: '#fd661c' }}>{meeting.clue.own}</span>/{CLUE_OWN_MAX}
           </span>
         </div>
         <div className="meeting-progress">
-          <div className="meeting-progress-fill" style={{ width: `${Math.min(100, (meeting.clue.own / 10) * 100)}%` }} />
+          <div className="meeting-progress-fill" style={{ width: `${Math.min(100, (meeting.clue.own / CLUE_OWN_MAX) * 100)}%` }} />
         </div>
         <div className="clue-board">
-          {Array.from({ length: CLUE_COUNT }, (_, index) => (
-            <span key={index} className={`clue-slot${meeting.clue.board[index] ? ' own' : ''}`}>{index + 1}</span>
-          ))}
+          {slots.map((placed, index) => {
+            const color = placed ? CLUE_COLORS[index] : undefined
+            return (
+              <span
+                key={index}
+                className={`clue-slot${placed ? ' own' : ''}`}
+                style={color ? { color, borderColor: color } : undefined}
+              >
+                {index + 1}
+              </span>
+            )
+          })}
         </div>
       </div>
       {meeting.chars.map(resident => (
@@ -154,6 +174,8 @@ export default function BuildingTab({ info }: { info: SklandBindingInfo }) {
   const building = info.building
   const labor = building?.labor
   const drone = labor ? computeDroneCount(labor, now) : 0
+  // 充能速度加成（中枢进驻技能），快照无法推导（已满）时不显示
+  const droneBonus = labor ? droneSpeedBonusPercent(labor) : null
 
   const charMap = new Map((info.chars ?? []).map(char => [char.charId, char.skinId]))
 
@@ -206,8 +228,35 @@ export default function BuildingTab({ info }: { info: SklandBindingInfo }) {
   if (building?.training) {
     const training = building.training
     const capSec = trainingWorkCapSec(training.remainSecs)
+    const completeAt = trainingCompleteTimeSec(training, info.currentTs)
+    const skill = trainingSkillInfo(training, info.chars)
+    const speedBonus = trainingSpeedBonusPercent(training.speed)
     rooms.push(
       <RoomCard key="training" title="训练室" level={training.level} color="#ffffff" icon={trainingIcon}>
+        <div className="room-info">
+          {completeAt >= 0 ? (
+            <>
+              <div className="room-info-row">
+                <span>剩余</span>
+                <span className="font-bender">{formatDuration(Math.max(0, completeAt - nowSec) * 1000)}</span>
+              </div>
+              <div className="room-info-row" title={skill?.skillName ? `训练速度 +${speedBonus}%` : undefined}>
+                {skill ? (
+                  <>
+                    <span className="skill-name">{skill.skillName ?? `技能${skill.slot}`}</span>
+                    <span>{specializeLevelText(skill.targetLevel)}</span>
+                  </>
+                ) : (
+                  <span>专精中</span>
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="room-info-row">
+              <span>空闲</span>
+            </div>
+          )}
+        </div>
         {[training.trainer, training.trainee].map((person, personIndex) => (
           person
             ? (
@@ -268,6 +317,9 @@ export default function BuildingTab({ info }: { info: SklandBindingInfo }) {
             <span className="drone-value font-bender">{drone}</span>
             <span className="font-bender">/{labor.maxValue}</span>
           </span>
+          {droneBonus !== null && (
+            <span className="drone-bonus font-bender" title="无人机充能速度加成（含控制中枢进驻技能）">+{droneBonus}%</span>
+          )}
         </div>
       )}
       <div className="building-body">

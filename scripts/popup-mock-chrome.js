@@ -43,7 +43,7 @@
     routine: { daily: { current: 2, total: 3 }, weekly: { current: 4, total: 6 } },
     chars: [
       { charId: 'char_002_amiya', skinId: 'char_002_amiya#1', level: 60, evolvePhase: 2 },
-      { charId: 'char_010_chen', skinId: 'char_010_chen#1', level: 90, evolvePhase: 2 },
+      { charId: 'char_010_chen', skinId: 'char_010_chen#1', level: 90, evolvePhase: 2, skills: [{ id: 'skchr_chen_1', specializeLevel: 3 }, { id: 'skchr_chen_2', specializeLevel: 2 }, { id: 'skchr_chen_3', specializeLevel: 1 }] },
       { charId: 'char_003_kalts', skinId: 'char_003_kalts#1', level: 40, evolvePhase: 1 }
     ]
   }

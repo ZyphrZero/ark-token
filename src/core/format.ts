@@ -11,8 +11,8 @@ import type { OperatorProgressionData, PlayerInfoPayload, SklandChar, SklandCult
  * - rarity 取本地干员表（v2 表已为 1-6 星），表里没有的干员跳过
  */
 
-/** 精简干员表：{ [charId]: [星级, { [模组ID]: 模组类型 }] } */
-type SlimTable = Record<string, [number, Record<string, string> | null]>
+/** 精简干员表：{ [charId]: [星级, { [模组ID]: 模组类型 } | null, [技能名...] | null] } */
+type SlimTable = Record<string, [number, Record<string, string> | null, (string[] | null)?]>
 
 export const operatorSlimTable = slimTableJson as unknown as SlimTable
 

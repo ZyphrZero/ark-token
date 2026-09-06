@@ -100,9 +100,10 @@ ark-token/
 ├── AGENTS.md                       # 仓库开发规范（勿删改）
 ├── manifest.json                   # MV3 清单（popup / options / service worker / 权限）
 ├── assets-source/
-│   └── character_table_simple.v2.json   # 干员表源数据（复制自 frontend-v2-plus，不打包）
+│   ├── character_table_simple.v2.json   # 干员表源数据（复制自 frontend-v2-plus，不打包）
+│   └── skill-name-extra.v1.json         # 新干员技能名补充表（提取自 ArknightsGameData，源表滞后时兜底）
 ├── scripts/
-│   ├── build-operator-table.mjs    # 从源表生成精简干员表（星级 + 模组类型映射）
+│   ├── build-operator-table.mjs    # 从源表+补充表生成精简干员表（星级 + 模组类型映射 + 技能名）
 │   ├── preview-server.cjs          # 本地静态服务器（视觉预览 dist/ 用）
 │   ├── make-popup-mock.mjs         # 构建后注入 chrome mock 生成 dist/src/popup/mock.html（配合 preview-server 预览面板，假数据）
 │   └── popup-mock-chrome.js        # mock.html 注入的 chrome API 模拟（仅本地预览，不含真实凭据）
@@ -177,6 +178,8 @@ node scripts/preview-server.cjs    # 在 http://127.0.0.1:8791 提供静态服�
 ### 更新干员表
 
 新干员/新模组上线后：把新版 `character_table_simple.v2.json`（来自一图流前端仓库 `frontend-v2-plus/src/static/json/operator/`）覆盖 `assets-source/` 同名文件，执行 `npm run build:operator-table` 后重新 `npm run build`。表内未收录的干员会在同步时被跳过，以保证星级与模组映射准确。
+
+源表更新通常滞后于游戏新干员，`assets-source/skill-name-extra.v1.json` 提供补充（提取自 ArknightsGameData 的 character_table + skill_table：TIER_1+ 干员的各槽位技能名，含星级），构建时自动合并，保证训练室能显示新干员的技能名与专精等级；提取口径见 `docs/BUILDING_MOOD_API.md` 第九节。
 
 ## 与一图流前后端的对接关系（只读参考）
 
