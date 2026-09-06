@@ -83,12 +83,22 @@ async function requestSkland<T>(
 ): Promise<T> {
   const headers = buildSklandHeaders(path, params, cred, token)
   const response = await fetchFn(url, { method: 'GET', headers })
-  if (!response.ok) {
-    throw new SklandError(`森空岛接口请求失败（HTTP ${response.status}）`)
+  // 凭证失效时森空岛返回 HTTP 401 + body {"code":10002,"message":"用户未登录"}
+  // （skland_dump/CAPTURE_STATUS.txt、SKLAND_CAPTURE_SUMMARY.md），因此非 2xx 也必须解析
+  // body 中的业务错误码，否则 isSklandCredentialExpired 识别不到，自动刷新链路不会触发
+  const envelope = (await response.json().catch(() => null)) as SklandEnvelope<T> | null
+  if (envelope && envelope.code !== 0) {
+    throw new SklandError(
+      describeSklandError(envelope.code, envelope.message ?? envelope.msg ?? '未知错误'),
+      envelope.code,
+      response.status
+    )
   }
-  const envelope = (await response.json()) as SklandEnvelope<T>
-  if (envelope.code !== 0) {
-    throw new SklandError(describeSklandError(envelope.code, envelope.message ?? envelope.msg ?? '未知错误'), envelope.code)
+  if (!response.ok) {
+    throw new SklandError(`森空岛接口请求失败（HTTP ${response.status}）`, -1, response.status)
+  }
+  if (!envelope) {
+    throw new SklandError('森空岛返回了无法解析的响应（非 JSON 内容）')
   }
   return envelope.data as T
 }
@@ -105,10 +115,17 @@ export function describeSklandError(code: number, message: string): string {
   return `森空岛凭证错误或已失效（${code}：${message}）`
 }
 
-/** 只有明确的登录态失效码才允许自动消耗 HG Token 换取新凭证。 */
+/**
+ * 只有明确的登录态失效才允许自动消耗 HG Token 换取新凭证：
+ * - 业务码 10002（用户未登录，随 HTTP 401 返回）/ 10000003（token 过期）
+ * - HTTP 401 且 body 无法解析（如被代理/WAF 改写）：401 即未授权，同样按凭证失效处理
+ */
 export function isSklandCredentialExpired(error: unknown): boolean {
   if (!(error instanceof SklandError)) {
     return false
+  }
+  if (error.httpStatus === 401) {
+    return true
   }
   return error.sklandCode === 10002 || error.sklandCode === 10000003
 }

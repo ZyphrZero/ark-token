@@ -2,6 +2,7 @@ import { createHash, createHmac } from 'node:crypto'
 import { describe, expect, it } from 'vitest'
 
 import { buildSklandHeaders, fetchCultivateData, fetchSklandBinding, fetchSklandPlayerInfo, getSign, isSklandCredentialExpired } from './skland'
+import { SklandError } from './errors'
 
 const NOW = 1_700_000_000_000
 const NOW_SEC = Math.floor(NOW / 1000)
@@ -145,9 +146,31 @@ describe('fetchSklandPlayerInfo', () => {
     expect(info.routine.daily.total).toBe(3)
   })
 
-  it('凭证失效时抛出 SklandError', async () => {
+  it('凭证失效（HTTP 200 + code）时抛出 SklandError', async () => {
     const fetchFn = async () => jsonResponse({ code: 10000003, message: 'token 过期' })
     await expect(fetchSklandPlayerInfo('135297507', 'bad-cred', TOKEN, fetchFn as typeof fetch)).rejects.toThrow(/凭证错误或已失效/)
+  })
+
+  it('凭证失效真实形态（HTTP 401 + code 10002 用户未登录，抓包见 skland_dump/CAPTURE_STATUS.txt）抛出带业务码的错误并判定为凭证失效', async () => {
+    const fetchFn = async () => jsonResponse({ code: 10002, message: '用户未登录' }, 401)
+    const error: unknown = await fetchSklandPlayerInfo('135297507', 'expired-cred', TOKEN, fetchFn as typeof fetch).catch(cause => cause)
+    expect(error).toBeInstanceOf(SklandError)
+    expect((error as SklandError).sklandCode).toBe(10002)
+    expect(isSklandCredentialExpired(error)).toBe(true)
+  })
+
+  it('HTTP 401 但 body 非 JSON（代理/WAF 改写）时仍判定为凭证失效', async () => {
+    const fetchFn = async () => new Response('<html>Blocked</html>', { status: 401 })
+    const error: unknown = await fetchSklandBinding('cred', TOKEN, fetchFn as typeof fetch).catch(cause => cause)
+    expect(error).toBeInstanceOf(SklandError)
+    expect(isSklandCredentialExpired(error)).toBe(true)
+  })
+
+  it('服务端故障（HTTP 503 非 JSON）不误判为凭证失效', async () => {
+    const fetchFn = async () => new Response('Service Unavailable', { status: 503 })
+    const error: unknown = await fetchSklandPlayerInfo('135297507', 'cred', TOKEN, fetchFn as typeof fetch).catch(cause => cause)
+    expect(error).toBeInstanceOf(SklandError)
+    expect(isSklandCredentialExpired(error)).toBe(false)
   })
 
   it('签名时间戳校验失败(10000/10003)提示校准系统时间而非重新扫码', async () => {
@@ -162,11 +185,15 @@ describe('fetchSklandPlayerInfo', () => {
 
 describe('凭证失效错误判定', () => {
   it('只将明确的鉴权错误码视为凭证失效', async () => {
-    const { SklandError } = await import('./errors')
     expect(isSklandCredentialExpired(new SklandError('未登录', 10002))).toBe(true)
     expect(isSklandCredentialExpired(new SklandError('凭证过期', 10000003))).toBe(true)
     expect(isSklandCredentialExpired(new SklandError('时间错误', 10003))).toBe(false)
     expect(isSklandCredentialExpired(new SklandError('未知', 500))).toBe(false)
     expect(isSklandCredentialExpired(new Error('not skland'))).toBe(false)
+  })
+
+  it('HTTP 401（业务码在 body 中丢失时）同样视为凭证失效', () => {
+    expect(isSklandCredentialExpired(new SklandError('HTTP 401', -1, 401))).toBe(true)
+    expect(isSklandCredentialExpired(new SklandError('HTTP 503', -1, 503))).toBe(false)
   })
 })

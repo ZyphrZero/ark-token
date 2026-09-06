@@ -110,6 +110,35 @@ describe('syncAccount', () => {
     expect(outcome.account.lastSync?.message).toContain('自动刷新')
   })
 
+  it('凭证失效真实形态（HTTP 401 + code 10002 用户未登录，抓包见 skland_dump/CAPTURE_STATUS.txt）同样触发自动刷新重试', async () => {
+    let cultivateCalls = 0
+    const fetchFn = async (url: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+      const urlText = String(url)
+      if (urlText.startsWith('https://zonai.skland.com/api/v1/game/cultivate/player')) {
+        cultivateCalls += 1
+        const cred = (init?.headers as Record<string, string>).cred
+        if (cred === 'old-cred') {
+          return jsonResponse({ code: 10002, message: '用户未登录' }, 401)
+        }
+        return sklandCultivateResponse()
+      }
+      if (urlText === `${BACKEND}/survey/hg/cred-token`) {
+        return jsonResponse({ code: 200, data: { cred: 'new-cred', token: 'new-signing-token' } })
+      }
+      if (urlText === `${BACKEND}/open-api/operator/upload`) {
+        return jsonResponse({ code: 200, data: { affectedRows: 1 } })
+      }
+      throw new Error(`未预期的请求：${urlText}`)
+    }
+
+    const account = sampleAccount({ hgToken: 'hg-token-value' })
+    const outcome = await syncAccount(account, TOKENS, BACKEND, { fetchFn: fetchFn as typeof fetch, skipVerify: true })
+
+    expect(cultivateCalls).toBe(2)
+    expect(outcome.account.skland.cred).toBe('new-cred')
+    expect(outcome.account.lastSync?.status).toBe('success')
+  })
+
   it('凭证失效且无官网 token 时报错并提示重新登录', async () => {
     const fetchFn = async (url: RequestInfo | URL): Promise<Response> => {
       if (String(url).startsWith('https://zonai.skland.com/')) {

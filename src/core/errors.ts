@@ -1,11 +1,14 @@
-/** 森空岛接口业务错误（HTTP 200 但 code !== 0，通常意味着凭证失效） */
+/** 森空岛接口业务错误（code !== 0，或 HTTP 层失败；凭证失效时通常为 HTTP 401 + code 10002） */
 export class SklandError extends Error {
   readonly sklandCode: number
+  /** HTTP 状态码；body 为 JSON 业务错误时也会带上，便于区分传输层与业务层失败 */
+  readonly httpStatus: number | undefined
 
-  constructor(message: string, sklandCode = -1) {
+  constructor(message: string, sklandCode = -1, httpStatus?: number) {
     super(message)
     this.name = 'SklandError'
     this.sklandCode = sklandCode
+    this.httpStatus = httpStatus
   }
 }
 

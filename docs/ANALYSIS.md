@@ -192,5 +192,12 @@ sign = md5( hex( hmac_sha256(key=cred_token, msg=raw) ) )  // cred_token 为 gen
   base64 包装；Web/插件不携带该头，直接返回明文。最初文档只记录了 base64 形态导致解析只按 base64 实现，
   是 "缺少 Base64 content" 报错的根因；现两种形态均已兼容（见 `ASSIST_RESPONSE_PARSER_BUG.md`）。
 - zonai 业务响应统一为 `{"code":0,"message":"OK","timestamp":"<s>","data":{...}}`，code=0 成功；401 时 code=10002 用户未登录。
+- 凭证失效的完整形态是 **HTTP 401 + body `{"code":10002,"message":"用户未登录"}`**（样本：`skland_dump/CAPTURE_STATUS.txt`、
+  `skland_dump/SKLAND_CAPTURE_SUMMARY.md`）。客户端必须解析非 2xx 响应体中的业务码（`src/core/skland.ts` 的
+  `requestSkland`、`src/core/sklandAssist.ts` 的 `requestAssistEnvelope`），且 HTTP 401 本身即未授权信号
+  （`isSklandCredentialExpired`），否则 `code` 随 401 返回时会被当成普通 HTTP 错误，hgToken 自动续凭证链路不触发——
+  这曾是"支持凭证自动刷新"账号仍需手动刷新凭证的根因（回归用例：`src/core/skland.test.ts`、`src/core/sync.test.ts` 中
+  的 401+10002 用例）。插件侧另在面板定时刷新中对凭证年龄超过 24h 的账号主动续期一次
+  （`src/background/infoRefresh.ts` 的 `CREDENTIAL_PROACTIVE_REFRESH_MS`）。
 - 搜索接口没有观察分页字段；三次相同参数连发（刷新按钮）返回条目顺序不同（疑似服务端乱序/随机），`hasSend` 会随申请状态更新。
 - 会话在 15:23:43 出现两次 401 后自动重登（generate_cred_by_code → user/info → 全量刷新），说明 cred 过期由客户端自动续期，抓包分析时无需人工干预。

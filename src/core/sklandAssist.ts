@@ -244,14 +244,18 @@ async function requestAssistEnvelope(
     ...(options.body === undefined ? {} : { body: options.body })
   })
 
-  if (!response.ok) {
-    throw new SklandError(`森空岛接口请求失败（HTTP ${response.status}）`)
-  }
-
-  const raw = await response.json()
+  // 凭证失效时森空岛返回 HTTP 401 + body {"code":10002}（见 skland.ts requestSkland 注释），
+  // 非 2xx 也必须解析 body 业务码，否则 withAssistCredential 的自动刷新不会触发
+  const raw = (await response.json().catch(() => null)) as unknown
   const parsed = parseEnvelopeRoot(raw)
   if (parsed.code !== undefined && parsed.code !== 0) {
-    throw new SklandError(describeSklandError(parsed.code, parsed.message ?? parsed.msg ?? '未知错误'), parsed.code)
+    throw new SklandError(describeSklandError(parsed.code, parsed.message ?? parsed.msg ?? '未知错误'), parsed.code, response.status)
+  }
+  if (!response.ok) {
+    throw new SklandError(`森空岛接口请求失败（HTTP ${response.status}）`, -1, response.status)
+  }
+  if (raw === null) {
+    throw new SklandError('森空岛返回了无法解析的响应（非 JSON 内容）')
   }
   return {
     root: raw,

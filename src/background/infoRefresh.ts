@@ -43,22 +43,42 @@ async function patchAccount(accountId: string, patch: Partial<GameAccount>): Pro
   await saveState(state)
 }
 
-/** 森空岛凭证失效时，若有官网 HG token 则自动换取新凭证重试一次（与 syncAccount 同策略） */
+/**
+ * 凭证老化阈值：超过该时长后在面板定时刷新时先主动用 HG token 换新凭证。
+ * 森空岛 cred 有效期有限（过期表现为 HTTP 401 + code 10002，抓包见 skland_dump/CAPTURE_STATUS.txt），
+ * 每天最多主动续期一次，避免高频授权触发鹰角设备验证风控；未到阈值或续期失败时走下方被动重试兜底。
+ */
+const CREDENTIAL_PROACTIVE_REFRESH_MS = 24 * 60 * 60 * 1000
+
+/**
+ * 森空岛凭证保障：老化时先用官网 HG token 主动续期，请求失败且判定凭证失效时再被动换取重试一次
+ * （与 syncAccount 同策略）。主动续期失败不阻断本次刷新——继续用旧凭证请求，真实失败会如实抛出。
+ */
 async function fetchPlayerInfoWithCredential(
   account: GameAccount,
   backendBaseUrl: string
 ): Promise<{ info: SklandBindingInfo; refreshed: GameAccount['skland'] | null }> {
+  let credential = account.skland
+  let refreshed: GameAccount['skland'] | null = null
+  if (account.hgToken && Date.now() - credential.obtainedAt > CREDENTIAL_PROACTIVE_REFRESH_MS) {
+    try {
+      refreshed = await exchangeHgToken(account.hgToken, backendBaseUrl)
+      credential = refreshed
+    } catch {
+      // 主动续期失败（网络/风控）：保留旧凭证继续，过期时由被动重试暴露真实错误
+    }
+  }
   try {
-    const info = await fetchSklandPlayerInfo(account.uid, account.skland.cred, account.skland.token)
-    return { info, refreshed: null }
+    const info = await fetchSklandPlayerInfo(account.uid, credential.cred, credential.token)
+    return { info, refreshed }
   } catch (error) {
     const credentialExpired = isSklandCredentialExpired(error)
     if (!credentialExpired || !account.hgToken) {
       throw error
     }
-    const refreshed = await exchangeHgToken(account.hgToken, backendBaseUrl)
-    const info = await fetchSklandPlayerInfo(account.uid, refreshed.cred, refreshed.token)
-    return { info, refreshed }
+    const reRefreshed = await exchangeHgToken(account.hgToken, backendBaseUrl)
+    const info = await fetchSklandPlayerInfo(account.uid, reRefreshed.cred, reRefreshed.token)
+    return { info, refreshed: reRefreshed }
   }
 }
 
