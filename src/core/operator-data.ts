@@ -42,6 +42,45 @@ export interface BuffEntry {
   extra?: { percent: number; max?: number; requires: string }
 }
 
+/**
+ * arkntools 职业数字编码（与中文名对应，实测交叉验证：陈=1 近卫、雷蛇=3 重装、
+ * 凯尔希=4 医疗、空=5 辅助、阿米娅=6 术师）。
+ * 注意**不是**助战检索的工作站字符串枚举（PIONEER/WARRIOR/...），换成图标 URL 时
+ * 用 professionKey()。
+ */
+export const PROFESSION_LABELS: Record<number, string> = {
+  1: '近卫',
+  2: '狙击',
+  3: '重装',
+  4: '医疗',
+  5: '辅助',
+  6: '术师',
+  7: '特种',
+  8: '先锋'
+}
+
+/** 数字职业 → 助战检索工作站的字符串枚举（css/hash 图标用） */
+export const PROFESSION_KEYS: Record<number, 'WARRIOR' | 'SNIPER' | 'TANK' | 'MEDIC' | 'SUPPORT' | 'CASTER' | 'SPECIAL' | 'PIONEER'> = {
+  1: 'WARRIOR',
+  2: 'SNIPER',
+  3: 'TANK',
+  4: 'MEDIC',
+  5: 'SUPPORT',
+  6: 'CASTER',
+  7: 'SPECIAL',
+  8: 'PIONEER'
+}
+
+/** 职业中文名；未知数字返回 '未知' */
+export function professionName(profession: number): string {
+  return PROFESSION_LABELS[profession] ?? '未知'
+}
+
+/** 数字职业 → 工作站枚举（图标 URL 用）；未知数字返回 undefined */
+export function professionKey(profession: number): string | undefined {
+  return PROFESSION_KEYS[profession]
+}
+
 /** 单个干员条目 */
 export interface OperatorEntry {
   charId: string
@@ -49,7 +88,7 @@ export interface OperatorEntry {
   name: string
   /** 星级（1-6） */
   rarity: number
-  /** 职业（数字 id，对应青绿/近卫/重装/狙击/术师/医疗/辅助/特种） */
+  /** 职业数字编码（见 PROFESSION_LABELS，1=近卫/2=狙击/.../8=先锋） */
   profession: number
   position: number
   /** 模组映射 uniEquipId → typeName2（X/Y/D/A/B） */

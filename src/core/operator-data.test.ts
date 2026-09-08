@@ -5,8 +5,11 @@ import {
   buildingSkillsOf,
   buildingSkillUnlockText,
   isBuildingSkillUnlocked,
+  operatorData,
   operatorName,
   operatorRarity,
+  professionKey,
+  professionName,
   stripBuffTags
 } from './operator-data'
 import type { BuildingSkillTier } from './operator-data'
@@ -24,6 +27,42 @@ describe('operatorName / operatorRarity', () => {
   it('未收录干员：名字回退 charId、星级为 null（调用方跳过以保证上传报文正确）', () => {
     expect(operatorName('char_999_unknown')).toBe('char_999_unknown')
     expect(operatorRarity('char_999_unknown')).toBeNull()
+  })
+})
+
+describe('professionName / professionKey', () => {
+  // arkntools 职业数字编码（实测交叉验证：陈=1 近卫、雷蛇=3 重装、凯尔希=4 医疗、
+  // 空=5 辅助、阿米娅=6 术师），与助战检索的工作站枚举（PIONEER/WARRIOR/...）不同
+  it('数字职业 → 中文名', () => {
+    expect(professionName(1)).toBe('近卫')
+    expect(professionName(2)).toBe('狙击')
+    expect(professionName(3)).toBe('重装')
+    expect(professionName(4)).toBe('医疗')
+    expect(professionName(5)).toBe('辅助')
+    expect(professionName(6)).toBe('术师')
+    expect(professionName(7)).toBe('特种')
+    expect(professionName(8)).toBe('先锋')
+  })
+
+  it('数字职业 → 工作站字符串枚举（图标 URL 用）', () => {
+    expect(professionKey(1)).toBe('WARRIOR')
+    expect(professionKey(6)).toBe('CASTER')
+    expect(professionKey(5)).toBe('SUPPORT')
+    expect(professionKey(8)).toBe('PIONEER')
+  })
+
+  it('未知数字回退', () => {
+    expect(professionName(9)).toBe('未知')
+    expect(professionName(-1)).toBe('未知')
+    expect(professionKey(9)).toBeUndefined()
+  })
+
+  it('打包表里空(char_101_sora)是辅助(5)，名字与职业一致', () => {
+    // 用实际干员验证 skill-tip 头部两个来源字段一致
+    const sora = operatorData.operators['char_101_sora']
+    expect(sora.profession).toBe(5)
+    expect(operatorName(sora.charId)).toBe('空')
+    expect(professionName(sora.profession)).toBe('辅助')
   })
 })
 

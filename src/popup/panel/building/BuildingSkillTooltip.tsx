@@ -6,11 +6,15 @@ import {
   buffOf,
   buildingSkillsOf,
   buildingSkillUnlockText,
-  isBuildingSkillUnlocked
+  isBuildingSkillUnlocked,
+  operatorData,
+  professionKey,
+  professionName
 } from '../../../core/operator-data'
 import type { OperatorProgress } from '../../../core/operator-data'
 import BuffDescription from './BuffDescription'
 import { skillIconUrl } from './skillIcons'
+import { professionIconUrl } from './professionIcons'
 import { MARGIN, placeTooltip } from './tooltipPlacement'
 import type { Placement } from './tooltipPlacement'
 
@@ -58,6 +62,11 @@ export default function BuildingSkillTooltip({ charId, anchor, progress, onMouse
     return null
   }
 
+  const operator = operatorData.operators[charId]
+  const operatorName = operator?.name ?? charId
+  const professionKeyValue = operator ? professionKey(operator.profession) : undefined
+  const professionIcon = professionIconUrl(professionKeyValue)
+
   return createPortal(
     <div
       ref={boxRef}
@@ -74,6 +83,12 @@ export default function BuildingSkillTooltip({ charId, anchor, progress, onMouse
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
+      {/* 干员头部：职业图标 + 名称（让技能说明归属于具体干员） */}
+      <div className="skill-tip-operator">
+        {professionIcon && <img className="skill-tip-profession" src={professionIcon} alt={professionName(operator?.profession ?? 0)} />}
+        <span className="skill-tip-operator-name">{operatorName}</span>
+        {operator && <span className="skill-tip-operator-profession">{professionName(operator.profession)}</span>}
+      </div>
       {tiers.map(tier => {
         const buff = buffOf(tier.id)
         const unlocked = isBuildingSkillUnlocked(tier, progress)

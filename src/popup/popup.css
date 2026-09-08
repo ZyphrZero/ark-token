@@ -829,7 +829,7 @@ body {
  * portal 到 body（头像在 .building-scroll 的 overflow 内，就地定位会被裁切）。
  * 位置与 max-height 由 tooltipPlacement.ts 按锚点算好后内联下发：只走上下不走左右，
  * 保证不遮挡头像；放不下时限高、内部滚动，而不是位移到锚点上方。
- * pointer-events: none —— 浮层不拦鼠标，避免与头像 hover 抢事件导致闪烁。
+ * 浮层需接收鼠标（可滚动 + hover 交接），见 ResidentCharacter 的延迟关闭。
  */
 .skill-tip {
   --cut: 7px;
@@ -846,6 +846,38 @@ body {
   overflow-y: auto;
   pointer-events: auto;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.55);
+}
+
+/* 干员头部：职业图标 + 名称 + 职业名（让技能说明归属于具体干员） */
+.skill-tip-operator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line-1);
+}
+
+.skill-tip-profession {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  object-fit: contain;
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.6));
+}
+
+.skill-tip-operator-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-1);
+  white-space: nowrap;
+}
+
+/* 职业中文名（如「术师」），弱化并靠右 */
+.skill-tip-operator-profession {
+  margin-left: auto;
+  font-size: 10px;
+  color: var(--text-3);
+  white-space: nowrap;
 }
 
 .skill-tip-item {
