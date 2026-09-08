@@ -174,13 +174,15 @@ body {
   padding: 4px 2px 2px 0;
 }
 
-/* 右侧大号理智闪电水印 */
+/* 右侧大号理智闪电水印（sanity.svg 为白色填充，用透明度压暗） */
 .sanity-watermark {
   position: absolute;
   right: 4px;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--line-1);
+  width: 56px;
+  height: auto;
+  opacity: 0.14;
   pointer-events: none;
 }
 
@@ -192,9 +194,14 @@ body {
 }
 
 .sanity-main .sanity-icon {
-  color: var(--accent);
   display: inline-flex;
   flex-shrink: 0;
+}
+
+.sanity-main .sanity-icon img {
+  width: 19px;
+  height: auto;
+  display: block;
 }
 
 .sanity-value {
@@ -510,40 +517,63 @@ body {
 }
 
 .room-body {
+  position: relative;
   display: flex;
   align-items: flex-start;
   gap: 6px;
-  padding: 2px 6px 5px;
-  min-height: 72px;
+  padding: 3px 8px 5px;
+  /* 固定高度：左侧设施瓷砖图按此高度铺满格子，会客室 extra 偏移量与之联动 */
+  height: 76px;
 }
 
+/* 60×60 设施瓷砖图铺满卡片主体格子：贴左侧、撑满整行高度（保持方形比例） */
 .room-body .room-icon {
-  width: 44px;
-  height: 44px;
-  object-fit: contain;
-  flex-shrink: 0;
-  margin-top: 2px;
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: auto;
+  pointer-events: none;
   filter: saturate(0.92);
 }
 
+/* 信息行叠加层：覆盖在设施图标上面，数值与文本统一靠左 */
 .room-info {
-  width: 72px;
+  position: relative;
+  z-index: 1;
+  width: max-content;
+  max-width: 150px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
+  justify-content: flex-start;
+  align-items: flex-start;
   gap: 3px;
   font-size: 11px;
-  padding-top: 4px;
+  padding-top: 3px;
+  /* 文字叠在彩色设施图标上，加投影保证可读 */
+  text-shadow: 0 0 3px rgba(16, 16, 18, 0.9), 0 1px 2px rgba(16, 16, 18, 0.8);
 }
 
 .room-info .room-info-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 4px;
-  width: 100%;
+  justify-content: flex-start;
+  gap: 3px;
   color: var(--text-2);
+}
+
+/* 行内小图标（氛围/策略/配方/无人机/电力），叠在设施图标上时同样受投影保护 */
+.room-info .room-info-icon {
+  width: 12px;
+  height: 12px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 2px rgba(16, 16, 18, 0.9));
+}
+
+.room-info .room-info-label {
+  white-space: nowrap;
 }
 
 .room-info .room-info-row .room-info-value {
@@ -563,18 +593,10 @@ body {
 .room-info .room-info-name {
   color: var(--room-accent);
   min-width: 0;
+  max-width: 120px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.room-info .room-info-row .room-info-name {
-  flex: 1;
-  min-width: 0;
-}
-
-.room-info .room-info-row > span:last-child {
-  flex-shrink: 0;
 }
 
 .room-extra {
@@ -584,6 +606,7 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: flex-start;
   gap: 4px;
   font-size: 11px;
 }
@@ -599,8 +622,8 @@ body {
 .meeting-status-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 4px;
+  justify-content: flex-start;
+  gap: 6px;
 }
 
 .meeting-status {
@@ -618,6 +641,22 @@ body {
 .meeting-own i {
   font-style: normal;
   color: var(--text-3);
+}
+
+.meeting-progress {
+  height: 3px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.meeting-progress .meeting-progress-fill {
+  height: 100%;
+  background: var(--clue-orange);
+}
+
+/* 会客室无信息列，extra（进度+线索板）右移让出左侧满格设施瓷砖（76px 格 + 间隙） */
+.room--meeting .room-extra {
+  margin-left: 82px;
 }
 
 .clue-board {

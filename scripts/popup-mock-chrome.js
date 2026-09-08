@@ -17,25 +17,34 @@
     ],
     building: {
       labor: { value: 87, maxValue: 200, remainSecs: 0, lastUpdateTime: NOW - 720 },
+      // 基建布局镜像真实抓包（skland_dump/building_api/player-info-slot-sample.json，2026-09-08）：
+      // slotId 为全局槽位号 slot_N，且数组顺序不按升序（powers=[26,16,15]），可测试编号排序逻辑
       // ap 单位 0.01 秒、满值 8_640_000（24 点心情，1 点 = 360_000），与真实接口一致
-      control: { slotId: '0', chars: [{ charId: 'char_002_amiya', ap: 7_920_000, lastApAddTime: NOW, index: 0 }], level: 5 },
+      control: { slotId: 'slot_34', chars: [{ charId: 'char_002_amiya', ap: 7_920_000, lastApAddTime: NOW, index: 0 }], level: 5 },
       powers: [
-        { slotId: '1', chars: [{ charId: 'char_010_chen', ap: 5_040_000, lastApAddTime: NOW - 3600, index: 0 }], level: 3 },
-        { slotId: '2', chars: [], level: 2 }
+        { slotId: 'slot_26', chars: [{ charId: 'char_010_chen', ap: 5_040_000, lastApAddTime: NOW - 3600, index: 0 }], level: 3 },
+        { slotId: 'slot_16', chars: [], level: 3 },
+        { slotId: 'slot_15', chars: [], level: 3 }
       ],
       manufactures: [
-        { slotId: '3', chars: [{ charId: 'char_010_chen', ap: 6_480_000, lastApAddTime: NOW - 3600, index: 0 }], level: 3, speed: 1.15, complete: 0, capacity: 96, weight: 24, formulaId: 4, remain: 99, completeWorkTime: 0, lastUpdateTime: NOW - 3600 },
-        { slotId: '4', chars: [], level: 2, speed: 1, complete: 0, capacity: 60, weight: 10, formulaId: 3, remain: 99, completeWorkTime: 0, lastUpdateTime: NOW - 1200 }
+        { slotId: 'slot_25', chars: [{ charId: 'char_010_chen', ap: 6_480_000, lastApAddTime: NOW - 3600, index: 0 }], level: 3, speed: 1.15, complete: 0, capacity: 96, weight: 24, formulaId: 4, remain: 99, completeWorkTime: 0, lastUpdateTime: NOW - 3600 },
+        { slotId: 'slot_14', chars: [], level: 3, speed: 1, complete: 0, capacity: 54, weight: 0, formulaId: 3, remain: 99, completeWorkTime: 0, lastUpdateTime: NOW - 1200 },
+        { slotId: 'slot_7', chars: [], level: 3, speed: 1, complete: 0, capacity: 54, weight: 10, formulaId: 1, remain: 99, completeWorkTime: 0, lastUpdateTime: NOW - 60 }
       ],
       tradings: [
-        { slotId: '5', chars: [{ charId: 'char_003_kalts', ap: 300_000, lastApAddTime: NOW - 3600, index: 0 }], level: 3, stock: [{ delivery: [], gain: [], instId: 1, type: 'O_GOLD' }, { delivery: [], gain: [], instId: 2, type: 'O_GOLD' }], stockLimit: 6, strategy: 'O_GOLD', completeWorkTime: 0, lastUpdateTime: NOW }
+        { slotId: 'slot_24', chars: [{ charId: 'char_003_kalts', ap: 300_000, lastApAddTime: NOW - 3600, index: 0 }], level: 3, stock: [{ delivery: [], gain: [], instId: 1, type: 'O_GOLD' }, { delivery: [], gain: [], instId: 2, type: 'O_GOLD' }], stockLimit: 10, strategy: 'O_GOLD', completeWorkTime: 0, lastUpdateTime: NOW },
+        { slotId: 'slot_5', chars: [], level: 3, stock: [], stockLimit: 6, strategy: 'O_GOLD', completeWorkTime: 0, lastUpdateTime: NOW },
+        { slotId: 'slot_6', chars: [], level: 3, stock: [], stockLimit: 6, strategy: 'O_DIAMOND', completeWorkTime: 0, lastUpdateTime: NOW }
       ],
       dormitories: [
-        { slotId: '6', chars: [{ charId: 'char_003_kalts', ap: 4_320_000, lastApAddTime: NOW - 3600, index: 0 }], level: 5, comfort: 5000 }
+        { slotId: 'slot_28', chars: [{ charId: 'char_003_kalts', ap: 4_320_000, lastApAddTime: NOW - 3600, index: 0 }], level: 5, comfort: 5000 },
+        { slotId: 'slot_20', chars: [], level: 5, comfort: 5000 },
+        { slotId: 'slot_9', chars: [], level: 1, comfort: 2000 },
+        { slotId: 'slot_3', chars: [], level: 1, comfort: 2000 }
       ],
-      hire: { slotId: '7', chars: [], level: 3, state: 1, refreshCount: 2, completeWorkTime: 0 },
-      training: { slotId: '8', level: 3, trainee: { charId: 'char_010_chen', ap: 5_040_000, lastApAddTime: NOW, targetSkill: 3 }, trainer: { charId: 'char_002_amiya', ap: 8_000_000, lastApAddTime: NOW - 3600 }, remainPoint: 20000, speed: 1, lastUpdateTime: NOW, remainSecs: 3600 },
-      meeting: { slotId: '9', chars: [], level: 3, clue: { board: ['RHINE', 'PENGUIN', 'URSUS'], own: 6, received: 1, dailyReward: false, needReceive: 0, shareCompleteTime: 0, sharing: true }, lastUpdateTime: NOW, completeWorkTime: 0 },
+      hire: { slotId: 'slot_23', chars: [], level: 3, state: 1, refreshCount: 2, completeWorkTime: 0 },
+      training: { slotId: 'slot_13', level: 3, trainee: { charId: 'char_010_chen', ap: 5_040_000, lastApAddTime: NOW, targetSkill: 3 }, trainer: { charId: 'char_002_amiya', ap: 8_000_000, lastApAddTime: NOW - 3600 }, remainPoint: 20000, speed: 1, lastUpdateTime: NOW, remainSecs: 3600 },
+      meeting: { slotId: 'slot_36', chars: [], level: 3, clue: { board: ['RHINE', 'PENGUIN', 'URSUS'], own: 6, received: 1, dailyReward: false, needReceive: 0, shareCompleteTime: 0, sharing: true }, lastUpdateTime: NOW, completeWorkTime: 0 },
       tiredChars: []
     },
     campaign: { reward: { current: 1, total: 2 } },

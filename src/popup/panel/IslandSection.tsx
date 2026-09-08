@@ -24,14 +24,14 @@ export default function IslandSection({ info }: { info: SklandBindingInfo }) {
   const now = useNow(1000)
   const labor = info.building?.labor
   const drone = labor ? computeDroneCount(labor, now) : null
-  // 充能速度加成（中枢进驻技能），快照无法推导（已满）时不显示
+  // 充能速度加成（各发电站之和），快照无法推导（已满）时不显示
   const droneBonus = labor ? droneSpeedBonusPercent(labor) : null
 
   return (
     <section className="island-section">
       <SectionHeader title="罗德岛" sub="Rhodes Island">
         {labor && drone !== null && (
-          <span className="drone-chip" title="无人机（含控制中枢充能加成）">
+          <span className="drone-chip" title="无人机（含发电站充能加成）">
             <DroneIcon size={14} />
             <StatReadout value={drone} max={labor.maxValue} />
             {droneBonus !== null && <i className="drone-bonus">+{droneBonus}%</i>}

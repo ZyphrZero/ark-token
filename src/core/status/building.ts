@@ -5,6 +5,7 @@ import type {
   SklandBuildingHire,
   SklandBuildingManufacture,
   SklandBuildingMeeting,
+  SklandBuildingPower,
   SklandBuildingTrading,
   SklandBuildingTraining,
   SklandLabor,
@@ -13,6 +14,7 @@ import type {
   SklandResidentCharacter
 } from '../skland-info'
 import slimTableJson from '../../assets/operator-table.slim.json'
+import droneChargeTableJson from '../../assets/drone-charge-table.json'
 
 /** 精简干员表（含技能名第三元素，构建口径见 scripts/build-operator-table.mjs） */
 const operatorSlimTable = slimTableJson as unknown as Record<
@@ -43,8 +45,9 @@ export function moodPercent(ap: number): number {
 
 /**
  * 无人机实际恢复速率（秒/架），由快照自描述：remainSecs 以 lastUpdateTime 为基准、
- * 覆盖 (maxValue − value) 架的恢复耗时，控制中枢进驻技能的充能加成（如「超频」类
- * 无人机充能速度 +X%）已含在其中。抓包实测（skland_dump/building_api/drone-rate-sample.json）：
+ * 覆盖 (maxValue − value) 架的恢复耗时，发电站的充能加成（基础 5%/站 + 进驻干员
+ * 基建技能）已含在其中；充能加成只来自发电站，控制中枢不产生（见 powerPlantChargePercent）。
+ * 抓包实测（skland_dump/building_api/drone-rate-sample.json）：
  * remainSecs=41351、剩余 184 架 → 224.7 秒/架 = 基准 360s ÷ 1.6（+60% 加成），
  * 且同一轮恢复的两份快照 lastUpdateTime + remainSecs 恒等（锚点核实）。
  * 快照已满或 remainSecs 缺失（0/-1）时回退基准速率。
@@ -79,7 +82,7 @@ export function droneSpeedBonusPercent(labor: SklandLabor): number | null {
 
 /**
  * 无人机数量实时推算：value + round(elapsedSec / 实际速率)，封顶 maxValue。
- * 速率含中枢充能加成（见 droneRecoverySeconds）；value 为下取整的快照值，
+ * 速率含发电站充能加成（见 droneRecoverySeconds）；value 为下取整的快照值，
  * 推算误差不超过 1 架。
  */
 export function computeDroneCount(labor: SklandLabor, nowMs: number): number {
@@ -90,10 +93,190 @@ export function computeDroneCount(labor: SklandLabor, nowMs: number): number {
   return Math.min(labor.value + Math.round(elapsedSec / droneRecoverySeconds(labor)), labor.maxValue)
 }
 
-/** 发电站发电量：2^(lv-1)*60 + (2^(lv-1)-1)*10 */
+/**
+ * 发电站发电量（下标 0 = 1 级）：游戏数据 building_data.json 的
+ * rooms.POWER.phases[].electricity，2026-09-08 核实为 60/130/270。
+ * 源表数值变动时 scripts/build-drone-charge-table.mjs 会构建失败以提醒同步。
+ */
+export const POWER_ELECTRICITY: readonly number[] = [60, 130, 270]
+
+/** 发电站发电量（Lv1/2/3 → 60/130/270），越界等级按最低/最高级收敛 */
 export function powerOutput(level: number): number {
-  const base = Math.pow(2, level - 1)
-  return base * 60 + (base - 1) * 10
+  const clamped = Math.min(Math.max(level, 1), POWER_ELECTRICITY.length)
+  return POWER_ELECTRICITY[clamped - 1] ?? 0
+}
+
+/**
+ * 单站发电量占全基地总供电的百分比（游戏内「270(33.3%)」括号中的值）。
+ * 分母为快照内全部发电站发电量之和（3 站 Lv3 → 810，单站 33.3%）；
+ * 无发电站时返回 null。
+ */
+export function powerSharePercent(rooms: SklandBuildingPower[], room: SklandBuildingPower): number | null {
+  const total = rooms.reduce((sum, item) => sum + powerOutput(item.level), 0)
+  return total > 0 ? (powerOutput(room.level) / total) * 100 : null
+}
+
+/**
+ * 发电站的基础无人机充能加成（+5%）：游戏数据 building_data.json 的
+ * powerData.basicSpeedBuff = 0.05，2026-09-08 核实。
+ * 空置发电站是否仍提供这 5% 抓包无法判定（样本 3 站全进驻），现按
+ * 「需有进驻干员」处理，与 PRTS 发电站房间说明一致。
+ */
+export const POWER_PLANT_BASE_CHARGE_PERCENT = 5
+
+/** 充能技能档位（表结构与生成口径见 scripts/build-drone-charge-table.mjs） */
+export interface DroneChargeTier {
+  /** 解锁所需精英阶段 */
+  phase: number
+  /** 解锁所需该阶段等级 */
+  level: number
+  /** 无条件生效的加成百分点（条件型技能为 0） */
+  percent: number
+  /** 技能名 */
+  name: string
+  /** per10Drone：每 10 架无人机上限 +1%（percent 为上限）；ramp：percent 为爬升终值 */
+  scale?: 'per10Drone' | 'ramp'
+  /** 依赖其他干员进驻位置的附加加成，运行时不计入（见 partial） */
+  extra?: { percent: number; max?: number; requires: string }
+}
+
+/** 充能技能表：charId → 技能槽[]（不同槽可叠加，每槽为同槽升级链、按解锁条件升序） */
+export type DroneChargeTable = Record<string, DroneChargeTier[][]>
+
+const droneChargeTable = droneChargeTableJson as DroneChargeTable
+
+/** 档位实际数值：per10Drone 按无人机上限折算（每 10 架 +1%，封顶 percent）；ramp 取长期终值 */
+function tierPercent(tier: DroneChargeTier, droneMax: number): number {
+  if (tier.scale === 'per10Drone') {
+    return Math.min(Math.floor(droneMax / 10), tier.percent)
+  }
+  return tier.percent
+}
+
+/** 干员的发电站充能技能加成 */
+export interface DroneChargeSkill {
+  /** 加成百分点合计 */
+  percent: number
+  /** 生效的技能名（多槽时按槽位顺序） */
+  names: string[]
+  /** 该干员还有依赖其他干员进驻的附加加成未计入，真实值可能更高 */
+  partial: boolean
+}
+
+/**
+ * 进驻干员的发电站充能技能加成：每个技能槽取「练度已满足的最后一档」，再跨槽求和。
+ * 练度取自快照 chars[] 的 evolvePhase/level——同槽的 α/β 是替换关系（β 需精英 2），
+ * 高精英阶段自动满足低阶条件；干员不在表中（无充能技能）时返回 0。
+ * 条件型加成（如「凯尔希进驻中枢 +5%」）需要快照外的阵营/子职业元数据，不计入，
+ * 改为置 partial 由调用方提示。
+ */
+export function powerPlantSkillPercent(
+  char: SklandPanelCharacter | undefined,
+  droneMax: number,
+  table: DroneChargeTable = droneChargeTable
+): DroneChargeSkill {
+  const slots = char ? table[char.charId] : undefined
+  if (!char || !slots) {
+    return { percent: 0, names: [], partial: false }
+  }
+  let percent = 0
+  let partial = false
+  const names: string[] = []
+  for (const tiers of slots) {
+    const unlocked = tiers.filter(
+      tier => char.evolvePhase > tier.phase || (char.evolvePhase === tier.phase && char.level >= tier.level)
+    )
+    const active = unlocked[unlocked.length - 1]
+    if (!active) {
+      continue
+    }
+    percent += tierPercent(active, droneMax)
+    names.push(active.name)
+    partial = partial || active.extra !== undefined
+  }
+  return { percent, names, partial }
+}
+
+/** 发电站单站充能加成明细 */
+export interface PowerPlantCharge {
+  /** 单站合计加成百分点（基础 + 进驻干员技能） */
+  percent: number
+  /** 基础部分（POWER_PLANT_BASE_CHARGE_PERCENT） */
+  base: number
+  /** 进驻干员技能部分 */
+  skill: number
+  /** 生效的技能名 */
+  skillNames: string[]
+  /** 存在未计入的条件型加成，真实值可能更高 */
+  partial: boolean
+}
+
+/**
+ * 发电站对无人机的充能速度加成：基础 5% + 进驻干员基建技能，空闲发电站返回 null。
+ * 全基地总加成 = 各发电站之和，与 droneSpeedBonusPercent(labor) 相互印证
+ * （抓包实测账号 20%+15%+25% = 60%，与 labor 推导的 +60% 一致，见
+ * docs/BUILDING_MOOD_API.md 第六节）。控制中枢不产生充能加成。
+ */
+export function powerPlantChargePercent(
+  room: SklandBuildingPower,
+  chars: SklandPanelCharacter[] | undefined,
+  labor: SklandLabor,
+  table: DroneChargeTable = droneChargeTable
+): PowerPlantCharge | null {
+  if (room.chars.length === 0) {
+    return null
+  }
+  let skill = 0
+  let partial = false
+  const skillNames: string[] = []
+  // 发电站容量恒 1（ROOM_CAPACITY.power），按 chars 求和以兼容将来的容量变化
+  for (const resident of room.chars) {
+    const bonus = powerPlantSkillPercent(
+      chars?.find(char => char.charId === resident.charId),
+      labor.maxValue,
+      table
+    )
+    skill += bonus.percent
+    skillNames.push(...bonus.names)
+    partial = partial || bonus.partial
+  }
+  return {
+    percent: POWER_PLANT_BASE_CHARGE_PERCENT + skill,
+    base: POWER_PLANT_BASE_CHARGE_PERCENT,
+    skill,
+    skillNames,
+    partial
+  }
+}
+
+/**
+ * 提取 slotId 中的槽位数字（真实格式为基建全局槽位号 slot_N，如 slot_25 → 25，
+ * 样本见 skland_dump/building_api/player-info-slot-sample.json）。
+ * 房间面板渲染顺序与同类编号均以此为依据；无数字时返回 null。
+ */
+export function slotNumberOf(slotId: string): number | null {
+  const match = /\d+/.exec(slotId)
+  return match ? Number(match[0]) : null
+}
+
+/**
+ * 同类房间的游戏内显示序号（制造站1/贸易站1、宿舍1-4、发电站1-3…）：
+ * 同类房间按槽位数字升序排名（1 起），与游戏内同类房间沿基建槽位顺序编号一致；
+ * slotId 无数字或不在列表中返回 null。
+ * 多间设施（制造/贸易/宿舍/发电）无论数量始终编号；单间设施（会客/人力/训练/中枢）
+ * 由调用方不调用本函数来保持无序号。
+ */
+export function roomSlotNumber(rooms: { slotId: string }[], slotId: string): number | null {
+  const target = slotNumberOf(slotId)
+  if (target === null) {
+    return null
+  }
+  const sorted = rooms
+    .map(room => slotNumberOf(room.slotId))
+    .filter((value): value is number => value !== null)
+    .sort((a, b) => a - b)
+  const index = sorted.indexOf(target)
+  return index >= 0 ? index + 1 : null
 }
 
 /** 制造站配方表：formulaId → 产物名 / 单件耗时（分钟）/ 单件重量 */

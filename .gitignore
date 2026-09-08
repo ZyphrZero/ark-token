@@ -5,3 +5,5 @@ dist/
 .zcode/
 .codegraph/
 skland_dump/
+# 上游游戏数据源表（5MB+，仅构建 drone-charge-table 时需要，下载方式见 scripts/build-drone-charge-table.mjs）
+assets-source/building_data.json

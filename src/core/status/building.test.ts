@@ -20,6 +20,10 @@ import {
   meetingWorkCapSec,
   moodPercent,
   powerOutput,
+  powerPlantChargePercent,
+  powerSharePercent,
+  roomSlotNumber,
+  slotNumberOf,
   RESIDENT_AP_MAX,
   residentMoodPercent,
   roomCapacity,
@@ -37,6 +41,7 @@ import type {
   SklandBuildingHire,
   SklandBuildingManufacture,
   SklandBuildingMeeting,
+  SklandBuildingPower,
   SklandBuildingTraining,
   SklandLabor,
   SklandMeetingClue,
@@ -74,7 +79,8 @@ describe('computeDroneCount', () => {
 
 describe('droneRecoverySeconds / computeDroneCount（充能加成）', () => {
   // 抓包样本 skland_dump/building_api/drone-rate-sample.json：
-  // +60% 充能加成账号（中枢进驻技能），remainSecs 已含加成，速率 ≈ 224.73 秒/架 = 360/1.6
+  // +60% 充能加成账号（三发电站之和，见 powerPlantChargePercent），remainSecs 已含加成，
+  // 速率 ≈ 224.73 秒/架 = 360/1.6
   const boosted = labor({ value: 51, maxValue: 235, lastUpdateTime: 1_788_689_243, remainSecs: 41_351 })
 
   it('实际速率由 remainSecs/(maxValue−value) 自描述：+60% 样本 ≈ 360/1.6', () => {
@@ -125,11 +131,146 @@ describe('droneRecoverySeconds / computeDroneCount（充能加成）', () => {
   })
 })
 
-describe('powerOutput', () => {
-  it('按等级指数增长', () => {
+/** 发电站测试夹具：默认 Lv3、可指定进驻干员（容量恒 1） */
+function power(slotId: string, charId?: string, level = 3): SklandBuildingPower {
+  return {
+    slotId,
+    level,
+    chars: charId ? [{ charId, ap: RESIDENT_AP_MAX, lastApAddTime: 0, index: 0 }] : []
+  }
+}
+
+/** 干员练度夹具：技能档位只看 evolvePhase/level */
+function panelChar(charId: string, evolvePhase: 0 | 1 | 2, level: number): SklandPanelCharacter {
+  return { charId, skinId: '', level, evolvePhase }
+}
+
+describe('powerOutput / powerSharePercent', () => {
+  // 游戏数据 building_data.json 的 rooms.POWER.phases[].electricity（2026-09-08 核实）
+  it('发电量按等级查表：60/130/270', () => {
     expect(powerOutput(1)).toBe(60)
     expect(powerOutput(2)).toBe(130)
     expect(powerOutput(3)).toBe(270)
+  })
+
+  it('越界等级按最低/最高级收敛', () => {
+    expect(powerOutput(0)).toBe(60)
+    expect(powerOutput(9)).toBe(270)
+  })
+
+  it('单站占比：抓包账号 3 站 Lv3 → 总供电 810、单站 33.3%', () => {
+    const rooms = [power('slot_15'), power('slot_16'), power('slot_26')]
+    expect(rooms.reduce((sum, room) => sum + powerOutput(room.level), 0)).toBe(810)
+    expect(powerSharePercent(rooms, rooms[0])).toBeCloseTo(33.3, 1)
+  })
+
+  it('占比按发电量加权而非按房间数均分；无发电站返回 null', () => {
+    const rooms = [power('slot_15'), power('slot_16', undefined, 1)]
+    // 270 / (270 + 60) = 81.8%
+    expect(powerSharePercent(rooms, rooms[0])).toBeCloseTo(81.8, 1)
+    expect(powerSharePercent([], power('slot_15'))).toBeNull()
+  })
+})
+
+describe('powerPlantChargePercent（抓包回归：2026-09-08 三发电站）', () => {
+  // 真实快照（currentTs=1788853862）：3 站 Lv3，进驻干员均为精英0 Lv1，故只有 PHASE_0 档生效
+  //   slot_15 雷蛇 脉冲电弧·α +15% / slot_16 格劳克斯 电磁充能·α +10% / slot_26 格雷伊 静电场 +20%
+  const snapshotLabor = labor({ value: 2, maxValue: 235, lastUpdateTime: 1_788_847_664, remainSecs: 52_364 })
+  const roster = [
+    panelChar('char_107_liskam', 0, 1),
+    panelChar('char_326_glacus', 0, 1),
+    panelChar('char_253_greyy', 0, 1)
+  ]
+  const rooms = [
+    power('slot_15', 'char_107_liskam'),
+    power('slot_16', 'char_326_glacus'),
+    power('slot_26', 'char_253_greyy')
+  ]
+
+  it('单站 = 基础 5% + 干员技能（精0 三站 → 20/15/25）', () => {
+    const percents = rooms.map(room => powerPlantChargePercent(room, roster, snapshotLabor)?.percent)
+    expect(percents).toEqual([20, 15, 25])
+  })
+
+  it('三站之和与 labor 独立推导的 +60% 一致（两条路径互证）', () => {
+    const total = rooms.reduce(
+      (sum, room) => sum + (powerPlantChargePercent(room, roster, snapshotLabor)?.percent ?? 0),
+      0
+    )
+    expect(total).toBe(60)
+    expect(droneSpeedBonusPercent(snapshotLabor)).toBe(60)
+  })
+
+  it('明细含基础/技能拆分与技能名，供 UI 提示', () => {
+    expect(powerPlantChargePercent(rooms[2], roster, snapshotLabor)).toEqual({
+      percent: 25,
+      base: 5,
+      skill: 20,
+      skillNames: ['静电场'],
+      partial: false
+    })
+  })
+
+  it('精英2 解锁 β 档且为替换关系（格劳克斯 α+10 → β+15，不叠加成 25）', () => {
+    const elite = [panelChar('char_326_glacus', 2, 1)]
+    expect(powerPlantChargePercent(rooms[1], elite, snapshotLabor)?.percent).toBe(20)
+    expect(powerPlantChargePercent(rooms[1], elite, snapshotLabor)?.skillNames).toEqual(['电磁充能·β'])
+    // 精1 仍只满足 PHASE_0 档
+    expect(powerPlantChargePercent(rooms[1], [panelChar('char_326_glacus', 1, 90)], snapshotLabor)?.percent).toBe(15)
+  })
+
+  it('空闲发电站返回 null；无充能技能/名册缺失的干员只有基础 5%', () => {
+    expect(powerPlantChargePercent(power('slot_15'), roster, snapshotLabor)).toBeNull()
+    // 泡普卡无发电站技能
+    expect(powerPlantChargePercent(power('slot_15', 'char_115_headbr'), roster, snapshotLabor)?.percent).toBe(5)
+    expect(powerPlantChargePercent(rooms[0], undefined, snapshotLabor)?.percent).toBe(5)
+  })
+
+  it('per10Drone 档（巡线框架）按无人机上限折算，封顶 +25%', () => {
+    const room = power('slot_15', 'char_1027_greyy2')
+    const chars = [panelChar('char_1027_greyy2', 0, 1)]
+    // 上限 235 → floor(235/10) = 23
+    expect(powerPlantChargePercent(room, chars, snapshotLabor)?.percent).toBe(5 + 23)
+    // 上限 300 → 30 但技能封顶 25
+    expect(powerPlantChargePercent(room, chars, labor({ maxValue: 300, value: 0, remainSecs: 1 }))?.percent).toBe(5 + 25)
+  })
+
+  it('多技能槽求和；条件型加成不计入但置 partial（等级门槛 L30 同样生效）', () => {
+    const room = power('slot_15', 'char_4093_frston')
+    // 精0 Lv1：仅槽 0「备用能源」+10%，槽 1 需 Lv30
+    const low = powerPlantChargePercent(room, [panelChar('char_4093_frston', 0, 1)], snapshotLabor)
+    expect(low).toMatchObject({ percent: 15, skillNames: ['备用能源'], partial: false })
+    // 精0 Lv30：槽 1「“愉快的对谈”」解锁，其 +5% 依赖凯尔希进驻中枢，不计入但标记 partial
+    const high = powerPlantChargePercent(room, [panelChar('char_4093_frston', 0, 30)], snapshotLabor)
+    expect(high).toMatchObject({ percent: 15, partial: true })
+    expect(high?.skillNames).toEqual(['备用能源', '“愉快的对谈”'])
+  })
+
+  it('ramp 档（技术交流）取长期终值', () => {
+    const room = power('slot_15', 'char_4015_spuria')
+    expect(powerPlantChargePercent(room, [panelChar('char_4015_spuria', 0, 1)], snapshotLabor)?.percent).toBe(5 + 15)
+    expect(powerPlantChargePercent(room, [panelChar('char_4015_spuria', 2, 1)], snapshotLabor)?.percent).toBe(5 + 20)
+  })
+})
+
+describe('roomSlotNumber', () => {
+  // 真实接口 slotId 为基建全局槽位号（如 slot_25），见"抓包数据回归"用例
+  it('提取 slotId 数字并按升序排名，乱序返回也应收敛', () => {
+    const rooms = [{ slotId: 'slot_31' }, { slotId: 'slot_25' }, { slotId: 'slot_27' }]
+    expect(roomSlotNumber(rooms, 'slot_25')).toBe(1)
+    expect(roomSlotNumber(rooms, 'slot_27')).toBe(2)
+    expect(roomSlotNumber(rooms, 'slot_31')).toBe(3)
+  })
+
+  it('同类仅 1 间时也编号（贸易站1/宿舍1），无数字或不在列表中返回 null', () => {
+    expect(roomSlotNumber([{ slotId: 'slot_28' }], 'slot_28')).toBe(1)
+    expect(roomSlotNumber([{ slotId: 'slot_1' }], 'slot_2')).toBeNull()
+    expect(roomSlotNumber([{ slotId: 'slot_1' }], 'slot')).toBeNull()
+  })
+
+  it('slotNumberOf 与抓包样本一致，面板渲染排序与编号共用该口径', () => {
+    expect(slotNumberOf('slot_34')).toBe(34)
+    expect(slotNumberOf('slot')).toBeNull()
   })
 })
 

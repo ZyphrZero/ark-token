@@ -2,7 +2,7 @@ import type { SklandActionPoint } from '../../core/skland-info'
 import { computeSanity } from '../../core/status/sanity'
 import { formatDuration, formatMinutesSeconds, formatRecoveryTime } from '../../utils/time'
 import { MeterBar, SectionHeader, StatReadout } from '../../ui/components'
-import { SanityIcon } from '../../ui/icons'
+import sanityIcon from '../assets/icons/sanity.svg'
 import { useNow } from '../useNow'
 
 /** 理智区块：大号读数 + 斜角进度条 + 下一恢复/全恢复时刻（前端按时间戳实时推算） */
@@ -15,9 +15,9 @@ export default function SanitySection({ ap }: { ap: SklandActionPoint }) {
     <section className="sanity-section">
       <SectionHeader title="理智" sub="Sanity" />
       <div className="sanity-body">
-        <SanityIcon size={64} className="sanity-watermark" />
+        <img className="sanity-watermark" src={sanityIcon} alt="" />
         <div className="sanity-main">
-          <span className="sanity-icon"><SanityIcon size={22} /></span>
+          <span className="sanity-icon"><img src={sanityIcon} alt="理智" /></span>
           <StatReadout className="sanity-value" value={sanity.current} max={sanity.max} />
           <MeterBar className="sanity-meter" value={sanity.current} max={sanity.max} />
           {full

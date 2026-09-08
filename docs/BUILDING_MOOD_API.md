@@ -6,6 +6,11 @@
 `player-info-app-decoded.json` 为解码后 JSON，昵称已脱敏）；
 计算逻辑还原自 App 前端 bundle `_web_inspect/main-0a037d97.3091b5d8.js`。
 
+2026-09-08 补充采集：新增 player/info 快照（`currentTs=1788853862`，账号 3 发电站/3 制造/
+3 贸易/4 宿舍全量）用于发电站电力与充能加成的核实，见第六节；游戏侧常量口径来自
+ArknightsGameData 的 `building_data.json`（`rooms.POWER`、`powerData`、`buffs`、
+`chars[].buffChar`），提取脚本 `scripts/build-drone-charge-table.mjs`。
+
 ## 一、传输格式的两个版本
 
 | 客户端 | 请求头 | 响应结构 |
@@ -92,9 +97,13 @@ App 首页「干员疲劳 N」= 服务端 tiredChars 数 + 客户端按上述外
 
 ### 无人机恢复速率（含充能加成）
 
-`labor.remainSecs` 以 `lastUpdateTime` 为基准、表示恢复至满尚需的秒数，**已包含控制中枢
-进驻技能的无人机充能速度加成**（抓包核实见 `skland_dump/building_api/drone-rate-sample.json`，
+`labor.remainSecs` 以 `lastUpdateTime` 为基准、表示恢复至满尚需的秒数，**已包含发电站的
+无人机充能速度加成**（抓包核实见 `skland_dump/building_api/drone-rate-sample.json`，
 +60% 加成账号三快照交叉验证，速率恒 ≈ 224.73 秒/架 = 360/1.6）：
+
+> **勘误（2026-09-08）**：旧版本此处写作「控制中枢进驻技能的加成」，**是错的**。
+> 核对 `building_data.json` 全部 buffs：含「无人机充能速度」的基建技能共 36 个，
+> `roomType` **全部为 POWER**，控制中枢不产生任何充能加成。
 
 ```
 实际速率（秒/架） = remainSecs / (maxValue − value)   // 已满或 remainSecs ≤ 0 时回退基准 360
@@ -112,7 +121,62 @@ App 首页「干员疲劳 N」= 服务端 tiredChars 数 + 客户端按上述外
 `(360(D−1)/remainSecs − 1, 360D/remainSecs − 1]` 的中点再取整，三份抓包快照与
 下取整边界构造均收敛到真实值；剩余架数 < 30（区间过宽，临近充满）时不显示。
 
-回归测试见 `src/core/status/building.test.ts`（"抓包数据回归" describe）。
+### 发电站单站数值（电力与充能）
+
+两个数值**都不在接口里**：`powers[]` 每站只有 `slotId` / `level` / `chars[]`
+（决定性核实：2026-09-08 会话 17,709 个 Reqable 抓包文件全量搜索，无任何接口返回
+电力或充能数值），必须用 `level` + `charId` + 干员练度本地推导。
+
+**电力**（面板「270(33.3%)」行）—— 游戏数据 `building_data.json`：
+
+| 项 | 口径 |
+|---|---|
+| 单站发电量 | `rooms.POWER.phases[].electricity` = **60 / 130 / 270**（Lv1/2/3），`maxCount: 3` |
+| 括号百分比 | 单站占**全基地总供电**之比 = 270 / 810（3 站 Lv3 → 各 33.3%） |
+
+电力账核对（抓包账号）：供电 810，快照内房间耗电 −800，加上快照缺失的加工站（−10）
+= −810 → 余量 0，恰好满载，印证 810 就是分母。封装 `POWER_ELECTRICITY` /
+`powerOutput()` / `powerSharePercent()`。旧实现的公式 `2^(lv-1)*60 + (2^(lv-1)-1)*10`
+数值恰好正确但与游戏数据无因果关系，已改为查表。
+
+**充能**（面板「+15%」行）—— 单站 = 基础 + 进驻干员基建技能：
+
+```
+单站充能% = 5%（powerData.basicSpeedBuff = 0.05）+ 进驻干员技能%
+全基地充能% = Σ 各发电站   ← 与 droneSpeedBonusPercent(labor) 相互印证
+```
+
+抓包账号实测（快照 `currentTs=1788853862`，三名干员**均为精英0 Lv1**）：
+
+| 房间 | 干员 | 生效技能 | 基础 | 技能 | 单站 |
+|---|---|---|---|---|---|
+| 发电站1 slot_15 | 雷蛇 | 脉冲电弧·α（β +20% 需精2） | 5% | 15% | **+20%** |
+| 发电站2 slot_16 | 格劳克斯 | 电磁充能·α（β +15% 需精2） | 5% | 10% | **+15%** |
+| 发电站3 slot_26 | 格雷伊 | 静电场 | 5% | 20% | **+25%** |
+| | | | | 合计 | **+60%** |
+
+与 `labor {maxValue:235, value:2, remainSecs:52364}` → 52364/233 = 224.7 秒/架
+= 360/1.6 → +60% **完全一致**，两条独立路径互证。
+
+**技能取档规则**（`powerPlantSkillPercent`）：技能表 `src/assets/drone-charge-table.json`
+的每名干员为「技能槽[] → 同槽升级链[]」结构：
+
+- 同槽的 α/β 是**替换**关系（β 需精英2），取「练度已满足的最后一档」；
+  练度用快照 `chars[].evolvePhase` / `level` 判定，高精英阶段自动满足低阶条件。
+  **不可假设账号已精2**——抓包账号三人全是精0，取 β 会各高 5%、总数错成 +65%/+70%。
+- 不同槽可**叠加**（4 名干员有双充能槽），跨槽求和。
+- 特殊档：`per10Drone`（巡线框架，每 10 架无人机上限 +1%、封顶 +25%，按 `labor.maxValue`
+  计算，235 上限 → +23%）、`ramp`（技术交流·α/β 随连续工作小时爬升，取终值）。
+- **条件型档位 6 个不计入**（如「凯尔希进驻中枢 +5%」「每有 1 名莱茵生命干员 +3%」），
+  需要快照外的阵营/子职业元数据；命中时置 `partial`，面板在数值后标 `*` 并在 title 说明。
+
+表由 `scripts/build-drone-charge-table.mjs` 从 `building_data.json` 生成
+（32 名干员 / 45 档，源表 5MB 不入库，下载方式见脚本头注释）；脚本对
+`powerData.basicSpeedBuff`、`rooms.POWER.electricity`、未知描述句式、
+新增充能槽结构均**断言失败**而非静默跳过。
+
+电力与充能是两套独立系统（电力只约束建筑建造/升级上限，不影响充能）。
+回归测试见 `src/core/status/building.test.ts`（"抓包回归：2026-09-08 三发电站" describe）。
 
 ## 七、工作区概况与房间容量
 
@@ -139,14 +203,33 @@ furniture/elevators/corridors 等附加字段）。对账样本
 训练室教官/学员不在 `chars` 数组中，`buildingOverview` 已单独计入。
 封装：`ROOM_CAPACITY` / `roomCapacity()` / `buildingOverview()`，见 `src/core/status/building.ts`。
 
+房间序号（面板卡片标题「制造站1/宿舍1-4…」的编号口径）：`slotId` 为基建全局槽位号、
+真实抓包格式为 `slot_25`/`slot_28` 这类带 `slot_` 前缀的字符串（决定性样本：
+`skland_dump/building_api/player-info-slot-sample.json`，2026-09-08 抓包，账号 3 贸易/
+3 制造/3 发电/4 宿舍全量在库），面板提取其中的数字、同类房间按该数字升序排名（1 起），
+与游戏内同类房间沿基建槽位顺序编号一致。**注意 API 返回的房间数组顺序不保证升序**
+（样本 powers=[slot_26, slot_16, slot_15]），必须排序后取排名，不能按数组下标编号。
+制造站/贸易站/宿舍/发电站无论数量始终编号（单间也显示 贸易站1/宿舍1）；
+会客室/人力办公室/训练室/控制中枢等单间设施不编号。封装见 `roomSlotNumber()`。
+如编号与游戏实机不符请以抓包样本修正。
+
+该样本同时佐证：`meeting.clue.board=[]` 且 `sharing=true`（板为空时照样交流中，
+证实 board 是紧凑列表语义）；`training.trainer` 可为 `null`（仅学员进驻）；
+进驻干员含 `bubble`/`workTime`、贸易订单含 `isViolated` 等本插件未建模字段；
+labor value=2/235、remainSecs=52364 → 224.7s/架 = 360/1.6（+60% 充能加成账号，
+与 `drone-rate-sample.json` 交叉一致）。
+
 ## 八、其他字段观察
 
 - 贸易站 `stockLimit` 为服务端按技能加成后的值（同账号 3 间 lv3 贸易站出现 10/14/10，
   14 应为「喀兰之主」类订单上限技能加成）；`stock[].delivery/gain` 为订单交付/收益条目。
 - 游戏内逐干员的「心情消耗/时」「生产力」加成与「剩余时间」倒计时按进驻干员基建技能
-  计算，player/info 的 `building.*.chars` 不含技能数据，**无法从快照推导**，插件不做
-  该口径的展示（曾按快照差分实测速率展示「心情/时」与生产力，与游戏内展示口径不符，
-  已于 2026-09-07 回退，见第十节备查）。
+  计算，`building.*.chars` 只有 `charId`、不含技能数据，插件不做该口径的展示
+  （曾按快照差分实测速率展示「心情/时」与生产力，与游戏内展示口径不符，已于
+  2026-09-07 回退，见第十节备查）。
+  注：这**不等于**"基建技能无法从快照推导"——顶层 `chars[]` 有 `evolvePhase`/`level`，
+  配合静态技能表即可定位生效档位，发电站充能加成即按此实现（见第六节）；受限的是
+  心情消耗/生产力这类需要逐技能数值建模的口径。
 - 游戏内进驻干员的「剩余时间」倒计时与心情无关（实测同一房间干员心情不同但倒计时
   相同：16:45:14、14:48:33），应为房间生产完成时刻（`completeWorkTime` 口径）。
 - 快照 `building.elevators/corridors` 为电梯/廊道结构房间（恒 1 级，不参与进驻）。

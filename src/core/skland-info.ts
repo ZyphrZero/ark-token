@@ -69,7 +69,7 @@ export interface SklandResidentCharacter {
   index: number
 }
 
-/** 基建设施公共结构 */
+/** 基建设施公共结构（slotId 为基建全局槽位号，真实格式 slot_N 如 slot_25，样本见 skland_dump/20260908_capture/raw/building_powers.json） */
 export interface SklandBuildingRoom {
   slotId: string
   slotState?: number
@@ -81,7 +81,7 @@ export interface SklandBuildingRoom {
 export interface SklandLabor {
   value: number
   maxValue: number
-  /** 从 lastUpdateTime 起恢复至满尚需的秒数，已含中枢进驻技能的充能速度加成（见 status/building.ts 的 droneRecoverySeconds）；已满时为 0 */
+  /** 从 lastUpdateTime 起恢复至满尚需的秒数，已含发电站的充能速度加成（基础 5%/站 + 进驻干员技能，见 status/building.ts 的 droneRecoverySeconds）；已满时为 0 */
   remainSecs: number
   lastUpdateTime: number
 }
@@ -89,7 +89,7 @@ export interface SklandLabor {
 /** 控制中枢 */
 export interface SklandBuildingControl extends SklandBuildingRoom {}
 
-/** 发电站 */
+/** 发电站（进驻干员数恒 1，真实样本见 skland_dump/20260908_capture/raw/building_powers.json，含 ap/lastApAddTime/bubble/workTime 字段语义结论） */
 export interface SklandBuildingPower extends SklandBuildingRoom {}
 
 /** 制造站（speed 1 为 100% 生产力） */
@@ -133,7 +133,7 @@ export interface SklandBuildingHire extends SklandBuildingRoom {
 /** 线索系列：会客室 1-7 号线索对应的阵营，编号顺序即列表顺序 */
 export type ClueSeries = 'RHINE' | 'PENGUIN' | 'BLACKSTEEL' | 'URSUS' | 'GLASGOW' | 'KJERAG' | 'RHODES'
 
-/** 会客室线索板状态（clue 对象，见抓包样本 skland_dump/building_api/meeting-clue-compact-sample.json） */
+/** 会客室线索板状态（clue 对象，见抓包样本 skland_dump/20260908_capture/raw/game_player_info.uid25186623.decoded.json 的 building.meeting；board 空数组时 sharing 仍可为 true） */
 export interface SklandMeetingClue {
   /** 已置入线索板的系列名，紧凑列表（非按槽位稀疏、无占位元素），槽位 i 是否置入须按系列名成员判断 */
   board: ClueSeries[]

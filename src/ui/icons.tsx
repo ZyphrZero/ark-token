@@ -108,18 +108,6 @@ export function LockIcon(props: IconProps) {
   )
 }
 
-/** 理智（闪电，实心） */
-export function SanityIcon({ size = 16, className }: IconProps) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" className={className} aria-hidden="true">
-      <path
-        fill="currentColor"
-        d="M13.2 1.6 4.1 13.9c-.3.4 0 .9.5.9h5.4l-1.6 7.2c-.1.6.7 1 1.1.5l9.4-12.6c.3-.4 0-1-.5-1h-5.5l1.3-6.8c.1-.6-.7-1-1-.5z"
-      />
-    </svg>
-  )
-}
-
 /** 无人机（四旋翼） */
 export function DroneIcon(props: IconProps) {
   return (
