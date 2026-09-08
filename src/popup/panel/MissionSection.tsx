@@ -1,6 +1,6 @@
 import type { SklandBindingInfo } from '../../core/skland-info'
 
-/** 任务进度区块：剿灭作战 / 保全派驻 / 日常周常 */
+/** 任务进度区块：剿灭作战 / 保全派驻 / 日常周常（数值语义色走 mval--* 类） */
 export default function MissionSection({ info }: { info: SklandBindingInfo }) {
   return (
     <section className="mission-section">
@@ -10,9 +10,11 @@ export default function MissionSection({ info }: { info: SklandBindingInfo }) {
             <span className="mission-cn">剿灭作战</span>
             <span className="mission-en">Annihilation</span>
           </span>
-          <span>
-            <span style={{ color: 'var(--red)' }}>{info.campaign?.reward?.current ?? 0}</span>
-            /{info.campaign?.reward?.total ?? 0}
+          <span className="mission-values">
+            <span>
+              <b className="mval--red">{info.campaign?.reward?.current ?? 0}</b>
+              <span className="mission-total">/{info.campaign?.reward?.total ?? 0}</span>
+            </span>
           </span>
         </div>
         <div className="mission-row">
@@ -22,12 +24,12 @@ export default function MissionSection({ info }: { info: SklandBindingInfo }) {
           </span>
           <span className="mission-values">
             <span>
-              <span style={{ color: 'var(--tower-purple)' }}>{info.tower?.reward?.higherItem?.current ?? 0}</span>
-              /{info.tower?.reward?.higherItem?.total ?? 0}
+              <b className="mval--purple">{info.tower?.reward?.higherItem?.current ?? 0}</b>
+              <span className="mission-total">/{info.tower?.reward?.higherItem?.total ?? 0}</span>
             </span>
             <span>
-              <span style={{ color: 'var(--tower-yellow)' }}>{info.tower?.reward?.lowerItem?.current ?? 0}</span>
-              /{info.tower?.reward?.lowerItem?.total ?? 0}
+              <b className="mval--yellow">{info.tower?.reward?.lowerItem?.current ?? 0}</b>
+              <span className="mission-total">/{info.tower?.reward?.lowerItem?.total ?? 0}</span>
             </span>
           </span>
         </div>
@@ -38,12 +40,12 @@ export default function MissionSection({ info }: { info: SklandBindingInfo }) {
           </span>
           <span className="mission-values">
             <span>
-              <span style={{ color: 'var(--primary-strong)' }}>{info.routine?.daily?.current ?? 0}</span>
-              /{info.routine?.daily?.total ?? 0}
+              <b className="mval--info">{info.routine?.daily?.current ?? 0}</b>
+              <span className="mission-total">/{info.routine?.daily?.total ?? 0}</span>
             </span>
             <span>
-              <span style={{ color: 'var(--primary-strong)' }}>{info.routine?.weekly?.current ?? 0}</span>
-              /{info.routine?.weekly?.total ?? 0}
+              <b className="mval--info">{info.routine?.weekly?.current ?? 0}</b>
+              <span className="mission-total">/{info.routine?.weekly?.total ?? 0}</span>
             </span>
           </span>
         </div>

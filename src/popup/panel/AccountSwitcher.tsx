@@ -1,13 +1,13 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 
 import type { GameAccount } from '../../core/types'
-import listArrow from '../assets/list-arrow.svg'
+import { CheckerMark } from '../../ui/components'
+import { AddIcon, ArrowRightIcon, SettingsIcon } from '../../ui/icons'
 import { openOptions, sendAddFriendMessage } from '../panelActions'
 
 /**
- * 账号切换侧滑面板（Figma 165:4994）：
- * 容器 270 宽 / 顶部 40px「角色列表 CHARACTER」标题栏 + 底线装饰 / 绑定角色项 254x70（背景 #2d2e30）。
- * 当前激活账号以 primary 边框与「当前」徽标标识（设计外的功能标识）。
+ * 账号切换侧滑面板：格纹角标双语标题栏 + 斜切角卡片列表。
+ * 当前激活账号以终端黄描边与「当前」徽标标识；支持 Esc / 点击遮罩关闭。
  */
 export default function AccountSwitcher({ accounts, activeAccountId, onActivate, onClose }: {
   accounts: GameAccount[]
@@ -19,6 +19,16 @@ export default function AccountSwitcher({ accounts, activeAccountId, onActivate,
   const [busy, setBusy] = useState(false)
   const [feedback, setFeedback] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null)
   const activeAccount = accounts.find(account => account.id === activeAccountId) ?? accounts[0]
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose()
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [onClose])
 
   async function handleAddFriend(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -53,11 +63,12 @@ export default function AccountSwitcher({ accounts, activeAccountId, onActivate,
       <div className="switcher-panel" onClick={event => event.stopPropagation()}>
         <div className="switcher-header">
           <span className="switcher-heading">
+            <CheckerMark />
             <span className="cn">角色列表</span>
-            <span className="en">CHARACTER</span>
+            <span className="en">Character</span>
           </span>
           <button type="button" className="icon-btn" title="打开管理页" onClick={() => openOptions()}>
-            ⚙
+            <SettingsIcon size={14} />
           </button>
         </div>
         <div className="switcher-list">
@@ -67,7 +78,7 @@ export default function AccountSwitcher({ accounts, activeAccountId, onActivate,
               <button
                 key={account.id}
                 type="button"
-                className={`switcher-item${active ? ' active' : ''}`}
+                className={`switcher-item cut-box${active ? ' active' : ''}`}
                 onClick={() => {
                   onActivate(account.id)
                   onClose()
@@ -83,7 +94,9 @@ export default function AccountSwitcher({ accounts, activeAccountId, onActivate,
                     <span className="uid">UID: {account.uid}</span>
                   </span>
                 </span>
-                <img className="switcher-arrow" src={listArrow} alt="" />
+                <span className="switcher-arrow">
+                  <ArrowRightIcon size={16} />
+                </span>
               </button>
             )
           })}
@@ -109,7 +122,7 @@ export default function AccountSwitcher({ accounts, activeAccountId, onActivate,
           </form>
         )}
         <div className="switcher-footer">
-          <button type="button" className="btn btn-sm" onClick={() => openOptions('#add')}>＋ 添加账号</button>
+          <button type="button" className="btn btn-sm" onClick={() => openOptions('#add')}><AddIcon size={12} /> 添加账号</button>
           <button type="button" className="btn btn-sm btn-ghost" onClick={() => openOptions()}>管理页</button>
         </div>
       </div>

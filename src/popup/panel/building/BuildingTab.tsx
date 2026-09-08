@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 
 import type {
   SklandBindingInfo,
@@ -8,9 +8,7 @@ import type {
 import {
   CLUE_OWN_MAX,
   clueBoardSlots,
-  computeDroneCount,
   dormitoryCurrentAp,
-  droneSpeedBonusPercent,
   estimateManufactureWeight,
   hireWorkCapSec,
   manufactureWorkCapSec,
@@ -26,11 +24,11 @@ import {
   workingCurrentAp
 } from '../../../core/status/building'
 import { formatDuration } from '../../../utils/time'
-import { LevelMark } from '../../icons'
+import { LevelMark } from '../../../ui/icons'
+import { MeterBar } from '../../../ui/components'
 import { useNow } from '../../useNow'
 import controlIcon from '../../assets/rooms/control.svg'
 import dormitoryIcon from '../../assets/rooms/dormitory.svg'
-import droneIcon from '../../assets/rooms/drone.svg'
 import hireIcon from '../../assets/rooms/hire.svg'
 import manufactureIcon from '../../assets/rooms/manufacture.svg'
 import meetingIcon from '../../assets/rooms/meeting.svg'
@@ -39,24 +37,30 @@ import tradingIcon from '../../assets/rooms/trading.svg'
 import trainingIcon from '../../assets/rooms/training.svg'
 import ResidentCharacter from './ResidentCharacter'
 
-/** 基建设施卡片骨架：标题(色条+等级刻度) + 图标 + 信息列 + 自定义内容 + 进驻干员 */
-function RoomCard({ title, level, color, icon, info, extra, children }: {
+/**
+ * 基建设施卡片骨架：头部（语义色条 + 中英文名 + 菱形等级刻度）+
+ * 主体（设施图标 + 信息读数 + 自定义内容 + 进驻干员）。
+ * 语义色由 tone 对应的 room--{tone} 类提供（--room-accent），视图层不再内联色值。
+ */
+function RoomCard({ title, en, level, tone, icon, info, extra, children }: {
   title: string
+  en: string
   level: number
-  color: string
+  tone: 'manufacture' | 'trading' | 'meeting' | 'dormitory' | 'hire' | 'training' | 'power' | 'control'
   icon: string
   info?: ReactNode
   extra?: ReactNode
   children?: ReactNode
 }) {
   return (
-    <div className="room-card">
-      {/* 设计稿：标题文字白色，颜色只体现在左侧色条与等级刻度 */}
-      <div className="room-title" style={{ borderColor: color }}>
-        <span>{title}</span>
+    <div className={`room-card cut-box room--${tone}`}>
+      {/* 头部文字白色，语义色只体现在左侧色条与等级刻度 */}
+      <div className="room-head">
+        <span className="room-name">{title}</span>
+        <span className="room-en">{en}</span>
         <span className="room-level">
           {Array.from({ length: level }, (_, index) => (
-            <LevelMark key={index} color={color} />
+            <LevelMark key={index} />
           ))}
         </span>
       </div>
@@ -76,12 +80,12 @@ function ManufactureRoom({ room, nowSec, charMap }: { room: SklandBuildingManufa
   // 生产耗尽后干员停止消耗心情，外推不超过配方剩余工时
   const capSec = manufactureWorkCapSec(room)
   return (
-    <RoomCard title="制造站" level={room.level} color="#FFD800" icon={manufactureIcon}>
+    <RoomCard title="制造站" en="Factory" level={room.level} tone="manufacture" icon={manufactureIcon}>
       <div className="room-info">
         <div className="room-info-row">
-          <span className="font-bender" style={{ color: '#ffd800' }}>{weight}<span style={{ color: '#fff' }}>/{room.capacity}</span></span>
+          <span className="room-info-value">{weight}<i>/{room.capacity}</i></span>
         </div>
-        <div style={{ color: '#ffd800' }}>{formula?.name ?? '未知配方'}</div>
+        <div className="room-info-name" title={formula?.name}>{formula?.name ?? '未知配方'}</div>
       </div>
       {room.chars.map(resident => (
         <ResidentCharacter
@@ -97,13 +101,12 @@ function ManufactureRoom({ room, nowSec, charMap }: { room: SklandBuildingManufa
 
 function TradingRoom({ room, nowSec, charMap }: { room: SklandBuildingTrading; nowSec: number; charMap: Map<string, string> }) {
   return (
-    // 设计稿（Figma 502:903）：贸易站色条 #2bf，订单数/策略文字 #25abdf
-    <RoomCard title="贸易站" level={room.level} color="#2bf" icon={tradingIcon}>
+    <RoomCard title="贸易站" en="Trading Post" level={room.level} tone="trading" icon={tradingIcon}>
       <div className="room-info">
         <div className="room-info-row">
-          <span className="font-bender" style={{ color: '#25abdf' }}>{room.stock.length}<span style={{ color: '#fff' }}>/{room.stockLimit}</span></span>
+          <span className="room-info-value">{room.stock.length}<i>/{room.stockLimit}</i></span>
         </div>
-        <div style={{ color: '#25abdf' }}>{tradingStrategyName(room.strategy)}</div>
+        <div className="room-info-name" title={tradingStrategyName(room.strategy)}>{tradingStrategyName(room.strategy)}</div>
       </div>
       {room.chars.map(resident => (
         <ResidentCharacter
@@ -129,17 +132,18 @@ function MeetingRoom({ info, nowSec, charMap }: { info: SklandBindingInfo; nowSe
   const capSec = meetingWorkCapSec(meeting)
   const slots = clueBoardSlots(meeting.clue)
   return (
-    <RoomCard title="会客室" level={meeting.level} color="#ffffff" icon={meetingIcon}>
+    <RoomCard title="会客室" en="Meeting" level={meeting.level} tone="meeting" icon={meetingIcon}>
       <div className="room-extra">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 4 }}>
+        <div className="meeting-status-row">
           <span className="meeting-status">{meeting.clue.sharing ? '交流中' : '搜集中'}</span>
-          <span className="font-bender">
-            <span style={{ color: '#fd661c' }}>{meeting.clue.own}</span>/{CLUE_OWN_MAX}
-          </span>
+          <span className="meeting-own"><b>{meeting.clue.own}</b><i>/{CLUE_OWN_MAX}</i></span>
         </div>
-        <div className="meeting-progress">
-          <div className="meeting-progress-fill" style={{ width: `${Math.min(100, (meeting.clue.own / CLUE_OWN_MAX) * 100)}%` }} />
-        </div>
+        <MeterBar
+          className="meter--thin"
+          value={meeting.clue.own}
+          max={CLUE_OWN_MAX}
+          style={{ '--meter-color': 'var(--clue-orange)' } as CSSProperties}
+        />
         <div className="clue-board">
           {slots.map((placed, index) => {
             const color = placed ? CLUE_COLORS[index] : undefined
@@ -167,15 +171,10 @@ function MeetingRoom({ info, nowSec, charMap }: { info: SklandBindingInfo; nowSe
   )
 }
 
-/** 基建 tab：顶部无人机实时数 + 各设施卡片（制造/贸易/会客/宿舍/人力/训练/发电/中枢） */
+/** 基建 tab：各设施卡片（制造/贸易/会客/宿舍/人力/训练/发电/中枢）；无人机读数在区块标题行 */
 export default function BuildingTab({ info }: { info: SklandBindingInfo }) {
-  const now = useNow(1000)
-  const nowSec = Math.floor(now / 1000)
+  const nowSec = Math.floor(useNow(1000) / 1000)
   const building = info.building
-  const labor = building?.labor
-  const drone = labor ? computeDroneCount(labor, now) : 0
-  // 充能速度加成（中枢进驻技能），快照无法推导（已满）时不显示
-  const droneBonus = labor ? droneSpeedBonusPercent(labor) : null
 
   const charMap = new Map((info.chars ?? []).map(char => [char.charId, char.skinId]))
 
@@ -191,11 +190,11 @@ export default function BuildingTab({ info }: { info: SklandBindingInfo }) {
   }
   for (const [index, room] of (building?.dormitories ?? []).entries()) {
     rooms.push(
-      <RoomCard key={`dormitory-${room.slotId}-${index}`} title="宿舍" level={room.level} color="#ffffff" icon={dormitoryIcon}>
+      <RoomCard key={`dormitory-${room.slotId}-${index}`} title="宿舍" en="Dormitory" level={room.level} tone="dormitory" icon={dormitoryIcon}>
         <div className="room-info">
           <div className="room-info-row">
             <span>氛围</span>
-            <span className="font-bender" style={{ color: '#9bc142' }}>{room.comfort}</span>
+            <span className="room-info-value">{room.comfort}</span>
           </div>
         </div>
         {room.chars.map(resident => (
@@ -213,7 +212,7 @@ export default function BuildingTab({ info }: { info: SklandBindingInfo }) {
     const hire = building.hire
     const capSec = hireWorkCapSec(hire, nowSec)
     rooms.push(
-      <RoomCard key="hire" title="人力办公室" level={hire.level} color="#ffffff" icon={hireIcon}>
+      <RoomCard key="hire" title="人力办公室" en="HR Office" level={hire.level} tone="hire" icon={hireIcon}>
         {hire.chars.map(resident => (
           <ResidentCharacter
             key={resident.charId}
@@ -232,18 +231,20 @@ export default function BuildingTab({ info }: { info: SklandBindingInfo }) {
     const skill = trainingSkillInfo(training, info.chars)
     const speedBonus = trainingSpeedBonusPercent(training.speed)
     rooms.push(
-      <RoomCard key="training" title="训练室" level={training.level} color="#ffffff" icon={trainingIcon}>
+      <RoomCard key="training" title="训练室" en="Training" level={training.level} tone="training" icon={trainingIcon}>
         <div className="room-info">
           {completeAt >= 0 ? (
             <>
               <div className="room-info-row">
                 <span>剩余</span>
-                <span className="font-bender">{formatDuration(Math.max(0, completeAt - nowSec) * 1000)}</span>
+                <span className="room-info-value">{formatDuration(Math.max(0, completeAt - nowSec) * 1000)}</span>
               </div>
               <div className="room-info-row" title={skill?.skillName ? `训练速度 +${speedBonus}%` : undefined}>
                 {skill ? (
                   <>
-                    <span className="skill-name">{skill.skillName ?? `技能${skill.slot}`}</span>
+                    <span className="room-info-name" title={skill.skillName ?? undefined}>
+                      {skill.skillName ?? `技能${skill.slot}`}
+                    </span>
                     <span>{specializeLevelText(skill.targetLevel)}</span>
                   </>
                 ) : (
@@ -279,11 +280,11 @@ export default function BuildingTab({ info }: { info: SklandBindingInfo }) {
   }
   for (const room of building?.powers ?? []) {
     rooms.push(
-      <RoomCard key={`power-${room.slotId}`} title="发电站" level={room.level} color="#d1eb64" icon={powerIcon}>
+      <RoomCard key={`power-${room.slotId}`} title="发电站" en="Power Plant" level={room.level} tone="power" icon={powerIcon}>
         <div className="room-info">
           <div className="room-info-row">
             <span>发电</span>
-            <span className="font-bender" style={{ color: '#caec46' }}>{powerOutput(room.level)}</span>
+            <span className="room-info-value">{powerOutput(room.level)}</span>
           </div>
         </div>
         {room.chars.map(resident => (
@@ -299,7 +300,7 @@ export default function BuildingTab({ info }: { info: SklandBindingInfo }) {
   }
   if (building?.control) {
     rooms.push(
-      <RoomCard key="control" title="控制中枢" level={building.control.level} color="#ffffff" icon={controlIcon}>
+      <RoomCard key="control" title="控制中枢" en="Control" level={building.control.level} tone="control" icon={controlIcon}>
         {building.control.chars.map(resident => (
           // 控制中枢无官方消耗速率口径，展示快照心情
           <ResidentCharacter key={resident.charId} resident={resident} charMap={charMap} />
@@ -309,26 +310,12 @@ export default function BuildingTab({ info }: { info: SklandBindingInfo }) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-      {labor && (
-        <div className="labor-row">
-          <img className="drone-icon" src={droneIcon} alt="" />
-          <span>
-            <span className="drone-value font-bender">{drone}</span>
-            <span className="font-bender">/{labor.maxValue}</span>
-          </span>
-          {droneBonus !== null && (
-            <span className="drone-bonus font-bender" title="无人机充能速度加成（含控制中枢进驻技能）">+{droneBonus}%</span>
-          )}
-        </div>
-      )}
-      <div className="building-body">
-        <div className="building-scroll">
-          <div className="building-list">{rooms}</div>
-        </div>
-        {/* 设计稿（Figma 502:1985）：列表底部 30px 渐隐遮罩 */}
-        <div className="building-fade" />
+    <div className="building-body">
+      <div className="building-scroll">
+        <div className="building-list">{rooms}</div>
       </div>
+      {/* 列表底部渐隐遮罩 */}
+      <div className="building-fade" />
     </div>
   )
 }

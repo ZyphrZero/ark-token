@@ -1,6 +1,6 @@
 import type { LastSync } from '../../core/types'
 import { formatTimeAgo } from '../../utils/time'
-import { RefreshIcon } from '../icons'
+import { RefreshIcon } from '../../ui/icons'
 import { openOptions } from '../panelActions'
 
 function describeSyncStatus(lastSync?: LastSync): { text: string; className: string } | null {
@@ -42,7 +42,7 @@ export default function PanelFooter({ fetchedAt, refreshing, onRefresh, canSync,
         </span>
         {canSync
           ? (
-              <button type="button" className="btn btn-sm" disabled={syncing} onClick={onSync}>
+              <button type="button" className="btn btn-sm btn-primary" disabled={syncing} onClick={onSync}>
                 {syncing ? '同步中…' : '同步到一图流'}
               </button>
             )
@@ -53,7 +53,7 @@ export default function PanelFooter({ fetchedAt, refreshing, onRefresh, canSync,
             )}
         <button type="button" className="icon-btn" title="立即刷新面板数据" disabled={refreshing} onClick={onRefresh}>
           <span className={refreshing ? 'spin' : undefined}>
-            <RefreshIcon />
+            <RefreshIcon size={14} />
           </span>
         </button>
       </div>

@@ -6,6 +6,7 @@ import { loadState, patchAccountCredential, removeAccount, subscribeState } from
 import { removeAccountInfo } from '../storage/infoCache'
 import type { GameAccount, PluginState } from '../core/types'
 import { formatTimeAgo } from '../utils/time'
+import { AddIcon } from '../ui/icons'
 
 interface AccountEditorProps {
   account: GameAccount
@@ -131,7 +132,7 @@ export default function AccountManager({ onSwitchToAdd }: { onSwitchToAdd: () =>
         <h2>还没有账号</h2>
         <p className="hint">先添加一个明日方舟账号（扫码 / 官网 Token / 森空岛凭证），再在「设置」中配置一图流读写 token。</p>
         <div className="actions">
-          <button className="btn btn-primary" onClick={onSwitchToAdd}>＋ 去添加账号</button>
+          <button className="btn btn-primary" onClick={onSwitchToAdd}><AddIcon size={12} /> 去添加账号</button>
         </div>
       </div>
     )

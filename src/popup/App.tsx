@@ -4,6 +4,8 @@ import { getSecurityStatus, loadState, setActiveAccount, subscribeState, type Se
 import { loadInfoCache, subscribeInfoCache, type InfoCache } from '../storage/infoCache'
 import type { PluginState } from '../core/types'
 import UnlockScreen from '../security/UnlockScreen'
+import { CheckerMark } from '../ui/components'
+import { AddIcon, LockIcon, RefreshIcon } from '../ui/icons'
 import AssistSearchPage from './assist/AssistSearchPage'
 import AccountSwitcher from './panel/AccountSwitcher'
 import IslandSection from './panel/IslandSection'
@@ -14,8 +16,8 @@ import StatusHeader from './panel/StatusHeader'
 import { openOptions, sendRefreshInfoMessage, sendSyncMessage } from './panelActions'
 
 /**
- * 状态面板主界面（视觉与数据区块移植自 rhodes-headquarters 的 popup）：
- * 博士信息头 / 理智实时恢复 / 公招+基建 Tabs / 任务进度 / 底栏（刷新与一图流同步）。
+ * 罗德岛终端数据面板主界面：
+ * 博士信息头 / 理智实时恢复 / 公招+基建 Tabs（含无人机读数） / 任务进度 / 底栏（刷新与一图流同步）。
  * 面板数据来自 infoCache（后台定时或手动刷新森空岛 player/info），实时数值按时间戳前端推算。
  */
 export default function App() {
@@ -82,21 +84,23 @@ export default function App() {
               <main className="panel-main">
                 {accounts.length === 0 ? (
                   <div className="panel-empty">
+                    <div className="empty-mark"><CheckerMark /><CheckerMark /><CheckerMark /></div>
                     <div className="empty-title">暂无账号</div>
                     <p className="empty-sub">
                       添加森空岛账号后，即可在此查看理智、公招、基建等状态，
                       并把干员练度同步到一图流。
                     </p>
                     <button className="btn btn-primary" onClick={() => openOptions('#add')}>
-                      ＋ 添加第一个账号
+                      <AddIcon size={12} /> 添加第一个账号
                     </button>
                   </div>
                 ) : !info ? (
                   <div className="panel-empty">
+                    <div className="empty-mark"><CheckerMark /><CheckerMark /><CheckerMark /></div>
                     <div className="empty-title">还没有面板数据</div>
                     <p className="empty-sub">点击下方刷新按钮，从森空岛拉取当前账号的状态数据</p>
                     <button className="btn btn-primary" disabled={refreshing} onClick={() => void handleRefresh()}>
-                      {refreshing ? '拉取中…' : '立即刷新'}
+                      <RefreshIcon size={12} /> {refreshing ? '拉取中…' : '立即刷新'}
                     </button>
                     {refreshNote && <p className="empty-sub">{refreshNote}</p>}
                   </div>
@@ -117,7 +121,7 @@ export default function App() {
               {/* 未设主密码的安全提示：放底栏上方，不占用主内容区的高度预算 */}
               {!security.configured && accounts.length > 0 && (
                 <div className="security-hint">
-                  🔒 凭据尚未加密保护
+                  <LockIcon size={12} /> 凭据尚未加密保护
                   <button className="link-btn" onClick={() => openOptions('#settings')}>
                     去设置主密码
                   </button>

@@ -31,6 +31,8 @@ import {
   type AssistUserInfo
 } from '../../core/assist'
 import type { GameAccount } from '../../core/types'
+import { CheckerMark } from '../../ui/components'
+import { BackIcon } from '../../ui/icons'
 import {
   sendAddFriendMessage,
   sendAssistAuthorizeMessage,
@@ -386,10 +388,12 @@ export default function AssistSearchPage({ account, onBack }: { account: GameAcc
   return (
     <div className="assist-page">
       <header className="assist-page-header">
-        <button type="button" className="icon-btn" title="返回状态面板" onClick={onBack}>‹</button>
+        <button type="button" className="icon-btn" title="返回状态面板" onClick={onBack}>
+          <BackIcon size={16} />
+        </button>
         <div>
-          <h2>助战检索</h2>
-          <span>SUPPORT SEARCH</span>
+          <h2><CheckerMark /> 助战检索</h2>
+          <span>Support Search</span>
         </div>
         <span className="assist-account-label">{account.nickName || '未命名博士'}</span>
       </header>

@@ -1,0 +1,46 @@
+/*
+ * 罗德岛终端 · 设计令牌（popup / options / security 共享）
+ * 方向：明日方舟游戏主界面复刻 —— 近黑底、白色主文字、亮黄交互色、
+ * 斜切角结构与格纹装饰；基建设施语义色沿用旧面板，保证信息辨识度。
+ */
+:root {
+  /* 表面层级（由深到浅） */
+  --bg-0: #101012;
+  --bg-1: #17181b;
+  --bg-2: #1e2024;
+  --bg-3: #26282d;
+  /* 线 */
+  --line-1: rgba(255, 255, 255, 0.08);
+  --line-2: rgba(255, 255, 255, 0.18);
+  --line-3: rgba(255, 255, 255, 0.34);
+  /* 文字三级 */
+  --text-1: #ffffff;
+  --text-2: rgba(255, 255, 255, 0.62);
+  --text-3: rgba(255, 255, 255, 0.38);
+  /* 主交互：罗德岛终端黄 */
+  --accent: #ffd802;
+  --accent-strong: #ffe14d;
+  --accent-ink: #1a1a1a;
+  /* 状态 */
+  --ok: #67c23a;
+  --warn: #e6a23c;
+  --danger: #f56c6c;
+  --red: #f56c6c;
+  --info: #5ab8f9;
+  /* 基建设施语义色 */
+  --manufacture-yellow: #ffd800;
+  --trading-blue: #4fc3f7;
+  --power-green: #d1eb64;
+  --dorm-green: #9bc142;
+  --clue-orange: #fd661c;
+  --drone-purple: #dc92ff;
+  --tower-purple: #c084fc;
+  --tower-yellow: #fbbf24;
+  /* 兼容别名：旧类名与安全组件沿用 */
+  --foreground: var(--text-1);
+  --background: var(--bg-0);
+  --secondary-background: var(--bg-2);
+  --list-item: var(--bg-1);
+  --border: var(--line-2);
+  --muted: var(--text-2);
+}

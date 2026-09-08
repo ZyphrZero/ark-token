@@ -1,65 +1,56 @@
 /*
- * 管理页样式：与弹窗面板同一套暗色明日方舟主题（配色令牌一致），
- * 布局沿用原版，仅替换颜色变量。
+ * 管理页样式：罗德岛终端主题（与弹窗面板共享 src/ui 的设计令牌与通用控件）。
+ * 布局沿用原结构，仅替换视觉语言；.card/.btn/.field/.message 等通用类来自 ui.css。
  */
+@import '../ui/ui.css';
 @import '../popup/assets/fonts/akrobat.css';
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-:root {
-  --foreground: hsl(0 0% 100%);
-  --background: hsl(220 4% 14%);
-  --secondary-background: hsl(223 6% 22%);
-  --border: hsl(223 5% 28%);
-  --list-item: hsl(220 3% 18%);
-  --muted: hsl(220 4% 72%);
-  --primary: hsl(211 57% 58%);
-  --primary-strong: hsl(211 57% 66%);
-  --danger: #f56c6c;
-  --ok: #67c23a;
-  --info: #5ab8f9;
-  --warn: #e6a23c;
-}
 
 body {
   font-family: 'Akrobat', 'Microsoft YaHei', 'Segoe UI', system-ui, sans-serif;
   font-size: 14px;
-  color: var(--foreground);
-  background: var(--background);
+  color: var(--text-1);
+  background: var(--bg-0);
 }
 
 .options {
-  max-width: 760px;
+  max-width: 780px;
   margin: 0 auto;
-  padding: 24px 16px 48px;
+  padding: 28px 16px 56px;
 }
 
 .options-header {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  margin-bottom: 16px;
+  gap: 12px;
+  margin-bottom: 18px;
 }
 
 .options-header h1 {
   font-size: 20px;
-  color: var(--foreground);
+  letter-spacing: 2px;
+  color: var(--text-1);
 }
 
 .options-header a {
-  color: var(--primary-strong);
+  color: var(--accent);
   font-size: 13px;
+  text-decoration: none;
+  border-bottom: 1px solid var(--line-2);
+  padding-bottom: 1px;
 }
 
+.options-header a:hover {
+  color: var(--accent-strong);
+  border-bottom-color: var(--accent);
+}
+
+/* 顶部导航：终端式文字 tab，激活项亮黄下划线 */
 .tabs {
   display: flex;
   gap: 4px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 20px;
+  border-bottom: 1px solid var(--line-1);
+  margin-bottom: 22px;
 }
 
 .tab {
@@ -67,17 +58,22 @@ body {
   background: transparent;
   padding: 10px 16px;
   font-size: 14px;
+  font-weight: 700;
   font-family: inherit;
-  color: var(--muted);
+  color: var(--text-3);
   cursor: pointer;
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
+  transition: color 0.15s;
+}
+
+.tab:hover {
+  color: var(--text-2);
 }
 
 .tab.active {
-  color: var(--foreground);
-  font-weight: 600;
-  border-bottom-color: var(--primary);
+  color: var(--text-1);
+  border-bottom-color: var(--accent);
 }
 
 .options-body {
@@ -86,143 +82,56 @@ body {
   gap: 16px;
 }
 
-.card {
-  background: var(--list-item);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 18px;
+.options .card {
+  padding: 16px;
 }
 
 .card h2 {
-  font-size: 16px;
+  font-size: 15px;
+  letter-spacing: 1px;
   margin-bottom: 12px;
-  color: var(--foreground);
 }
 
 .card h3 {
-  font-size: 14px;
-  margin: 12px 0 8px;
+  font-size: 13px;
+  margin: 14px 0 8px;
 }
 
 .hint {
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.7;
+  color: var(--text-3);
 }
 
 .hint code {
-  background: var(--secondary-background);
-  border: 1px solid var(--border);
-  border-radius: 4px;
+  background: var(--bg-2);
+  border: 1px solid var(--line-1);
   padding: 1px 5px;
   font-size: 11px;
   word-break: break-all;
 }
 
 label.field {
-  display: block;
   font-size: 13px;
-  font-weight: 600;
-  margin: 12px 0 4px;
 }
 
-input[type='text'],
-input[type='password'],
-input[type='url'],
-textarea,
-select {
-  width: 100%;
-  border: 1px solid var(--border);
-  border-radius: 8px;
+.options input[type='text'],
+.options input[type='password'],
+.options input[type='url'],
+.options textarea,
+.options select {
   padding: 8px 10px;
   font-size: 13px;
-  font-family: inherit;
-  color: var(--foreground);
-  background: var(--background);
 }
 
-input:focus,
-textarea:focus,
-select:focus {
-  outline: 2px solid rgba(106, 154, 194, 0.35);
-  border-color: var(--primary);
-}
-
-textarea {
+.options textarea {
   min-height: 90px;
   resize: vertical;
   word-break: break-all;
-}
-
-.btn {
-  border: 1px solid var(--border);
-  background: var(--secondary-background);
-  color: var(--foreground);
-  border-radius: 8px;
-  padding: 8px 16px;
-  font-size: 13px;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
-}
-
-.btn:hover:not(:disabled) {
-  border-color: var(--primary);
-}
-
-.btn:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-
-.btn-primary {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: #fff;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background: var(--primary-strong);
-}
-
-.btn-danger {
-  color: var(--danger);
-  border-color: var(--danger);
-  background: transparent;
-}
-
-.btn-danger:hover:not(:disabled) {
-  background: rgba(245, 108, 108, 0.12);
-}
-
-.btn-sm {
-  padding: 5px 12px;
-  font-size: 12px;
 }
 
 .credential-input {
   flex: 1 1 320px;
   min-width: 240px;
 }
-
-.actions {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-top: 14px;
-}
-
-.message {
-  margin-top: 10px;
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 13px;
-  word-break: break-all;
-}
-
-.message.ok { background: rgba(103, 194, 58, 0.12); color: var(--ok); }
-.message.err { background: rgba(245, 108, 108, 0.12); color: var(--danger); }
-.message.info { background: rgba(90, 184, 249, 0.12); color: var(--info); }
 
 .method-picker {
   display: flex;
@@ -235,27 +144,28 @@ textarea {
   gap: 12px;
   align-items: flex-start;
   text-align: left;
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  border: 1px solid var(--line-2);
   padding: 14px;
-  background: var(--list-item);
+  background: var(--bg-1);
   color: inherit;
   font-family: inherit;
   cursor: pointer;
   font-size: 14px;
+  transition: border-color 0.15s;
 }
 
 .method-option:hover {
-  border-color: var(--primary);
+  border-color: var(--accent);
 }
 
 .method-option input {
   margin-top: 3px;
+  width: auto;
 }
 
 .method-option .desc {
   display: block;
-  color: var(--muted);
+  color: var(--text-3);
   font-size: 12px;
   margin-top: 3px;
   line-height: 1.6;
@@ -270,8 +180,7 @@ textarea {
 }
 
 .qr-box img {
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  border: 1px solid var(--line-2);
   background: #fff;
 }
 
@@ -280,7 +189,7 @@ textarea {
   align-items: center;
   gap: 12px;
   padding: 10px 8px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--line-1);
 }
 
 .binding-row:last-child {
@@ -293,15 +202,28 @@ textarea {
 }
 
 .binding-row .meta {
-  color: var(--muted);
+  color: var(--text-3);
   font-size: 12px;
 }
 
 .account-block {
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  position: relative;
+  border: none;
   padding: 16px;
-  background: var(--list-item);
+  background: var(--line-2);
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+}
+
+.account-block::before {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  background: var(--bg-1);
+  clip-path: polygon(9.3px 0, 100% 0, 100% calc(100% - 9.3px), calc(100% - 9.3px) 100%, 0 100%, 0 9.3px);
+}
+
+.account-block > * {
+  position: relative;
 }
 
 .account-block .title-row {
@@ -331,17 +253,26 @@ textarea {
 .badge {
   font-size: 11px;
   padding: 2px 8px;
-  border-radius: 10px;
-  background: var(--secondary-background);
-  color: var(--muted);
+  background: var(--bg-2);
+  color: var(--text-2);
+  border-left: 2px solid var(--line-2);
 }
 
-.badge.ok { background: rgba(103, 194, 58, 0.15); color: var(--ok); }
-.badge.err { background: rgba(245, 108, 108, 0.15); color: var(--danger); }
+.badge.ok {
+  background: rgba(103, 194, 58, 0.12);
+  color: var(--ok);
+  border-left-color: var(--ok);
+}
+
+.badge.err {
+  background: rgba(245, 108, 108, 0.12);
+  color: var(--danger);
+  border-left-color: var(--danger);
+}
 
 .last-sync {
   font-size: 12px;
-  color: var(--muted);
+  color: var(--text-3);
   margin-top: 6px;
 }
 
@@ -352,71 +283,61 @@ textarea {
   margin: 10px 0;
 }
 
+.check-row input {
+  width: auto;
+}
+
 .warning-box {
-  background: rgba(230, 162, 60, 0.12);
+  background: rgba(230, 162, 60, 0.1);
   border: 1px solid var(--warn);
+  border-left-width: 2px;
   color: var(--warn);
-  border-radius: 8px;
   padding: 10px 12px;
   font-size: 12px;
   line-height: 1.7;
 }
 
-/* 锁定屏 */
-.lock-screen {
-  background: var(--list-item);
-  border: 1px solid var(--border);
-  border-radius: 10px;
+/* options 页内的锁定屏：居中卡片形态 */
+.options .lock-screen {
+  background: var(--line-2);
+  border: none;
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
   padding: 20px 24px;
   max-width: 520px;
   margin: 48px auto;
 }
 
-.lock-screen h2 {
-  margin: 0 0 10px;
-  color: var(--foreground);
+.options .lock-screen::before {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  background: var(--bg-1);
+  clip-path: polygon(9.3px 0, 100% 0, 100% calc(100% - 9.3px), calc(100% - 9.3px) 100%, 0 100%, 0 9.3px);
 }
 
-.lock-hint {
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.7;
+.options .lock-screen > * {
+  position: relative;
+}
+
+.options .lock-screen h2 {
+  margin: 0 0 10px;
+}
+
+.options .lock-hint {
   margin: 0 0 12px;
 }
 
-.lock-input {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 8px 12px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  font-size: 14px;
-  font-family: inherit;
-  color: var(--foreground);
-  background: var(--background);
-}
-
-.lock-input:focus {
-  outline: none;
-  border-color: var(--primary);
-}
-
-.lock-actions {
+.options .lock-actions {
   margin-top: 12px;
 }
 
-.lock-error {
+.options .lock-error {
   margin-top: 10px;
-  padding: 8px 10px;
-  border-radius: 8px;
-  background: rgba(245, 108, 108, 0.12);
-  color: var(--danger);
-  font-size: 13px;
 }
 
 /* 安全面板 */
-.security-form {
+.options .security-form {
   margin-top: 10px;
   padding-top: 10px;
-  border-top: 1px dashed var(--border);
+  border-top: 1px dashed var(--line-2);
 }

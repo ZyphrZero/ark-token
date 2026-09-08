@@ -7,15 +7,15 @@ function RecruitItem({ recruit, index, now }: { recruit: SklandRecruit; index: n
   const state = parseRecruitSlot(recruit, now)
 
   return (
-    <li className="recruit-item">
+    <li className={`recruit-item cut-box recruit-item--${state.status}`}>
       <span className="slot-badge font-bender">{index + 1}</span>
       {state.status === 'completed' && <span className="slot-main">已成功招募到候选人</span>}
       {state.status === 'recruiting' && (
         <>
-          <span className="slot-main recruiting-label">招募中...</span>
+          <span className="slot-main">招募中...</span>
           <span className="slot-countdown">
-            <span>剩余时间: {formatDuration(state.remainMs ?? 0)}</span>
-            <span>预计完成于 {formatClockTime(state.finishAtMs ?? 0, now)}</span>
+            <span>剩余 {formatDuration(state.remainMs ?? 0)}</span>
+            <span>{formatClockTime(state.finishAtMs ?? 0, now)} 完成</span>
           </span>
         </>
       )}
@@ -38,10 +38,15 @@ export default function RecruitTab({ info }: { info: SklandBindingInfo }) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-      <div className="hire-refresh-row">
+    <>
+      <div className="hire-row">
         {hire
-          ? <>联络次数 <span className="font-bender">{hire.refreshCount}</span>/3</>
+          ? (
+              <>
+                <span>联络次数</span>
+                <span className="readout font-bender"><b>{hire.refreshCount}</b><i>/3</i></span>
+              </>
+            )
           : '公招功能可能尚未解锁'}
       </div>
       <ul className="recruit-list">
@@ -49,6 +54,6 @@ export default function RecruitTab({ info }: { info: SklandBindingInfo }) {
           <RecruitItem key={`${recruit.startTs}-${index}`} recruit={recruit} index={index} now={now} />
         ))}
       </ul>
-    </div>
+    </>
   )
 }

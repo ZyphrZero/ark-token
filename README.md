@@ -139,13 +139,17 @@ ark-token/
 │   │   ├── index.ts                # service worker：同步/面板刷新/助战消息路由 + chrome.alarms 定时同步与面板刷新（锁定时跳过）
 │   │   └── infoRefresh.ts          # 面板数据定时刷新 + 公招/理智桌面通知调度（通知 alarm 前缀 yituliu-notify-）
 │   ├── security/                   # 安全相关界面（锁定屏 / 主密码设置 / 安全面板，popup 与 options 共用）
+│   ├── ui/                         # 罗德岛终端设计系统（popup / options / security 共享）
+│   │   ├── tokens.css              # 设计令牌：近黑底 + 白字 + 终端黄交互色、三级文字/线/表面、设施语义色
+│   │   ├── ui.css                  # 通用控件：斜切角容器、格纹装饰、按钮/输入/卡片/徽标/分段 Tabs/斜角进度条（含安全组件依赖的类）
+│   │   ├── icons.tsx               # 统一内联 SVG 图标库（currentColor 线性风格，24 网格）
+│   │   └── components.tsx          # UI 原语：SectionHeader（双语标题）/CutCard/MeterBar/StatReadout/Tag/SegmentedTabs 等
 │   ├── popup/                      # 弹窗状态面板与助战检索页
 │   │   ├── panel/                  # 面板区块组件（recruit/ 公招、building/ 基建）
 │   │   ├── assist/                 # 助战检索页面（业务规则复用 src/core/assist/，本目录只保留表单与渲染）
 │   │   ├── useNow.ts               # 实时时钟 hook（驱动倒计时，tick 内不发请求）
-│   │   ├── icons.tsx               # 内联 SVG 图标
 │   │   ├── panelActions.ts         # 弹窗 → 后台消息与页面跳转辅助
-│   │   └── assets/                 # 字体（Bender/Akrobat）、图标 SVG、区块标题底纹（移植自 rhodes-headquarters）
+│   │   └── assets/                 # 字体（Bender/Akrobat）、基建设施与干员心情图标 SVG
 │   ├── options/                    # 管理页（账号管理 / 添加向导 / 设置，含状态面板与通知设置）
 │   │   └── yituliuSession.ts       # 从一图流标签页读取登录会话（chrome.scripting 胶水）
 │   ├── assets/
