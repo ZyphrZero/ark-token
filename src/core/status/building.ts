@@ -13,14 +13,8 @@ import type {
   SklandPanelCharacter,
   SklandResidentCharacter
 } from '../skland-info'
-import slimTableJson from '../../assets/operator-table.slim.json'
-import droneChargeTableJson from '../../assets/drone-charge-table.json'
-
-/** 精简干员表（含技能名第三元素，构建口径见 scripts/build-operator-table.mjs） */
-const operatorSlimTable = slimTableJson as unknown as Record<
-  string,
-  [number, Record<string, string> | null, (string[] | null)?]
->
+import { operatorData } from '../operator-data'
+import type { BuildingSkillTier } from '../operator-data'
 
 /** 无人机基准恢复速率：无充能加成时每 360 秒（6 分钟）恢复 1 架 */
 const DRONE_BASE_RECOVERY_SECONDS = 360
@@ -96,7 +90,7 @@ export function computeDroneCount(labor: SklandLabor, nowMs: number): number {
 /**
  * 发电站发电量（下标 0 = 1 级）：游戏数据 building_data.json 的
  * rooms.POWER.phases[].electricity，2026-09-08 核实为 60/130/270。
- * 源表数值变动时 scripts/build-drone-charge-table.mjs 会构建失败以提醒同步。
+ * 源表数值变动时 scripts/build-operator-data.mjs 会构建失败以提醒同步。
  */
 export const POWER_ELECTRICITY: readonly number[] = [60, 130, 270]
 
@@ -124,26 +118,53 @@ export function powerSharePercent(rooms: SklandBuildingPower[], room: SklandBuil
  */
 export const POWER_PLANT_BASE_CHARGE_PERCENT = 5
 
-/** 充能技能档位（表结构与生成口径见 scripts/build-drone-charge-table.mjs） */
-export interface DroneChargeTier {
-  /** 解锁所需精英阶段 */
-  phase: number
-  /** 解锁所需该阶段等级 */
-  level: number
-  /** 无条件生效的加成百分点（条件型技能为 0） */
-  percent: number
-  /** 技能名 */
-  name: string
-  /** per10Drone：每 10 架无人机上限 +1%（percent 为上限）；ramp：percent 为爬升终值 */
-  scale?: 'per10Drone' | 'ramp'
-  /** 依赖其他干员进驻位置的附加加成，运行时不计入（见 partial） */
-  extra?: { percent: number; max?: number; requires: string }
-}
+/** 充能技能档位（`BuildingSkillTier` 的充能语义子集，派生自 operator-data） */
+export type DroneChargeTier = BuildingSkillTier
 
 /** 充能技能表：charId → 技能槽[]（不同槽可叠加，每槽为同槽升级链、按解锁条件升序） */
 export type DroneChargeTable = Record<string, DroneChargeTier[][]>
 
-const droneChargeTable = droneChargeTableJson as DroneChargeTable
+/** 是否发电站充能技能：percent>0 或含条件型附加（percent=0 的普通技能/非充能跳过） */
+function isChargeTier(tier: BuildingSkillTier): boolean {
+  return tier.percent > 0 || tier.extra !== undefined
+}
+
+/**
+ * 同槽 α/β 升级链判定：连续两个充能档位，若后者 phase 严格更高（且 level 相同，即
+ * 精英化解锁的替换），视为同一技能槽的升级（α→β），否则视为独立技能槽。
+ * 可区分格劳克斯 α(0,1)→β(2,1)（同槽替换）与 Friston-3 备用能源(0,1)/愉快的对话(0,30)
+ * （phase 相同、level 递升 → 独立技能，可叠加）。
+ */
+function isChainUpgrade(prev: DroneChargeTier, next: DroneChargeTier): boolean {
+  return next.phase > prev.phase && next.level === prev.level
+}
+
+/**
+ * 由全量表构建充能技能表：每个干员的 buildingSkills 按「同槽升级链」分组为技能槽，
+ * 只保留发电站充能技能。同一技能槽的可能为 α/β 链（phase 递增，取练度已满足的末档），
+ * 不同技能槽相互独立可叠加。生成口径见 scripts/build-operator-data.mjs。
+ */
+const droneChargeTable: DroneChargeTable = (() => {
+  const table: DroneChargeTable = {}
+  for (const [charId, entry] of Object.entries(operatorData.operators)) {
+    // 只收充能档位，按解锁条件（phase→level）升序，模拟同槽链与多槽的读取顺序
+    const charge = entry.buildingSkills.filter(isChargeTier).sort((a, b) => a.phase - b.phase || a.level - b.level)
+    if (charge.length === 0) continue
+    const groups: DroneChargeTier[][] = []
+    for (const tier of charge) {
+      const last = groups[groups.length - 1]
+      const prev = last?.[last.length - 1]
+      // 与上一档构成同槽升级链则并入，否则开新槽
+      if (prev && isChainUpgrade(prev, tier)) {
+        last.push(tier)
+      } else {
+        groups.push([tier])
+      }
+    }
+    table[charId] = groups
+  }
+  return table
+})()
 
 /** 档位实际数值：per10Drone 按无人机上限折算（每 10 架 +1%，封顶 percent）；ramp 取长期终值 */
 function tierPercent(tier: DroneChargeTier, droneMax: number): number {
@@ -431,7 +452,7 @@ export function trainingSpeedBonusPercent(speed: number): number {
 export type SkillNameTable = Record<string, readonly string[] | null | undefined>
 
 const skillNameTable: SkillNameTable = Object.fromEntries(
-  Object.entries(operatorSlimTable).map(([charId, entry]) => [charId, entry[2]])
+  Object.entries(operatorData.operators).map(([charId, entry]) => [charId, entry.skills])
 )
 
 /** 专精等级 → 中文文案（与游戏内「专精一/二/三」一致） */

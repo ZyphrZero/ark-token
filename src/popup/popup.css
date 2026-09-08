@@ -482,6 +482,29 @@ body {
   flex-direction: column;
 }
 
+/* 整卡可折叠：button 包住头部，去按钮默认外观，点击区扩到整行高度 */
+.room-collapse {
+  display: block;
+  width: 100%;
+  padding: 1px 0;
+  margin: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.room-collapse:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: -1px;
+}
+
+.room-collapse:hover .room-name {
+  color: var(--accent);
+}
+
 .room-head {
   display: flex;
   align-items: center;
@@ -490,6 +513,18 @@ body {
   border-left: 2px solid var(--room-accent);
   margin-left: 1px;
   color: var(--room-accent);
+}
+
+/* 折叠箭头：展开朝下，折叠朝右（rotate 由 React 侧 class 控制，避免手写两种形态） */
+.room-collapse-icon {
+  flex-shrink: 0;
+  color: var(--text-3);
+  transition: transform 0.15s ease;
+  pointer-events: none;
+}
+
+.room-collapse-icon.open {
+  transform: rotate(180deg);
 }
 
 .room-head .room-name {
@@ -788,6 +823,103 @@ body {
 .resident .resident-mood-text.tired {
   color: var(--danger);
   opacity: 1;
+}
+
+/* ---- 基建技能浮层（悬浮进驻干员头像） ----
+ * portal 到 body（头像在 .building-scroll 的 overflow 内，就地定位会被裁切）。
+ * 位置与 max-height 由 tooltipPlacement.ts 按锚点算好后内联下发：只走上下不走左右，
+ * 保证不遮挡头像；放不下时限高、内部滚动，而不是位移到锚点上方。
+ * pointer-events: none —— 浮层不拦鼠标，避免与头像 hover 抢事件导致闪烁。
+ */
+.skill-tip {
+  --cut: 7px;
+  --box-bg: var(--bg-1);
+  position: fixed;
+  z-index: 60;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  /* 限高来自 JS 实测。4 技能 + 长描述最坏约 440px，而头像居中时上下各只剩 ~267px，
+   * 溢出确实会发生，故浮层必须可滚动 → 需要接收鼠标事件；移入浮层时的关闭延迟
+   * 交接见 ResidentCharacter。 */
+  overflow-y: auto;
+  pointer-events: auto;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.55);
+}
+
+.skill-tip-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+/* 未解锁：整条压暗（与游戏内一致），描述里的着色也一并变灰 */
+.skill-tip-item.locked {
+  opacity: 0.45;
+}
+
+.skill-tip-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.skill-tip-icon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  object-fit: contain;
+  background: var(--bg-2);
+  border: 1px solid var(--line-2);
+}
+
+.skill-tip-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-1);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 已解锁/未解锁徽标：靠右，弱化处理（状态本身已由整条透明度体现） */
+.skill-tip-badge {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-size: 10px;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+
+.skill-tip-unlock {
+  font-size: 10px;
+  color: var(--text-3);
+}
+
+.skill-tip-desc {
+  font-size: 11px;
+  line-height: 15px;
+  color: var(--text-2);
+  word-break: break-word;
+}
+
+/* 富文本着色（上游 <@cc.*> 标签，见 BuffDescription） */
+.skill-tip-desc .buff-vup {
+  color: var(--ok);
+}
+
+.skill-tip-desc .buff-vdown {
+  color: var(--danger);
+}
+
+.skill-tip-desc .buff-kw {
+  color: var(--info);
+}
+
+.skill-tip-desc .buff-rem {
+  color: var(--warn);
 }
 
 /* ============ 任务进度 ============ */

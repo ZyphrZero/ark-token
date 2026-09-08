@@ -5,5 +5,7 @@ dist/
 .zcode/
 .codegraph/
 skland_dump/
-# 上游游戏数据源表（5MB+，仅构建 drone-charge-table 时需要，下载方式见 scripts/build-drone-charge-table.mjs）
+# 上游数据下载缓存（build:operator-data 用，可安全删除后重下）
+.cache/
+# 上游游戏数据源表（5MB+，已由 build:operator-data 联网获取，本地副本仅作缓存）
 assets-source/building_data.json

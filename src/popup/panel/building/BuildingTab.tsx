@@ -45,14 +45,20 @@ import comfortIcon from '../../assets/icons/fenwei.svg'
 import droneChargeIcon from '../../assets/icons/无人机.svg'
 import powerStatIcon from '../../assets/icons/电力图标.svg'
 import ResidentCharacter from './ResidentCharacter'
+import type { CharMap } from './ResidentCharacter'
+import { useRoomCollapse } from './roomCollapse'
+import type { RoomCollapse } from './roomCollapse'
 
 /**
- * 基建设施卡片骨架：头部（语义色条 + 中英文名 + 菱形等级刻度）+
+ * 基建设施卡片骨架：头部（语义色条 + 折叠箭头 + 中英文名 + 菱形等级刻度）+
  * 主体（60×60 设施图标作底层铺在卡片左侧，info 信息行叠加覆盖在图标上方靠左显示）+
  * 进驻干员（右侧）。info/extra 走 prop、children 只放干员，避免信息块被混进干员列。
  * 语义色由 tone 对应的 room--{tone} 类提供（--room-accent），视图层不内联色值。
+ *
+ * 可折叠：整卡头部可点击切换，折叠后只保留头部一行（露出下面的房间），
+ * 状态由调用方用 useRoomCollapse（localStorage 持久化）统一管理。
  */
-function RoomCard({ title, en, level, tone, icon, info, extra, children }: {
+function RoomCard({ title, en, level, tone, icon, info, extra, children, collapsed, onToggle, toggleable = true }: {
   title: string
   en: string
   level: number
@@ -61,26 +67,61 @@ function RoomCard({ title, en, level, tone, icon, info, extra, children }: {
   info?: ReactNode
   extra?: ReactNode
   children?: ReactNode
+  /** 是否折叠（仅调用方已启用折叠时传入；缺省视为展开） */
+  collapsed?: boolean
+  /** 点击头部切换折叠 */
+  onToggle?: () => void
+  /** 是否可折叠（单间但有内容的房间默认可折叠；确无内容时置 false 隐藏箭头） */
+  toggleable?: boolean
 }) {
+  const isCollapsed = collapsed === true
+  const head = (
+    <div className="room-head">
+      {toggleable && onToggle && (
+        <CollapseIcon className={`room-collapse-icon${isCollapsed ? '' : ' open'}`} size={10} />
+      )}
+      <span className="room-name">{title}</span>
+      <span className="room-en">{en}</span>
+      <span className="room-level">
+        {Array.from({ length: level }, (_, index) => (
+          <LevelMark key={index} />
+        ))}
+      </span>
+    </div>
+  )
   return (
     <div className={`room-card cut-box room--${tone}`}>
-      {/* 头部文字白色，语义色只体现在左侧色条与等级刻度 */}
-      <div className="room-head">
-        <span className="room-name">{title}</span>
-        <span className="room-en">{en}</span>
-        <span className="room-level">
-          {Array.from({ length: level }, (_, index) => (
-            <LevelMark key={index} />
-          ))}
-        </span>
-      </div>
-      <div className="room-body">
-        <img className="room-icon" src={icon} alt="" />
-        {info && <div className="room-info">{info}</div>}
-        {extra && <div className="room-extra">{extra}</div>}
-        {children && <div className="room-residents">{children}</div>}
-      </div>
+      {toggleable && onToggle ? (
+        <button
+          type="button"
+          className="room-collapse"
+          aria-expanded={!isCollapsed}
+          onClick={onToggle}
+          title={isCollapsed ? '展开' : '折叠'}
+        >
+          {head}
+        </button>
+      ) : (
+        head
+      )}
+      {!isCollapsed && (
+        <div className="room-body">
+          <img className="room-icon" src={icon} alt="" />
+          {info && <div className="room-info">{info}</div>}
+          {extra && <div className="room-extra">{extra}</div>}
+          {children && <div className="room-residents">{children}</div>}
+        </div>
+      )}
     </div>
+  )
+}
+
+/** 折叠箭头（头部左侧，展开时朝下、折叠时朝右） */
+function CollapseIcon({ className, size = 10 }: { className?: string; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 10 10" fill="none" className={className} aria-hidden="true">
+      <path d="M2 3.5 5 6.5 8 3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   )
 }
 
@@ -95,6 +136,16 @@ function roomTitle(base: string, rooms: { slotId: string }[], slotId: string): s
   return number !== null ? `${base}${number}` : base
 }
 
+/**
+ * 折叠状态的持久化 key。多间设施用「类型 + 槽位号」（槽位号是基建全局唯一，见
+ * roomSlotNumber）；单间设施直接用具名 key。槽位号含 `slot_` 前缀（真实接口格式），
+ * 直接拼 `slot_26` 而不取数字——取数字拼接在「玩家基建里槽位号恰好重组」时可能与
+ * 其他房间撞 key。
+ */
+function roomKeyOf(type: string, slotId: string): string {
+  return `${type}:${slotId}`
+}
+
 /** 发电站充能加成明细提示：基础 +5% + 技能名 +20% = +25%；条件型加成未计入时补充说明 */
 function chargeTitle(charge: PowerPlantCharge): string {
   const parts = [`基础 +${charge.base}%`]
@@ -105,11 +156,18 @@ function chargeTitle(charge: PowerPlantCharge): string {
   return charge.partial ? `${text}（*另有依赖其他干员进驻的附加加成未计入）` : text
 }
 
-function ManufactureRoom({ room, rooms, nowSec, charMap }: { room: SklandBuildingManufacture; rooms: SklandBuildingManufacture[]; nowSec: number; charMap: Map<string, string> }) {
+function ManufactureRoom({ room, rooms, nowSec, charMap, collapse }: {
+  room: SklandBuildingManufacture
+  rooms: SklandBuildingManufacture[]
+  nowSec: number
+  charMap: CharMap
+  collapse: RoomCollapse
+}) {
   const formula = MANUFACTURE_FORMULAS[room.formulaId]
   const weight = estimateManufactureWeight(room, nowSec * 1000)
   // 生产耗尽后干员停止消耗心情，外推不超过配方剩余工时
   const capSec = manufactureWorkCapSec(room)
+  const key = roomKeyOf('manufacture', room.slotId)
   return (
     <RoomCard
       title={roomTitle('制造站', rooms, room.slotId)}
@@ -117,6 +175,8 @@ function ManufactureRoom({ room, rooms, nowSec, charMap }: { room: SklandBuildin
       level={room.level}
       tone="manufacture"
       icon={manufactureIcon}
+      collapsed={collapse.isCollapsed(key)}
+      onToggle={() => collapse.toggle(key)}
       info={(
         <>
           <div className="room-info-row">
@@ -141,7 +201,14 @@ function ManufactureRoom({ room, rooms, nowSec, charMap }: { room: SklandBuildin
   )
 }
 
-function TradingRoom({ room, rooms, nowSec, charMap }: { room: SklandBuildingTrading; rooms: SklandBuildingTrading[]; nowSec: number; charMap: Map<string, string> }) {
+function TradingRoom({ room, rooms, nowSec, charMap, collapse }: {
+  room: SklandBuildingTrading
+  rooms: SklandBuildingTrading[]
+  nowSec: number
+  charMap: CharMap
+  collapse: RoomCollapse
+}) {
+  const key = roomKeyOf('trading', room.slotId)
   return (
     <RoomCard
       title={roomTitle('贸易站', rooms, room.slotId)}
@@ -149,6 +216,8 @@ function TradingRoom({ room, rooms, nowSec, charMap }: { room: SklandBuildingTra
       level={room.level}
       tone="trading"
       icon={tradingIcon}
+      collapsed={collapse.isCollapsed(key)}
+      onToggle={() => collapse.toggle(key)}
       info={(
         <>
           <div className="room-info-row">
@@ -176,7 +245,12 @@ function TradingRoom({ room, rooms, nowSec, charMap }: { room: SklandBuildingTra
 /** 各线索系列的标记色，按游戏内线索图样主题色提亮以适配深色背景；顺序对应槽位 1-7 */
 const CLUE_COLORS = ['#9fce6a', '#5a8fe0', '#7c8cb8', '#e05a5a', '#fdd400', '#c79a6b', '#78b5bf']
 
-function MeetingRoom({ info, nowSec, charMap }: { info: SklandBindingInfo; nowSec: number; charMap: Map<string, string> }) {
+function MeetingRoom({ info, nowSec, charMap, collapse }: {
+  info: SklandBindingInfo
+  nowSec: number
+  charMap: CharMap
+  collapse: RoomCollapse
+}) {
   const meeting = info.building.meeting
   if (!meeting) {
     return null
@@ -184,6 +258,7 @@ function MeetingRoom({ info, nowSec, charMap }: { info: SklandBindingInfo; nowSe
   // 搜集线索的干员与线索板并排展示
   const capSec = meetingWorkCapSec(meeting)
   const slots = clueBoardSlots(meeting.clue)
+  const key = roomKeyOf('meeting', meeting.slotId)
   return (
     <RoomCard
       title="会客室"
@@ -191,6 +266,8 @@ function MeetingRoom({ info, nowSec, charMap }: { info: SklandBindingInfo; nowSe
       level={meeting.level}
       tone="meeting"
       icon={meetingIcon}
+      collapsed={collapse.isCollapsed(key)}
+      onToggle={() => collapse.toggle(key)}
       extra={(
         <>
           <div className="meeting-status-row">
@@ -234,18 +311,30 @@ export default function BuildingTab({ info }: { info: SklandBindingInfo }) {
   const nowSec = Math.floor(useNow(1000) / 1000)
   const building = info.building
 
-  const charMap = new Map((info.chars ?? []).map(char => [char.charId, char.skinId]))
+  // charId → 干员条目（皮肤用于头像、evolvePhase/level 用于基建技能解锁判定）
+  const charMap = new Map((info.chars ?? []).map(char => [char.charId, char]))
   const manufactures = bySlot(building?.manufactures ?? [])
   const tradings = bySlot(building?.tradings ?? [])
   const dormitories = bySlot(building?.dormitories ?? [])
   const powers = bySlot(building?.powers ?? [])
   // 发电站充能的 per10Drone 档位（巡线框架）需要无人机上限，故一并取 labor
   const labor = building?.labor
+  // 房间折叠偏好（localStorage 持久化，key 见 roomKeyOf）
+  const collapse = useRoomCollapse()
 
   const rooms: ReactNode[] = []
   if (building?.control) {
     rooms.push(
-      <RoomCard key="control" title="控制中枢" en="Control" level={building.control.level} tone="control" icon={controlIcon}>
+      <RoomCard
+        key="control"
+        title="控制中枢"
+        en="Control"
+        level={building.control.level}
+        tone="control"
+        icon={controlIcon}
+        collapsed={collapse.isCollapsed('control')}
+        onToggle={() => collapse.toggle('control')}
+      >
         {building.control.chars.map(resident => (
           // 控制中枢无官方消耗速率口径，展示快照心情
           <ResidentCharacter key={resident.charId} resident={resident} charMap={charMap} />
@@ -254,15 +343,16 @@ export default function BuildingTab({ info }: { info: SklandBindingInfo }) {
     )
   }
   for (const room of manufactures) {
-    rooms.push(<ManufactureRoom key={`manufacture-${room.slotId}`} room={room} rooms={manufactures} nowSec={nowSec} charMap={charMap} />)
+    rooms.push(<ManufactureRoom key={`manufacture-${room.slotId}`} room={room} rooms={manufactures} nowSec={nowSec} charMap={charMap} collapse={collapse} />)
   }
   for (const room of tradings) {
-    rooms.push(<TradingRoom key={`trading-${room.slotId}`} room={room} rooms={tradings} nowSec={nowSec} charMap={charMap} />)
+    rooms.push(<TradingRoom key={`trading-${room.slotId}`} room={room} rooms={tradings} nowSec={nowSec} charMap={charMap} collapse={collapse} />)
   }
   if (building?.meeting) {
-    rooms.push(<MeetingRoom key="meeting" info={info} nowSec={nowSec} charMap={charMap} />)
+    rooms.push(<MeetingRoom key="meeting" info={info} nowSec={nowSec} charMap={charMap} collapse={collapse} />)
   }
   for (const [index, room] of dormitories.entries()) {
+    const dormKey = roomKeyOf('dormitory', room.slotId)
     rooms.push(
       <RoomCard
         key={`dormitory-${room.slotId}-${index}`}
@@ -271,6 +361,8 @@ export default function BuildingTab({ info }: { info: SklandBindingInfo }) {
         level={room.level}
         tone="dormitory"
         icon={dormitoryIcon}
+        collapsed={collapse.isCollapsed(dormKey)}
+        onToggle={() => collapse.toggle(dormKey)}
         info={(
           <div className="room-info-row">
             <img className="room-info-icon" src={comfortIcon} alt="" />
@@ -294,7 +386,16 @@ export default function BuildingTab({ info }: { info: SklandBindingInfo }) {
     const hire = building.hire
     const capSec = hireWorkCapSec(hire, nowSec)
     rooms.push(
-      <RoomCard key="hire" title="人力办公室" en="HR Office" level={hire.level} tone="hire" icon={hireIcon}>
+      <RoomCard
+        key="hire"
+        title="人力办公室"
+        en="HR Office"
+        level={hire.level}
+        tone="hire"
+        icon={hireIcon}
+        collapsed={collapse.isCollapsed('hire')}
+        onToggle={() => collapse.toggle('hire')}
+      >
         {hire.chars.map(resident => (
           <ResidentCharacter
             key={resident.charId}
@@ -320,6 +421,8 @@ export default function BuildingTab({ info }: { info: SklandBindingInfo }) {
         level={training.level}
         tone="training"
         icon={trainingIcon}
+        collapsed={collapse.isCollapsed('training')}
+        onToggle={() => collapse.toggle('training')}
         info={completeAt >= 0 ? (
           <>
             <div className="room-info-row">
@@ -370,6 +473,7 @@ export default function BuildingTab({ info }: { info: SklandBindingInfo }) {
     // 充能 = 基础 5% + 进驻干员基建技能（按 chars 的精英阶段取档，见 powerPlantChargePercent）
     const charge = labor ? powerPlantChargePercent(room, info.chars, labor) : null
     const share = powerSharePercent(powers, room)
+    const powerKey = roomKeyOf('power', room.slotId)
     rooms.push(
       <RoomCard
         key={`power-${room.slotId}`}
@@ -378,6 +482,8 @@ export default function BuildingTab({ info }: { info: SklandBindingInfo }) {
         level={room.level}
         tone="power"
         icon={powerIcon}
+        collapsed={collapse.isCollapsed(powerKey)}
+        onToggle={() => collapse.toggle(powerKey)}
         info={(
           <>
             <div className="room-info-row" title={charge ? chargeTitle(charge) : undefined}>

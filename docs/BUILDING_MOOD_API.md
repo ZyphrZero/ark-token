@@ -7,9 +7,11 @@
 计算逻辑还原自 App 前端 bundle `_web_inspect/main-0a037d97.3091b5d8.js`。
 
 2026-09-08 补充采集：新增 player/info 快照（`currentTs=1788853862`，账号 3 发电站/3 制造/
-3 贸易/4 宿舍全量）用于发电站电力与充能加成的核实，见第六节；游戏侧常量口径来自
-ArknightsGameData 的 `building_data.json`（`rooms.POWER`、`powerData`、`buffs`、
-`chars[].buffChar`），提取脚本 `scripts/build-drone-charge-table.mjs`。
+3 贸易/4 宿舍全量）用于发电站电力与充能加成的核实，见第六节。
+
+游戏侧静态数据统一由 `scripts/build-operator-data.mjs` 生成到
+`src/assets/operator-data.json`（干员/技能/房间全量表）与
+`src/popup/assets/building-skills/`（529 枚技能图标），源见第十一节。
 
 ## 一、传输格式的两个版本
 
@@ -158,22 +160,23 @@ App 首页「干员疲劳 N」= 服务端 tiredChars 数 + 客户端按上述外
 与 `labor {maxValue:235, value:2, remainSecs:52364}` → 52364/233 = 224.7 秒/架
 = 360/1.6 → +60% **完全一致**，两条独立路径互证。
 
-**技能取档规则**（`powerPlantSkillPercent`）：技能表 `src/assets/drone-charge-table.json`
-的每名干员为「技能槽[] → 同槽升级链[]」结构：
+**技能取档规则**（`powerPlantSkillPercent`）：充能表由 `src/assets/operator-data.json` 的
+`operators[].buildingSkills` 在运行时派生（`building.ts` 的 `droneChargeTable`）——
+只保留充能档位（`percent > 0` 或含 `extra`），再按「同槽升级链」分组：
 
 - 同槽的 α/β 是**替换**关系（β 需精英2），取「练度已满足的最后一档」；
   练度用快照 `chars[].evolvePhase` / `level` 判定，高精英阶段自动满足低阶条件。
   **不可假设账号已精2**——抓包账号三人全是精0，取 β 会各高 5%、总数错成 +65%/+70%。
 - 不同槽可**叠加**（4 名干员有双充能槽），跨槽求和。
+- **分组判据**（`isChainUpgrade`）：上游 arkntools 的技能序列不显式区分「同槽升级」与
+  「独立技能槽」，两者靠解锁条件区分——后一档 `phase` 严格更高**且 `level` 相同**
+  即同槽替换（格劳克斯 α(0,1)→β(2,1)）；`phase` 相同而 `level` 递升则是独立技能
+  （Friston-3 备用能源(0,1) / “愉快的对谈”(0,30)，可叠加）。仅按序号分槽会把 α/β
+  当成两槽相加，实测会把格劳克斯算成 +30%（应为 +20%）。
 - 特殊档：`per10Drone`（巡线框架，每 10 架无人机上限 +1%、封顶 +25%，按 `labor.maxValue`
   计算，235 上限 → +23%）、`ramp`（技术交流·α/β 随连续工作小时爬升，取终值）。
-- **条件型档位 6 个不计入**（如「凯尔希进驻中枢 +5%」「每有 1 名莱茵生命干员 +3%」），
+- **条件型档位不计入**（如「凯尔希进驻中枢 +5%」「每有 1 名莱茵生命干员 +3%」），
   需要快照外的阵营/子职业元数据；命中时置 `partial`，面板在数值后标 `*` 并在 title 说明。
-
-表由 `scripts/build-drone-charge-table.mjs` 从 `building_data.json` 生成
-（32 名干员 / 45 档，源表 5MB 不入库，下载方式见脚本头注释）；脚本对
-`powerData.basicSpeedBuff`、`rooms.POWER.electricity`、未知描述句式、
-新增充能槽结构均**断言失败**而非静默跳过。
 
 电力与充能是两套独立系统（电力只约束建筑建造/升级上限，不影响充能）。
 回归测试见 `src/core/status/building.test.ts`（"抓包回归：2026-09-08 三发电站" describe）。
@@ -271,11 +274,12 @@ training.trainee.targetSkill 为 chars[].skills 数组的 0 起下标（-1 = 空
 > 证明是 0 起下标而非 1 起槽位号；曾按 1 起解读导致技能定位错误，已修正。
 
 封装见 `trainingSkillInfo()` / `specializeLevelText()`（`src/core/status/building.ts`）。
-技能名表来自精简干员表第三元素（`scripts/build-operator-table.mjs` 生成）：源表
-`character_table_simple.v2.json` 的 `skills[].skillName` 为主；源表未收录的新干员由
-`assets-source/skill-name-extra.v1.json` 补充（提取自 ArknightsGameData 的
+技能名表来自 `operator-data.json` 的 `operators[].skills`：以本地源表
+`assets-source/character_table_simple.v2.json` 的 `skills[].skillName` 为主；源表未收录的
+新干员由 `assets-source/skill-name-extra.v1.json` 补充（提取自 ArknightsGameData 的
 character_table + skill_table：TIER_1+ 干员，`{ [charId]: [rarity, [技能名...]] }`，
 技能名取 skill_table `levels` 末级 name）。极新干员两表都缺时技能名回退为「技能N」。
+（`char_4217_makoto` 即只在补充表中，回归用例依赖它。）
 
 ## 十、心情消耗速率差分实测（备查，未接入插件）
 
@@ -309,3 +313,125 @@ character_table + skill_table：TIER_1+ 干员，`{ [charId]: [rarity, [技能�
   （游戏明细为逐干员贡献 1 + Σ技能加成，房间与快照 slot 的映射会因换班漂移）。
 - 若将来重新引入，须先解决上述口径漂移问题，且不得按「心情耗尽倒计时」解读游戏内
   逐干员「剩余时间」（那是房间生产完成时刻，见第八节）。
+
+## 十一、静态游戏数据源与生成（2026-09-08 换源）
+
+游戏侧静态数据（干员元数据、基建技能、技能图标、房间常量）统一由
+`npm run build:operator-data`（`scripts/build-operator-data.mjs`）生成，产物两处：
+
+| 产物 | 内容 |
+|---|---|
+| `src/assets/operator-data.json` | `operators`（429 名：中文名/星级/职业/位置/模组映射/战斗技能名/基建技能）、`buffs`（755 个技能：名称/描述/percent/图标）、`rooms`（12 间：名称 + electricity） |
+| `src/popup/assets/building-skills/` | 529 枚技能图标 |
+
+### 数据源
+
+| 来源 | 取用 | 说明 |
+|---|---|---|
+| [`arkntools/arknights-toolbox-data`](https://github.com/arkntools/arknights-toolbox-data) | `assets/data/{building,character}.json`、`assets/locales/cn/{building,character}.json`、`assets/img/building_skill/` | 主源，**固定 commit**（与 RIIC-Web 同一提交）；干员→基建技能、技能名/描述/图标、星级/职业 |
+| `Kengxxiao/ArknightsGameData` | `zh_CN/gamedata/excel/building_data.json` | 只取房间级常量（`rooms.*.phases[].electricity`、`powerData.basicSpeedBuff`），arkntools **不含**这些 |
+| `assets-source/character_table_simple.v2.json` | `equip[].{uniEquipId,typeName2}`、`skills[].skillName` | 本地源表，模组映射与战斗技能名，arkntools **不含**这些 |
+| `assets-source/skill-name-extra.v1.json` | `[charId]: [rarity, [技能名...]]` | 源表未收录的新干员技能名 |
+
+### 拉取策略（国内可达）
+
+默认走 **jsDelivr CDN**（`ARKDATA_SRC=jsdelivr`，国内直连可用），`ARKDATA_SRC=github` 切 raw。
+下载层 **curl 优先、Node fetch 兜底**（实测本机 Node 的 undici 直连 raw.githubusercontent
+超时而 curl 正常）。下载内容缓存到 `.cache/arkdata/`（已 gitignore，删掉会重下）。
+
+两个坑（都已实测确认，改源时注意）：
+
+- **Kengxxiao 仓库 >20MB，jsDelivr 直接 404**，只能走 raw；路径必须带 `zh_CN/` 前缀。
+- **`arkntools` 的技能描述是二级索引**：`buff.data[id].desc` 是 **hex 字符串键**（如 `"8c2e"`），
+  须按原字符串去 `locales/cn/building.json` 的 `buff.description[键]` 取，
+  `Number()` 转十进制会取空；取出后**必须剥 `<@cc.vup>` 富文本标签**再解析数值，
+  否则 `无人机充能速度+20%` 匹配不到（曾导致全表 `percent` 为 0）。
+
+### 断言而非静默降级
+
+脚本对以下变动**直接抛错**，避免静默产出错数据：`powerData.basicSpeedBuff ≠ 0.05`、
+`rooms.POWER.electricity ≠ [60,130,270]`、`unlock` 格式无法解析。
+
+### 技能图标
+
+529 枚（覆盖全部房间，不只发电站），扩展名在生成期统一决定（`ICON_EXT`）：
+编码器优先 `cwebp`、其次 `ffmpeg`（libwebp），都没有则落原 PNG。
+
+- 一律**无损**：36×36 带透明的小图有损反而更大（实测单张 939B PNG → 有损 q90 1056B、
+  无损 768B）；全量无损约省 18%（PNG 637KB → webp ~520KB）。
+- 编码器存在但转换失败时**抛错**（不回退 PNG），否则会与数据表 `icon` 扩展名不一致。
+- 数据表 `buildingSkills[].icon` / `buffs[].icon` 存**裸文件名**（如 `bskill_pow_spd3.webp`），
+  不含路径——Vite 会给打包资源加 hash，硬编码 `/assets/...` 在扩展里会 404。
+  消费方用 `import.meta.glob` 登记目录再按文件名取，封装见
+  `src/popup/panel/building/skillIcons.ts`。
+- **必须关掉 base64 内联**：Vite 默认 `assetsInlineLimit` 为 4KB，图标只有 1.5KB 会被
+  全部内联进 JS，实测主 chunk 从 ~90KB 涨到 **1MB**（popup 启动要多解析 1MB 脚本）。
+  `vite.config.ts` 里对 `building-skills` 路径返回 `false` 强制产出独立文件。
+
+## 十二、基建技能浮层（悬浮干员头像）
+
+进驻干员头像悬浮时弹出该干员的**全部**基建技能（已解锁 + 未解锁），与游戏内一致：
+技能图标、技能名、`已解锁/未解锁`、解锁条件、效果描述（数值着色）。
+
+| 关注点 | 实现 |
+|---|---|
+| 解锁判定 | `isBuildingSkillUnlocked(tier, { evolvePhase, level })`：精英阶段更高即满足，同阶段比等级。精英化后等级重置，故高阶段自动满足低阶条件（`0_30` 档在精1 Lv1 即已解锁） |
+| 解锁条件文案 | `buildingSkillUnlockText`：`0_1`→初始解锁、`0_30`→等级 30 解锁、`1_1`/`2_1`→精英 N 解锁（实测只有这 4 种档位） |
+| 描述着色 | 数据存**富文本原文** `buffs[].descriptionRich`，由 `BuffDescription` 解析标签为节点 |
+| 浮层定位 | **必须 portal 到 body**：头像在 `.building-scroll`（`overflow-y: auto`）内，就地绝对定位会被裁掉。口径见下方「浮层定位」小节 |
+| 练度来源 | `charMap` 的值由 `skinId` 改为整个 `SklandPanelCharacter`，一次拿到皮肤 + `evolvePhase`/`level` |
+
+### 浮层定位（`tooltipPlacement.ts`，纯函数 + 回归测试）
+
+**扩展 popup 是操作系统级窗口**，`body` 固定 400×600 且 `overflow: hidden`——DOM 内容
+**画不到窗口外**（与网页里浮层可溢出视口不同），所以位置必须落在视口内。
+
+口径：**只走上下，不走左右**。
+
+- 干员头像靠右排列，控制中枢 5 人时最左头像 x≈170；浮层宽 300，左右两侧都放不下。
+  曾按「左侧优先、放不下翻右侧」实现，右侧又被 `innerWidth − 宽度` 钳回 x=126，
+  **结果盖住头像**（用户实测反馈的缺陷）。垂直方向有 600px，放下方/上方既宽敞又
+  绝不遮挡锚点。
+- 垂直：优先锚点下方；下方不够翻上方；两侧都不够时取空间更大的一侧并返回 `maxHeight`，
+  由浮层**内部滚动**消化，而不是位移到锚点上方遮挡。
+- 水平：与锚点左边对齐后钳进视口（垂直已错开，水平钳制不会造成遮挡）。
+- 高度先渲染再实测（`useLayoutEffect` 读 `scrollHeight`），首帧 `visibility: hidden`
+  避免看到跳位。
+
+单干员最多 **4 个**基建技能（芙兰卡）、最长描述 97 字 → 最坏约 440px 高，而头像居中时
+上下各只剩 ~267px，**溢出确实会发生**。故浮层 `pointer-events: auto`（滚动条要能用），
+并用 140ms 延迟关闭实现 hover 交接：离开头像后延迟关闭、期间移入浮层则取消
+（否则鼠标移向浮层时头像的 `mouseleave` 会先把它关掉）。
+
+回归测试 `tooltipPlacement.test.ts` 含**全视口横扫**：普通与 440px 高两种尺寸下，
+逐一断言浮层不与锚点相交、且不越出视口。
+
+### 富文本标签词表（上游 arkntools / 游戏数据）
+
+统一以 `</>` 闭合、可嵌套：
+
+| 标签 | 出现次数 | 渲染 |
+|---|---|---|
+| `<@cc.vup>` | 731 | 提升值，绿（`--ok`） |
+| `<@cc.kw>` | 485 | 关键词，蓝（`--info`） |
+| `<@cc.rem>` | 78 | 强调，橙（`--warn`） |
+| `<@cc.vdown>` | 64 | 下降值，红（`--danger`） |
+| `<$cc.*>` | 各数个 | 术语包装，**无颜色**，仅包住内容（如 `<$cc.angel><@cc.kw>能天使</></>`），渲染时透传 |
+
+容错（`renderBuffDescription`，回归测试见 `BuffDescription.test.ts`）：多余的 `</>` 忽略、
+未闭合标签在文本结束时自动收尾、未知 `@` 标签按无色渲染——上游新增标签不至于让整条
+描述消失。上游确实存在畸形标签（`<<$cc.bd_b1>` 多一个左尖括号，1 处）。
+
+## 十三、房间折叠（基建面板）
+
+每个基建房间可折叠/展开，点击头部切换，状态按房间持久化（localStorage）。
+
+| 关注点 | 实现 |
+|---|---|
+| 持久化 | **localStorage 而非 chrome.storage**：popup 每次打开都是新页面，chrome.storage 异步、首帧读不到会先按展开渲染再收起（可见跳动）；localStorage 同步可读，首帧即为正确状态。折叠偏好不含敏感信息、无需跨设备同步，故不进 chrome.storage 的账号状态（那里有加密与 schema 迁移成本） |
+| 只存已折叠 | key 集合只存**已折叠**的房间，默认全部展开；玩家扩建基建新增房间自然按展开呈现 |
+| key 口径 | 多间设施用「类型 + 槽位号」（`manufacture:slot_25`、`power:slot_26`），槽位号是基建全局唯一；单间设施用具名 key（`control`/`hire`/`training`/`meeting`）。槽位号含 `slot_` 前缀（真实接口格式）直接原样拼，不取数字——取数字在玩家槽位号重组时可能与别的房间撞 key |
+| 提取 | `useRoomCollapse()` 在 BuildingTab 顶层调用一次，向下传 `collapse: RoomCollapse`，避免多份状态互相覆盖；纯读写逻辑 `loadCollapsedKeys`/`persistKeys` 可注入存储，便于 node 环境单测 |
+| 数据损坏容错 | localStorage 数据非数组/JSON 损坏/storage 被禁用（隐私模式）时退回空集（全部展开），不抛错 |
+
+回归测试 `roomCollapse.test.ts`（7 例）：无记录默认展开、round-trip、损坏数据容错、存储不可用/getItem 抛错、setItem 抛错静默。

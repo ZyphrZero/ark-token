@@ -103,7 +103,7 @@ ark-token/
 │   ├── character_table_simple.v2.json   # 干员表源数据（复制自 frontend-v2-plus，不打包）
 │   └── skill-name-extra.v1.json         # 新干员技能名补充表（提取自 ArknightsGameData，源表滞后时兜底）
 ├── scripts/
-│   ├── build-operator-table.mjs    # 从源表+补充表生成精简干员表（星级 + 模组类型映射 + 技能名）
+│   ├── build-operator-data.mjs     # 生成全量干员/基建数据表 + 同步技能图标（arkntools 固定 commit + 房间常量 + 本地源表补模组/技能名，走 jsDelivr 国内可达）
 │   ├── preview-server.cjs          # 本地静态服务器（视觉预览 dist/ 用）
 │   ├── make-popup-mock.mjs         # 构建后注入 chrome mock 生成 dist/src/popup/mock.html（配合 preview-server 预览面板，假数据）
 │   └── popup-mock-chrome.js        # mock.html 注入的 chrome API 模拟（仅本地预览，不含真实凭据）
@@ -149,11 +149,11 @@ ark-token/
 │   │   ├── assist/                 # 助战检索页面（业务规则复用 src/core/assist/，本目录只保留表单与渲染）
 │   │   ├── useNow.ts               # 实时时钟 hook（驱动倒计时，tick 内不发请求）
 │   │   ├── panelActions.ts         # 弹窗 → 后台消息与页面跳转辅助
-│   │   └── assets/                 # 字体（Bender/Akrobat）、基建设施与干员心情图标 SVG
+│   │   └── assets/                 # 字体（Bender/Akrobat）、基建设施与干员心情图标 SVG、building-skills/（529 枚基建技能图标）
 │   ├── options/                    # 管理页（账号管理 / 添加向导 / 设置，含状态面板与通知设置）
 │   │   └── yituliuSession.ts       # 从一图流标签页读取登录会话（chrome.scripting 胶水）
 │   ├── assets/
-│   │   └── operator-table.slim.json  # 精简干员表（npm run build:operator-table 生成）
+│   │   └── operator-data.json      # 全量干员/基建数据表（npm run build:operator-data 生成：干员元数据 + 基建技能 + 房间常量）
 │   └── utils/time.ts               # 时间/时长格式化
 └── dist/                           # 构建产物（加载已解压扩展时选这个目录）
 ```

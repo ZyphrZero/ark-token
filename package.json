@@ -9,8 +9,7 @@
     "build": "tsc --noEmit && vite build",
     "test": "vitest run",
     "test:watch": "vitest",
-    "build:operator-table": "node scripts/build-operator-table.mjs",
-    "build:drone-charge-table": "node scripts/build-drone-charge-table.mjs",
+    "build:operator-data": "node scripts/build-operator-data.mjs",
     "lint": "oxlint"
   },
   "dependencies": {
