@@ -8,7 +8,7 @@
 |---|---|
 | 宿主机（Windows）IP | `192.168.50.120`（DHCP 分配，变更后需更新模拟器代理设置） |
 | Reqable 监听 | `0.0.0.0:9000`（桌面版；MCP 工具名前缀 `mcp__reqable__`） |
-| 模拟器 | MuMu Player 实例 0，`F:\MuMuPlayer\nx_main\MuMuNxMain.exe` |
+| 模拟器 | MuMu Player 实例 0，`D:\MuMuPlayer\nx_main\MuMuNxMain.exe` |
 | adb 序列 | `emulator-5554`（等价 `127.0.0.1:16384`） |
 | Android 版本 | 15（x86_64 系统，arm64 应用经 Houdini/native bridge 运行） |
 | root | KernelSU（`/data/adb/ksud`，ksud 3.2.5），`adb root` 直接可用 |
