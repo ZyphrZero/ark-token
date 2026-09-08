@@ -58,7 +58,8 @@ export const DEFAULT_SETTINGS: ExtensionSettings = {
   infoRefreshIntervalMinutes: 30,
   refreshAllAccounts: false,
   recruitNotifyEnabled: true,
-  sanityNotifyEnabled: false
+  sanityNotifyEnabled: false,
+  trainingNotifyEnabled: true
 }
 
 export function defaultStorageArea(): StorageArea {

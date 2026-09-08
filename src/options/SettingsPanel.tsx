@@ -298,6 +298,16 @@ export default function SettingsPanel() {
           <label htmlFor="sanity-notify">理智完全恢复时发送桌面通知</label>
         </div>
 
+        <div className="check-row">
+          <input
+            id="training-notify"
+            type="checkbox"
+            checked={settings.trainingNotifyEnabled}
+            onChange={event => setSettings({ ...settings, trainingNotifyEnabled: event.target.checked })}
+          />
+          <label htmlFor="training-notify">训练室专精完成时发送桌面通知（含技能名与目标专精等级）</label>
+        </div>
+
         <div className="actions">
           <button className="btn btn-primary" onClick={() => void save('info')}>保存设置</button>
         </div>

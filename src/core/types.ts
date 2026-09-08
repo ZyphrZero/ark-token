@@ -57,6 +57,8 @@ export interface ExtensionSettings {
   recruitNotifyEnabled: boolean
   /** 理智完全恢复桌面通知 */
   sanityNotifyEnabled: boolean
+  /** 训练室专精完成桌面通知 */
+  trainingNotifyEnabled: boolean
 }
 
 export interface PluginState {

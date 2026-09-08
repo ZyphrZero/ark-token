@@ -1,10 +1,11 @@
 import { exchangeHgToken } from '../core/hgAuth'
 import { fetchSklandPlayerInfo, isSklandCredentialExpired } from '../core/skland'
 import type { SklandBindingInfo } from '../core/skland-info'
+import { specializeLevelText, trainingCompleteTimeSec, trainingSkillInfo } from '../core/status/building'
 import { mergeRecruitNotifications } from '../core/status/recruit'
 import type { ExtensionSettings, GameAccount } from '../core/types'
 import { getSecurityStatus, loadState, saveState } from '../storage/store'
-import { saveAccountInfo } from '../storage/infoCache'
+import { getAccountInfo, saveAccountInfo } from '../storage/infoCache'
 
 /**
  * 状态面板数据刷新与桌面通知调度（在 MV3 service worker 中执行）。
@@ -24,6 +25,10 @@ function recruitAlarmName(accountId: string, key: string): string {
 
 function sanityAlarmName(accountId: string): string {
   return `${NOTIFY_ALARM_PREFIX}${accountId}:sanity`
+}
+
+function trainingAlarmName(accountId: string): string {
+  return `${NOTIFY_ALARM_PREFIX}${accountId}:training`
 }
 
 /** 设置了主密码且未解锁时凭据不可用；定时刷新静默跳过，手动刷新给出提示 */
@@ -106,6 +111,19 @@ async function rescheduleAccountNotifications(
     const completeRecoveryMs = info.status.ap.completeRecoveryTime * 1000
     if (completeRecoveryMs > nowMs) {
       chrome.alarms.create(sanityAlarmName(accountId), { when: completeRecoveryMs })
+    }
+  }
+  if (settings.trainingNotifyEnabled) {
+    // remainSecs 必须与同一响应的 currentTs 配对（语义见 status/building.ts 的
+    // trainingCompleteTimeSec）；空闲（-1）不排通知。完成未收取时 remainSecs 的形态
+    // 无抓包样本（推测为 0），加 60 秒余量兜底：既挡该状态与服务端/本地秒级时钟偏差
+    // 造成的重复通知，也不影响正常在练训练（离完成总在分钟级以上）
+    const training = info.building?.training
+    if (training) {
+      const completeMs = trainingCompleteTimeSec(training, info.currentTs) * 1000
+      if (completeMs > nowMs + 60_000) {
+        chrome.alarms.create(trainingAlarmName(accountId), { when: completeMs })
+      }
     }
   }
 }
@@ -194,6 +212,23 @@ async function fireNotification(alarmName: string): Promise<void> {
       iconUrl: chrome.runtime.getURL('icon-256.png'),
       title: '理智已完全恢复',
       message: `${who}博士，理智已全部恢复`
+    })
+    return
+  }
+  if (kind === 'training') {
+    // 触发时缓存仍是完成前的快照（完成后的刷新因 60 秒余量不会重排本 alarm），据此补技能名
+    // 与目标专精等级；缓存缺失或学员信息不全时退化为通用文案
+    const cached = await getAccountInfo(accountId)
+    const training = cached?.data.building?.training
+    const skill = training ? trainingSkillInfo(training, cached?.data.chars) : null
+    const detail = skill
+      ? `「${skill.skillName ?? `技能${skill.slot}`}」${specializeLevelText(skill.targetLevel)}`
+      : '专精'
+    chrome.notifications.create(alarmName, {
+      type: 'basic',
+      iconUrl: chrome.runtime.getURL('icon-256.png'),
+      title: '专精训练完成',
+      message: `${who}训练室${detail}训练完成，请回游戏收取`
     })
     return
   }
