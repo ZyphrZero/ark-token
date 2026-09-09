@@ -130,6 +130,7 @@ ark-token/
 │   │   └── status/                 # 状态面板实时推算（纯函数：入参 nowMs，不依赖响应式系统）
 │   │       ├── sanity.ts           # 理智恢复（每 6 分钟 1 点，锚定 lastApAddTime）
 │   │       ├── recruit.ts          # 公招槽位状态机 + 完成通知合并（3 分钟窗口）
+│   │       ├── operators.ts        # 我的干员：快照/本地目录合并、多条件筛选和排序
 │   │       └── building.ts         # 无人机恢复/发电量公式/制造配方表与库存估算/进驻干员心情（按设施外推当前疲劳值，语义见 docs/BUILDING_MOOD_API.md）
 │   ├── storage/
 │   │   ├── store.ts                # chrome.storage.local 封装（账号增删改 / 激活切换 / 设置与全局 token / 主密码加解密边界与解锁 / 旧版账号 token 迁移）
@@ -146,6 +147,8 @@ ark-token/
 │   │   └── components.tsx          # UI 原语：SectionHeader（双语标题）/CutCard/MeterBar/StatReadout/Tag/SegmentedTabs 等
 │   ├── popup/                      # 弹窗状态面板与助战检索页
 │   │   ├── panel/                  # 面板区块组件（recruit/ 公招、building/ 基建）
+│   │   │   ├── MyOperatorsPage.tsx # 我的干员独立面板：招募状态、职业/星级/精英化筛选、角色卡片
+│   │   │   └── operators.css       # 我的干员布局与卡片样式（设计说明见 docs/MY_OPERATORS_UI.md）
 │   │   ├── assist/                 # 助战检索页面（业务规则复用 src/core/assist/，本目录只保留表单与渲染）
 │   │   ├── useNow.ts               # 实时时钟 hook（驱动倒计时，tick 内不发请求）
 │   │   ├── panelActions.ts         # 弹窗 → 后台消息与页面跳转辅助

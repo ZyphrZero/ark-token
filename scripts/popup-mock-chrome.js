@@ -7,7 +7,7 @@
       uid: '135297507', name: '阿米娅', level: 120,
       avatar: { type: 'ICON', id: '1', url: '' },
       ap: { current: 82, max: 135, lastApAddTime: NOW - 120, completeRecoveryTime: NOW + 5 * 3600 },
-      charCnt: 214
+      charCnt: 23
     },
     recruit: [
       { startTs: NOW - 3600, finishTs: NOW + 900, state: 2 },
@@ -53,7 +53,17 @@
     chars: [
       { charId: 'char_002_amiya', skinId: 'char_002_amiya#1', level: 60, evolvePhase: 2 },
       { charId: 'char_010_chen', skinId: 'char_010_chen#1', level: 90, evolvePhase: 2, skills: [{ id: 'skchr_chen_1', specializeLevel: 3 }, { id: 'skchr_chen_2', specializeLevel: 2 }, { id: 'skchr_chen_3', specializeLevel: 1 }] },
-      { charId: 'char_003_kalts', skinId: 'char_003_kalts#1', level: 40, evolvePhase: 1 }
+      { charId: 'char_003_kalts', skinId: 'char_003_kalts#1', level: 40, evolvePhase: 1 },
+      // 以下练度均为界面预览用假数据，不代表真实账号。
+      ...[
+        ['char_103_angel', 2, 90], ['char_172_svrash', 2, 90], ['char_180_amgoat', 2, 90],
+        ['char_293_thorns', 2, 80], ['char_264_f12yin', 2, 60], ['char_017_huang', 2, 80],
+        ['char_4064_mlynar', 2, 90], ['char_202_demkni', 2, 90], ['char_311_mudrok', 2, 70],
+        ['char_2023_ling', 2, 60], ['char_1028_texas2', 2, 90], ['char_1012_skadi2', 2, 60],
+        ['char_358_lisa', 2, 60], ['char_128_plosis', 1, 70], ['char_151_myrtle', 2, 40],
+        ['char_123_fang', 1, 55], ['char_285_medic2', 0, 30], ['char_237_gravel', 1, 60],
+        ['char_124_kroos', 1, 55], ['char_179_cgbird', 2, 60]
+      ].map(([charId, evolvePhase, level]) => ({ charId, skinId: '', evolvePhase, level }))
     ]
   }
   const state = {

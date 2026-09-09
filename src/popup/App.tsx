@@ -10,6 +10,7 @@ import AssistSearchPage from './assist/AssistSearchPage'
 import AccountSwitcher from './panel/AccountSwitcher'
 import IslandSection from './panel/IslandSection'
 import MissionSection from './panel/MissionSection'
+import MyOperatorsPage from './panel/MyOperatorsPage'
 import PanelFooter from './panel/PanelFooter'
 import SanitySection from './panel/SanitySection'
 import StatusHeader from './panel/StatusHeader'
@@ -27,6 +28,7 @@ export default function App() {
   const [cache, setCache] = useState<InfoCache | null>(null)
   const [switcherOpen, setSwitcherOpen] = useState(false)
   const [assistOpen, setAssistOpen] = useState(false)
+  const [operatorsOpen, setOperatorsOpen] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
   const [refreshNote, setRefreshNote] = useState<string | null>(null)
 
@@ -79,6 +81,8 @@ export default function App() {
         <>
           {assistOpen && activeAccount ? (
             <AssistSearchPage account={activeAccount} onBack={() => setAssistOpen(false)} />
+          ) : operatorsOpen && info ? (
+            <MyOperatorsPage key={activeAccount?.id} info={info} onBack={() => setOperatorsOpen(false)} />
           ) : (
             <>
               <main className="panel-main">
@@ -110,6 +114,7 @@ export default function App() {
                       status={info.status}
                       onOpenSwitcher={() => setSwitcherOpen(true)}
                       onOpenAssist={() => setAssistOpen(true)}
+                      onOpenOperators={() => setOperatorsOpen(true)}
                     />
                     <SanitySection ap={info.status.ap} />
                     <IslandSection info={info} />
@@ -119,7 +124,7 @@ export default function App() {
               </main>
 
               {/* 未设主密码的安全提示：放底栏上方，不占用主内容区的高度预算 */}
-              {!security.configured && accounts.length > 0 && (
+              {!operatorsOpen && !security.configured && accounts.length > 0 && (
                 <div className="security-hint">
                   <LockIcon size={12} /> 凭据尚未加密保护
                   <button className="link-btn" onClick={() => openOptions('#settings')}>

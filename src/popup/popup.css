@@ -29,10 +29,14 @@ body {
   position: relative;
   display: flex;
   flex-direction: column;
+  width: 400px;
+  min-width: 400px;
   height: 600px;
   padding: 12px 14px 10px;
   overflow: hidden;
 }
+
+/* 干员页是弹窗内的全高视图；固定外层宽度，避免扩展 popup 按卡片内容 shrink-to-fit。 */
 
 .panel-main {
   flex: 1;

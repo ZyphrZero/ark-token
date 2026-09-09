@@ -60,6 +60,47 @@ export function SupportIcon(props: IconProps) {
   )
 }
 
+/** 干员档案（身份卡） */
+export function OperatorsIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <rect x="3" y="4" width="18" height="16" rx="1" />
+      <circle cx="9" cy="10" r="2" />
+      <path d="M6 16c0-2 1.3-3 3-3s3 1 3 3M15 9h3M15 13h3" />
+    </Svg>
+  )
+}
+
+/** 设置（齿轮） */
+export function PortraitViewIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <rect x="6" y="3" width="12" height="18" rx="1" />
+      <circle cx="12" cy="9" r="2" />
+      <path d="M9 17v-1a3 3 0 0 1 6 0v1" />
+    </Svg>
+  )
+}
+
+export function GridViewIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+      <rect x="14" y="14" width="7" height="7" rx="1" />
+    </Svg>
+  )
+}
+
+export function ListViewIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
+    </Svg>
+  )
+}
+
 /** 设置（齿轮） */
 export function SettingsIcon(props: IconProps) {
   return (
