@@ -25,8 +25,8 @@ export function assistSkillUrl(skillId?: string): string | undefined {
   return skillId ? `${CDN}/char_skill/${encodeURIComponent(skillId)}.png` : undefined
 }
 
-export function assistEquipUrl(typeName?: string): string | undefined {
-  return typeName ? `${CDN}/uniequip/type/${encodeURIComponent(typeName)}.png` : undefined
+export function assistEquipUrl(typeIcon?: string): string | undefined {
+  return typeIcon ? `${CDN}/uniequip/type/${encodeURIComponent(typeIcon)}.png` : undefined
 }
 
 const PROFESSION_ICON_HASH: Record<string, { black: string; white: string }> = {

@@ -5,7 +5,24 @@ import { buildOperatorRoster, DEFAULT_OPERATOR_FILTERS, filterOperatorRoster } f
 
 // 2026-09-08 抓包裁剪：仅保留干员字段；出处见 docs/MY_OPERATORS_UI.md。
 const characters: SklandPanelCharacter[] = [
-  { charId: 'char_002_amiya', skinId: 'char_002_amiya@winter#1', level: 1, evolvePhase: 2 },
+  // 2026-09-08 player/info 抓包裁剪：阿米娅含潜能、总技能等级、专精和已开启/锁定模组。
+  {
+    charId: 'char_002_amiya',
+    skinId: 'char_002_amiya@winter#1',
+    level: 1,
+    evolvePhase: 2,
+    potentialRank: 3,
+    mainSkillLvl: 7,
+    skills: [
+      { id: 'skcom_magic_rage[3]', specializeLevel: 0 },
+      { id: 'skchr_amiya_2', specializeLevel: 0 },
+      { id: 'skchr_amiya_3', specializeLevel: 0 }
+    ],
+    equip: [
+      { id: 'uniequip_001_amiya', level: 1, locked: false },
+      { id: 'uniequip_002_amiya', level: 1, locked: true }
+    ]
+  },
   { charId: 'char_502_nblade', skinId: 'char_502_nblade#1', level: 30, evolvePhase: 0 },
   { charId: 'char_500_noirc', skinId: 'char_500_noirc#1', level: 1, evolvePhase: 0 },
   { charId: 'char_503_rang', skinId: 'char_503_rang#1', level: 5, evolvePhase: 0 }
@@ -13,6 +30,16 @@ const characters: SklandPanelCharacter[] = [
 const roster = buildOperatorRoster(characters)
 
 describe('operator roster', () => {
+  it('keeps captured potential, skill and module fields with the matched roster entry', () => {
+    const amiya = roster.find(operator => operator.charId === 'char_002_amiya')
+    expect(amiya?.progress).toMatchObject({
+      potentialRank: 3,
+      mainSkillLvl: 7,
+      skills: [{ specializeLevel: 0 }, { specializeLevel: 0 }, { specializeLevel: 0 }],
+      equip: [{ id: 'uniequip_001_amiya', locked: false }, { id: 'uniequip_002_amiya', locked: true }]
+    })
+  })
+
   it('按 charId 匹配招募状态，精二 1 级仍为已招募', () => {
     const owned = filterOperatorRoster(roster, DEFAULT_OPERATOR_FILTERS)
     expect(owned.map((operator) => operator.charId)).toHaveLength(4)

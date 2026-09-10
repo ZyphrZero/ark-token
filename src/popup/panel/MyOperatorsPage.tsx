@@ -1,6 +1,6 @@
-import { useMemo, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 
-import { professionKey, professionName } from '../../core/operator-data'
+import { operatorModuleIconOf, professionKey, professionName } from '../../core/operator-data'
 import type { SklandBindingInfo } from '../../core/skland-info'
 import {
   buildOperatorRoster,
@@ -11,7 +11,9 @@ import {
 } from '../../core/status/operators'
 import { CheckerMark, CheckerStripe } from '../../ui/components'
 import { BackIcon, GridViewIcon, ListViewIcon, LockIcon, PortraitViewIcon, RefreshIcon, StarIcon } from '../../ui/icons'
+import { assistEquipUrl, assistEvolvePhaseIconUrl, assistPotentialIconUrl, assistSkillUrl } from '../../core/assist/assets'
 import { professionIconUrl } from './building/professionIcons'
+import { SkillSpecBadge } from './skillSpec'
 import './operators.css'
 
 const PROFESSIONS = [8, 1, 3, 2, 6, 4, 5, 7]
@@ -32,7 +34,45 @@ const VIEW_MODES = [
   { key: 'list', label: '文本列表', Icon: ListViewIcon }
 ] as const
 
-function OperatorCard({ operator, viewMode }: { operator: RosterOperator; viewMode: 'portrait' | 'square' }) {
+function StatusIcon({ src, alt, className }: { src?: string; alt: string; className?: string }) {
+  const [failed, setFailed] = useState(false)
+  if (!src || failed) return null
+  return <img src={src} alt={alt} className={className} onError={() => setFailed(true)} />
+}
+
+function OperatorStatusBadges({ operator }: { operator: RosterOperator }) {
+  const progress = operator.progress
+  if (!progress) return null
+  return (
+    <div className="operator-status-badges" aria-label="干员养成状态">
+      {progress.potentialRank !== undefined && (
+        <span className="operator-status-badge operator-status-potential" title={`潜能 ${progress.potentialRank + 1}`}>
+          <StatusIcon src={assistPotentialIconUrl(progress.potentialRank)} alt="潜能" />
+          <small>{progress.potentialRank + 1}</small>
+        </span>
+      )}
+      {progress.equip?.map(equip => {
+        const icon = operatorModuleIconOf(equip.id)
+        return (
+          <span className={`operator-status-badge operator-status-module${equip.locked ? ' is-locked' : ''}`} key={equip.id} title={`${equip.id}：${equip.locked ? '未开启' : `等级 ${equip.level}`}`}>
+            <StatusIcon src={assistEquipUrl(icon)} alt="模组" />
+            {equip.locked ? <LockIcon size={8} /> : <small>{equip.level}</small>}
+          </span>
+        )
+      })}
+      {progress.skills?.map((skill, index) => (
+        <span className={`operator-status-badge operator-status-skill${skill.specializeLevel > 0 ? ' is-mastered' : ''}`} key={`${skill.id}-${index}`} title={`技能 ${index + 1}：${skill.specializeLevel > 0 ? `专精 ${skill.specializeLevel}` : '未专精'}`}>
+          <span className="operator-skill-icon-stack">
+            <StatusIcon src={assistSkillUrl(skill.id)} alt={`技能 ${index + 1}`} />
+            <SkillSpecBadge level={skill.specializeLevel} className="operator-skill-spec" />
+          </span>
+        </span>
+      ))}
+    </div>
+  )
+}
+
+function OperatorCard({ operator, viewMode, onSelect }: { operator: RosterOperator; viewMode: 'portrait' | 'square'; onSelect: (operator: RosterOperator) => void }) {
   const [failedSrc, setFailedSrc] = useState<string>()
   const imageKind = viewMode === 'square' ? 'avatar' : 'portrait'
   const portraitSrc = operator.progress?.skinId
@@ -41,10 +81,12 @@ function OperatorCard({ operator, viewMode }: { operator: RosterOperator; viewMo
   const profession = operator.profession === null ? '职业待收录' : professionName(operator.profession)
   const icon = professionIconUrl(operator.profession === null ? undefined : professionKey(operator.profession))
   return (
-    <article
+    <button
+      type="button"
       className={`operator-card operator-card--${viewMode}${operator.progress ? '' : ' operator-card--missing'}`}
       style={{ '--rarity-color': RARITY_COLORS[operator.rarity ?? 1] } as CSSProperties}
-      aria-label={`${operator.name}，${profession}，${operator.progress ? `精英 ${operator.progress.evolvePhase}，等级 ${operator.progress.level}` : '未招募'}`}
+      aria-label={`${operator.name}，${profession}，${operator.progress ? `精英 ${operator.progress.evolvePhase}，等级 ${operator.progress.level}` : '未招募'}，查看详情`}
+      onClick={() => onSelect(operator)}
     >
       <div className="operator-card-classification">
         <span className="operator-card-profession" title={profession}>
@@ -60,6 +102,18 @@ function OperatorCard({ operator, viewMode }: { operator: RosterOperator; viewMo
         </span>
       </div>
       <div className="operator-card-portrait">
+        {operator.progress && (
+          <span
+            className="operator-card-phase-icon"
+            title={`精炼等级 ${operator.progress.evolvePhase}`}
+            aria-label={`精炼等级 ${operator.progress.evolvePhase}`}
+          >
+            <StatusIcon
+              src={assistEvolvePhaseIconUrl(operator.progress.evolvePhase)}
+              alt={`精炼等级 ${operator.progress.evolvePhase}`}
+            />
+          </span>
+        )}
           {failedSrc !== portraitSrc ? (
             <img
               src={portraitSrc}
@@ -93,12 +147,13 @@ function OperatorCard({ operator, viewMode }: { operator: RosterOperator; viewMo
             </span>
           )}
         </div>
+        <OperatorStatusBadges operator={operator} />
       </div>
-    </article>
+    </button>
   )
 }
 
-function OperatorTextList({ operators }: { operators: RosterOperator[] }) {
+function OperatorTextList({ operators, onSelect }: { operators: RosterOperator[]; onSelect: (operator: RosterOperator) => void }) {
   return (
     <table className="operators-table" aria-label="干员文本列表">
       <colgroup>
@@ -116,12 +171,25 @@ function OperatorTextList({ operators }: { operators: RosterOperator[] }) {
           <th scope="col">星级</th>
           <th scope="col">精英化</th>
           <th scope="col">等级</th>
-          <th scope="col">招募</th>
+          <th scope="col">养成</th>
         </tr>
       </thead>
       <tbody>
         {operators.map(operator => (
-          <tr key={operator.charId} style={{ '--rarity-color': RARITY_COLORS[operator.rarity ?? 1] } as CSSProperties}>
+          <tr
+            key={operator.charId}
+            style={{ '--rarity-color': RARITY_COLORS[operator.rarity ?? 1] } as CSSProperties}
+            tabIndex={0}
+            role="button"
+            aria-label={`查看${operator.name}详情`}
+            onClick={() => onSelect(operator)}
+            onKeyDown={event => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault()
+                onSelect(operator)
+              }
+            }}
+          >
             <th scope="row" title={operator.name}>{operator.name}</th>
             <td>{operator.profession === null ? '未知' : professionName(operator.profession)}</td>
             <td className="operator-text-rarity">{operator.rarity === null ? '-' : `${operator.rarity}星`}</td>
@@ -129,8 +197,8 @@ function OperatorTextList({ operators }: { operators: RosterOperator[] }) {
               {operator.progress ? `精英 ${operator.progress.evolvePhase}` : '-'}
             </td>
             <td className="font-bender operator-text-level">{operator.progress?.level ?? '-'}</td>
-            <td className={operator.progress ? 'operator-text-owned' : 'operator-text-missing'}>
-              {operator.progress ? '已招募' : '未招募'}
+            <td className={operator.progress ? 'operator-text-owned operator-text-status' : 'operator-text-missing'}>
+              {operator.progress ? <OperatorStatusBadges operator={operator} /> : '未招募'}
             </td>
           </tr>
         ))}
@@ -143,7 +211,9 @@ function OperatorTextList({ operators }: { operators: RosterOperator[] }) {
 export default function MyOperatorsPage({ info, onBack }: { info: SklandBindingInfo; onBack: () => void }) {
   const [filters, setFilters] = useState<OperatorFilters>(DEFAULT_OPERATOR_FILTERS)
   const [viewMode, setViewMode] = useState<OperatorViewMode>('portrait')
+  const [filtersOpen, setFiltersOpen] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
+  const [selectedOperator, setSelectedOperator] = useState<RosterOperator | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const roster = useMemo(() => (info.chars ? buildOperatorRoster(info.chars) : []), [info.chars])
   const results = useMemo(() => filterOperatorRoster(roster, filters), [roster, filters])
@@ -189,6 +259,18 @@ export default function MyOperatorsPage({ info, onBack }: { info: SklandBindingI
         </span>
       </header>
       <CheckerStripe />
+      <button
+        type="button"
+        className={`operators-filter-toggle${filtersOpen ? ' active' : ''}`}
+        aria-expanded={filtersOpen}
+        aria-controls="operators-filter-panel"
+        onClick={() => setFiltersOpen(open => !open)}
+      >
+        <span>筛选</span>
+        {activeFilters > 0 && <b className="font-bender">{activeFilters}</b>}
+        <span className="operators-filter-toggle-icon" aria-hidden="true">{filtersOpen ? '−' : '+'}</span>
+      </button>
+      {filtersOpen && <div id="operators-filter-panel" className="operators-filter-panel">
       <div className="operators-tabs" role="tablist" aria-label="招募状态">
         {(['owned', 'missing', 'all'] as const).map((key) => (
           <button
@@ -292,6 +374,7 @@ export default function MyOperatorsPage({ info, onBack }: { info: SklandBindingI
           </select>
         </div>
       )}
+      </div>}
       <div className="operators-results-bar">
         <span role="status">
           共 <b className="font-bender">{results.length}</b> 名干员{activeFilters > 0 && <small> · 已筛选</small>}
@@ -336,11 +419,11 @@ export default function MyOperatorsPage({ info, onBack }: { info: SklandBindingI
             <h2>暂无干员数据</h2>
           </div>
         ) : results.length ? viewMode === 'list' ? (
-          <OperatorTextList operators={results} />
+          <OperatorTextList operators={results} onSelect={setSelectedOperator} />
         ) : (
           <div className="operators-grid">
             {results.map((operator) => (
-              <OperatorCard key={operator.charId} operator={operator} viewMode={viewMode} />
+              <OperatorCard key={operator.charId} operator={operator} viewMode={viewMode} onSelect={setSelectedOperator} />
             ))}
           </div>
         ) : (
@@ -355,6 +438,21 @@ export default function MyOperatorsPage({ info, onBack }: { info: SklandBindingI
           </div>
         )}
       </div>
+      {selectedOperator && <LazyOperatorDetailDialog operator={selectedOperator} onClose={() => setSelectedOperator(null)} />}
     </main>
   )
+}
+
+function LazyOperatorDetailDialog({ operator, onClose }: { operator: RosterOperator; onClose: () => void }) {
+  const [Dialog, setDialog] = useState<typeof import('./OperatorDetailDialog').default | null>(null)
+  useEffect(() => {
+    let disposed = false
+    void import('./OperatorDetailDialog').then(module => {
+      if (!disposed) setDialog(() => module.default)
+    })
+    return () => {
+      disposed = true
+    }
+  }, [])
+  return Dialog ? <Dialog operator={operator} onClose={onClose} /> : <div className="operator-detail-backdrop"><div className="operator-detail-dialog operator-detail-loading">正在加载干员详情…</div></div>
 }

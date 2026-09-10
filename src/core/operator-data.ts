@@ -93,6 +93,8 @@ export interface OperatorEntry {
   position: number
   /** 模组映射 uniEquipId → typeName2（X/Y/D/A/B） */
   equips?: Record<string, string>
+  /** 模组图标映射 uniEquipId → 游戏资源 typeIcon（如 arc-x） */
+  equipIcons?: Record<string, string>
   /** 各槽位战斗技能名（顺序与森空岛 chars[].skills[] 一致，训练室用） */
   skills?: string[]
   /** 基建技能（可含多槽与同槽 α/β 升级链，见 BuildingSkillTier） */
@@ -118,6 +120,24 @@ export function operatorName(charId: string): string {
 /** 干员星级；表未收录时返回 null（调用方跳过来保证上传报文正确） */
 export function operatorRarity(charId: string): number | null {
   return operatorData.operators[charId]?.rarity ?? null
+}
+
+/** 模组 id 对应的类型（X/Y/D/A/B）；用于运行时模组图标。 */
+export function operatorModuleTypeOf(equipId: string): string | undefined {
+  for (const entry of Object.values(operatorData.operators)) {
+    const type = entry.equips?.[equipId]
+    if (type) return type
+  }
+  return undefined
+}
+
+/** 模组 id 对应的游戏资源图标名（如 arc-x）；用于 CDN 图标 URL。 */
+export function operatorModuleIconOf(equipId: string): string | undefined {
+  for (const entry of Object.values(operatorData.operators)) {
+    const icon = entry.equipIcons?.[equipId]
+    if (icon) return icon
+  }
+  return undefined
 }
 
 /** 干员的基建技能档位（按解锁条件升序）；表未收录或无基建技能时为空数组 */

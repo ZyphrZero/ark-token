@@ -201,3 +201,18 @@ sign = md5( hex( hmac_sha256(key=cred_token, msg=raw) ) )  // cred_token 为 gen
   （`src/background/infoRefresh.ts` 的 `CREDENTIAL_PROACTIVE_REFRESH_MS`）。
 - 搜索接口没有观察分页字段；三次相同参数连发（刷新按钮）返回条目顺序不同（疑似服务端乱序/随机），`hasSend` 会随申请状态更新。
 - 会话在 15:23:43 出现两次 401 后自动重登（generate_cred_by_code → user/info → 全量刷新），说明 cred 过期由客户端自动续期，抓包分析时无需人工干预。
+
+## 六、v2.0.0 附记（2026-09-10 抓包）
+
+App 升级 v2.0.0（vcode 200000200）后复核：第三节签名算法与公共头结构**完全不变**
+（platform 1 + xsm/wtoken/is_new_tiger，wtoken 仍 0004_ 前缀），一键登录链路不变，
+binding/player/info schema 逐键比对无增减。新出现的接口（编目见
+`skland_dump/20260910_capture/CAPTURE_SUMMARY.md`）：
+
+| 接口 | 说明 |
+|---|---|
+| `GET /api/v1/auth/refresh`（`sign_enable: false`，无 timestamp/sign） | 登录态刷新，触发后 wtoken 尾部格式变化；与凭证续期链路相关 |
+| `GET /api/v2/user/item/list?pageToken=&pageSize=10` | 首个 `/api/v2/` 前缀接口，用户物品分页列表 |
+| `GET /api/v1/user/center` | 「我的」页聚合（gameplatList/gameCardList/userInfo） |
+| `GET /api/v1/game/arknights/char-book/char-info` | 干员档案全量（见 `docs/CHAR_BOOK_API.md`） |
+| `POST /h5/v1/game/arknights/char-id/transit` | 首个 `/h5/` 前缀接口，进入干员详情页触发 |

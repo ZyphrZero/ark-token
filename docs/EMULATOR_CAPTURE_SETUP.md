@@ -117,7 +117,24 @@ MSYS_NO_PATHCONV=1 adb -s $ADB shell "su -c 'grep -c cacerts /proc/\$(pidof zygo
 - **遥测是否直连因环境而异**：旧 Android 15 环境中 `h.trace.qq.com`/`sentry` 曾绕过代理直连抓不到；本 Android 12 环境则全部走代理可抓。不要因"抓不到某域名"或"域名陌生"而误判代理故障，先对照本表归类。
 - **同 host 的宿主机流量混入**：在宿主机浏览器打开森空岛 Web 版也会产生 `zonai.skland.com` 流量，特征是 `platform: 3`、桌面浏览器 UA、`vname: 1.2.0`、签名头少（无 xsm/wtoken）。用 `application` 字段区分来源（模拟器 = `MuMuVMMHeadless`）。
 
-## 4. 模拟器截图与 UI 操作
+### 3.2 大响应体的直接签名拉取（绕过 MCP 截断）
+
+zonai 接口的响应体超过约 300KB 时，MCP `get_by_id` 返回会被截断（部分落盘为 `encoding:"file"` 可直接复制，未落盘的拿不到全文）。此时可**绕过模拟器，在宿主机直接签名请求**（算法与本仓库插件一致，见 `src/core/skland.ts` 的 `getSign` 与 `docs/ANALYSIS.md`）：
+
+```
+timestamp = floor((now - 300ms) / 1000)
+headers   = {platform:'3', timestamp, dId:'<任意 UA 串>', vName:'1.2.0'}   // JSON 键序固定
+raw       = path + queryString(无?) + timestamp + JSON.stringify(headers)
+sign      = md5(hex(hmac_sha256(key=token, msg=raw)))   // token 取自最近一次 generate_cred_by_code 响应
+```
+
+请求头仅需 `platform/timestamp/dId/vName/cred/sign` 六项（无需 xsm/wtoken）。要点：
+
+- **不带 `x-transformed: base64` 头 → 服务端返回明文 JSON**（App 形态才是 base64 包装），且字段更全（实测 char-info 明文形态多出 talents/potentialRanks/phase/items 等键）
+- cred/token 从最新抓包的 `generate_cred_by_code` 响应获取，经环境变量传入、不落盘；该接口走 `auth/refresh`（`sign_enable:false`）或 App 重登后凭据会轮换，旧 token 失效需重取
+- Reqable 的 script/rewrite 功能可做同样的事（响应裁剪），但属 premium 功能；直接签名是零依赖替代
+
+
 
 ```bash
 adb -s $ADB exec-out screencap -p > "$TEMP/screen.png"     # 截图，Read 打开查看
@@ -128,6 +145,8 @@ adb -s $ADB shell input tap 540 1591                       # 点击坐标
 adb -s $ADB shell cmd package resolve-activity --brief $PKG | tail -1  # 解析启动 Activity
 adb -s $ADB shell am start -n <pkg>/<activity>             # force-stop 后残留任务可能启动即退，显式拉起
 ```
+
+截图用 Read 工具打开 PNG 查看。
 
 ## 5. 故障排查
 

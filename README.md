@@ -111,6 +111,7 @@ ark-token/
 │   ├── core/                       # 纯逻辑层（不依赖 DOM / chrome API，可直接单测）
 │   │   ├── types.ts                # GameAccount、SecurityConfig、PlayerInfoPayload 等数据模型
 │   │   ├── skland-info.ts          # 森空岛 player/info 状态数据类型（理智/公招/基建/任务进度，裁剪版）
+│   │   ├── operator-details.ts     # 干员详情表查询、范围/技能等级/描述数值解析
 │   │   ├── errors.ts               # 错误类型与错误码 → 中文提示映射
 │   │   ├── crypto.ts               # 凭据加密（AES-GCM-256 + PBKDF2，WebCrypto）
 │   │   ├── skland.ts               # 森空岛签名（HMAC-SHA256+MD5）与数据 API（binding/cultivate/player info）
@@ -147,7 +148,8 @@ ark-token/
 │   │   └── components.tsx          # UI 原语：SectionHeader（双语标题）/CutCard/MeterBar/StatReadout/Tag/SegmentedTabs 等
 │   ├── popup/                      # 弹窗状态面板与助战检索页
 │   │   ├── panel/                  # 面板区块组件（recruit/ 公招、building/ 基建）
-│   │   │   ├── MyOperatorsPage.tsx # 我的干员独立面板：招募状态、职业/星级/精英化筛选、角色卡片
+│   │   │   ├── MyOperatorsPage.tsx # 我的干员独立面板：筛选、养成图标、角色卡片与详情入口
+│   │   │   └── OperatorDetailDialog.tsx # 干员情报、范围、技能效果和模组详情弹层
 │   │   │   └── operators.css       # 我的干员布局与卡片样式（设计说明见 docs/MY_OPERATORS_UI.md）
 │   │   ├── assist/                 # 助战检索页面（业务规则复用 src/core/assist/，本目录只保留表单与渲染）
 │   │   ├── useNow.ts               # 实时时钟 hook（驱动倒计时，tick 内不发请求）

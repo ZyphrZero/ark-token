@@ -198,8 +198,14 @@ export interface SklandPanelCharacter {
   skinId: string
   level: number
   evolvePhase: 0 | 1 | 2
+  /** 当前潜能档位（0-based；0 对应潜能 1），抓包语义见 skland_dump/20260909_capture/CAPTURE_SUMMARY.md */
+  potentialRank?: number
+  /** 当前技能总等级（1-7；专精等级单独在 skills[]），抓包字段名为 mainSkillLvl */
+  mainSkillLvl?: number
   /** 各技能槽位（顺序 1-3）：skillId 与当前专精等级（0-3），槽位顺序与本地干员表一致 */
   skills?: { id: string; specializeLevel: number }[]
+  /** 模组列表；locked=false 表示该模组已开启，字段名为接口原始 equip（非 cultivate/player 的 equips） */
+  equip?: { id: string; level: number; locked: boolean }[]
 }
 
 /** player/info 响应（裁剪版） */

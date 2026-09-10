@@ -9,6 +9,16 @@
 2026-09-08 补充采集：新增 player/info 快照（`currentTs=1788853862`，账号 3 发电站/3 制造/
 3 贸易/4 宿舍全量）用于发电站电力与充能加成的核实，见第六节。
 
+2026-09-10 补充采集（App 已升级 v2.0.0，签名头结构与 player/info schema 均无变化）：
+`skland_dump/20260910_capture/` 含同一份游戏上传快照的双形态拉取——10:58 App base64
+形态（`raw/game_player_info.uid25186623.decoded.json`）与 11:52 明文形态
+（`raw/game_player_info.uid25186623.refetch.json`，直接签名请求所得），两者
+`lastUpdateTime`/clue/labor/workTime 逐字段一致，再次印证 API 只返回最近一次游戏上传
+状态；另含三个干员的 char-book/char-info 全量样本（见 `docs/CHAR_BOOK_API.md`）。
+注：本文件早前引用的 `skland_dump/building_api/` 样本目录与 Reqable record 编号来自
+旧抓包环境，文件已不存在；等效现物样本见 `skland_dump/20260908_capture/` 与
+`skland_dump/20260910_capture/`。
+
 游戏侧静态数据统一由 `scripts/build-operator-data.mjs` 生成到
 `src/assets/operator-data.json`（干员/技能/房间全量表）与
 `src/popup/assets/building-skills/`（529 枚技能图标），源见第十一节。
@@ -33,7 +43,9 @@
 `lastApAddTime` 为该快照对应的服务器时间（unix 秒）。**ap 是快照值**，当前心情必须按设施
 速率外推；游戏未在线同步时快照可能落后数小时甚至数天。
 
-`chars[].workTime` 为该干员在此设施的累计工作小时数；`bubble` 为互动气泡，与心情无关。
+`chars[].workTime` 为该干员在此设施的**累计工作时长（单位秒）**：2026-09-08→09-10
+两快照（间隔 44.4h）实测发电站三人各 +6.6~6.8 万，折合约 18.6h 实际工作（与挂机在线
+时长吻合）；同一份游戏上传快照内重复拉取 API 该值不变。`bubble` 为互动气泡，与心情无关。
 
 `building.tiredChars` 为服务端标记的疲劳干员（实测为空数组），App 会在其上叠加客户端
 按设施外推的判定合并计数。
@@ -84,6 +96,11 @@ App 首页「干员疲劳 N」= 服务端 tiredChars 数 + 客户端按上述外
 | `board` | **已置入线索板的系列名，紧凑列表**：置入 1/3/4/7 号位时为 `[RHINE, BLACKSTEEL, URSUS, RHODES]`，无占位元素。槽位 i（1-7）是否置入必须按系列名成员判断（编号顺序 `RHINE→PENGUIN→BLACKSTEEL→URSUS→GLASGOW→KJERAG→RHODES`，与游戏数据 `clue_data.json` 一致），**不可用 `board[index]` 下标判断** |
 | `own` | 自有库数量，**含已置入线索**，上限 10（游戏内 N/10 口径） |
 | `sharing` | 线索交流进行中；开启交流**不要求** board 集齐 7 条（实测只置入 4 条仍为 true） |
+
+2026-09-10 新增现物样本（`skland_dump/20260910_capture/raw/game_player_info.uid25186623.refetch.json`）：
+`board=["PENGUIN","GLASGOW","KJERAG","RHODES"]`、`own=6`、`sharing=true`——置入 4 个不同
+系列即为 4 个元素的紧凑列表（与 9/8 归档 `skland_dump/20260908_capture/` 的 `board=[]`
+空置形态、以及早前 4 系列样本互证），再次确认无占位稀疏元素、与 own/sharing 无联动。
 
 封装：`src/core/status/building.ts` 的 `CLUE_SERIES` / `CLUE_OWN_MAX` / `clueBoardSlots()`，
 回归测试见 `src/core/status/building.test.ts`（`clueBoardSlots` describe）。
@@ -243,7 +260,7 @@ labor value=2/235、remainSecs=52364 → 224.7s/架 = 360/1.6（+60% 充能加�
 
 | 字段 | 语义 |
 |---|---|
-| `trainee.targetSkill` | 正在专精的技能序号（1-3）；空闲时 trainee 对象仍在但为 -1，未进驻为 null |
+| `trainee.targetSkill` | 正在专精的技能在 `chars[].skills` 数组中的 **0 起下标**（空闲时 trainee 对象仍在但为 -1，未进驻为 null；0 起而非 1 起槽位号，见下方索引口径核实） |
 | `remainPoint` | 剩余训练点数（未按速度折算），-1 = 空闲 |
 | `speed` | 训练速度倍率（1 + 加成），1.35 即 +35% |
 | `remainSecs` | 剩余秒数，**以响应 `currentTs` 为基准**（非 `lastUpdateTime`），-1 = 空闲 |
@@ -257,6 +274,11 @@ remainSecs ≈ remainPoint / speed − (currentTs − lastUpdateTime)
 
 消费时必须用同一响应的 `currentTs` 配对 `remainSecs`；封装见
 `trainingCompleteTimeSec()` / `trainingSpeedBonusPercent()`（`src/core/status/building.ts`）。
+
+现物样本：空闲形态（`trainee` 对象保留、`targetSkill/remainPoint/remainSecs` 均 -1、
+`slotState=2`）见 `skland_dump/20260910_capture/raw/game_player_info.uid25186623.refetch.json`；
+训练进行中形态（`targetSkill=2`、含 `remainSecs` 口径核实数据）见
+`skland_dump/20260908_capture/raw/game_player_info.uid25186623.decoded.json`。
 
 技能名称与专精等级（专精一/二/三）**可以**推导：`player/info` 的 `chars[]` 完整结构含
 `skills: [{ id, specializeLevel }]`（槽位顺序 1-3，抓包核实见

@@ -51,8 +51,9 @@
     tower: { reward: { higherItem: { current: 2, total: 4 }, lowerItem: { current: 1, total: 4 } } },
     routine: { daily: { current: 2, total: 3 }, weekly: { current: 4, total: 6 } },
     chars: [
-      { charId: 'char_002_amiya', skinId: 'char_002_amiya#1', level: 60, evolvePhase: 2 },
-      { charId: 'char_010_chen', skinId: 'char_010_chen#1', level: 90, evolvePhase: 2, skills: [{ id: 'skchr_chen_1', specializeLevel: 3 }, { id: 'skchr_chen_2', specializeLevel: 2 }, { id: 'skchr_chen_3', specializeLevel: 1 }] },
+      // 以下潜能、模组和专精只用于详情视觉预览，不代表真实账号。
+      { charId: 'char_002_amiya', skinId: 'char_002_amiya#1', level: 60, evolvePhase: 2, potentialRank: 3, mainSkillLvl: 7, skills: [{ id: 'skcom_magic_rage[3]', specializeLevel: 0 }, { id: 'skchr_amiya_2', specializeLevel: 1 }, { id: 'skchr_amiya_3', specializeLevel: 3 }], equip: [{ id: 'uniequip_002_amiya', level: 2, locked: false }] },
+      { charId: 'char_010_chen', skinId: 'char_010_chen#1', level: 90, evolvePhase: 2, potentialRank: 5, mainSkillLvl: 7, skills: [{ id: 'skchr_chen_1', specializeLevel: 3 }, { id: 'skchr_chen_2', specializeLevel: 2 }, { id: 'skchr_chen_3', specializeLevel: 1 }], equip: [{ id: 'uniequip_002_chen', level: 3, locked: false }, { id: 'uniequip_003_chen', level: 1, locked: true }] },
       { charId: 'char_003_kalts', skinId: 'char_003_kalts#1', level: 40, evolvePhase: 1 },
       // 以下练度均为界面预览用假数据，不代表真实账号。
       ...[

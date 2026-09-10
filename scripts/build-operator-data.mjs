@@ -291,10 +291,13 @@ async function main() {
     const ct = simpleTable[charId]
     if (ct && Array.isArray(ct.equip)) {
       const equips = {}
+      const equipIcons = {}
       for (const equip of ct.equip) {
         if (equip.uniEquipId && equip.typeName2) equips[equip.uniEquipId] = equip.typeName2
+        if (equip.uniEquipId && equip.typeIcon) equipIcons[equip.uniEquipId] = equip.typeIcon
       }
       if (Object.keys(equips).length > 0) operators[charId].equips = equips
+      if (Object.keys(equipIcons).length > 0) operators[charId].equipIcons = equipIcons
     }
     let skillNames = null
     if (ct && Array.isArray(ct.skills) && ct.skills.length > 0) {

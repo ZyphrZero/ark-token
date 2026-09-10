@@ -959,6 +959,9 @@
       "equips": {
         "uniequip_002_nights": "X"
       },
+      "equipIcons": {
+        "uniequip_002_nights": "ccr-x"
+      },
       "skills": [
         "攻击力强化·β型",
         "赤色之瞳"
@@ -993,6 +996,9 @@
       "equips": {
         "uniequip_002_fmout": "X"
       },
+      "equipIcons": {
+        "uniequip_002_fmout": "spc-x"
+      },
       "skills": [
         "战术咏唱·β型",
         "命运"
@@ -1026,6 +1032,9 @@
       ],
       "equips": {
         "uniequip_002_greyy": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_greyy": "spc-y"
       },
       "skills": [
         "战术咏唱·β型",
@@ -1070,6 +1079,9 @@
       "equips": {
         "uniequip_002_akkord": "X"
       },
+      "equipIcons": {
+        "uniequip_002_akkord": "bla-x"
+      },
       "skills": [
         "反拍重音",
         "震爆调谐"
@@ -1103,6 +1115,9 @@
       ],
       "equips": {
         "uniequip_002_cammou": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_cammou": "fun-y"
       },
       "skills": [
         "攻击力强化·β型",
@@ -1147,6 +1162,9 @@
       "equips": {
         "uniequip_002_indigo": "X"
       },
+      "equipIcons": {
+        "uniequip_002_indigo": "msc-x"
+      },
       "skills": [
         "灯塔守卫者",
         "光影迷宫"
@@ -1180,6 +1198,9 @@
       ],
       "equips": {
         "uniequip_002_pudd": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_pudd": "cha-y"
       },
       "skills": [
         "战术咏唱·β型",
@@ -1215,6 +1236,9 @@
       "equips": {
         "uniequip_002_jesica": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_jesica": "mar-y"
+      },
       "skills": [
         "强力击·β型",
         "掩护烟幕"
@@ -1248,6 +1272,9 @@
       ],
       "equips": {
         "uniequip_002_shotst": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_shotst": "mar-x"
       },
       "skills": [
         "碎甲击",
@@ -1283,6 +1310,9 @@
       "equips": {
         "uniequip_002_clour": "X"
       },
+      "equipIcons": {
+        "uniequip_002_clour": "mar-x"
+      },
       "skills": [
         "攻击力强化·β型",
         "双弦开弓"
@@ -1316,6 +1346,9 @@
       ],
       "equips": {
         "uniequip_002_mm": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_mm": "mar-x"
       },
       "skills": [
         "麻痹弹",
@@ -1351,6 +1384,9 @@
       "equips": {
         "uniequip_002_yuki": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_yuki": "art-y"
+      },
       "skills": [
         "敌飙",
         "凝武"
@@ -1384,6 +1420,9 @@
       ],
       "equips": {
         "uniequip_002_pinecn": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_pinecn": "rpr-x"
       },
       "skills": [
         "RMA长钉",
@@ -1419,6 +1458,9 @@
       "equips": {
         "uniequip_002_glaze": "X"
       },
+      "equipIcons": {
+        "uniequip_002_glaze": "dea-x"
+      },
       "skills": [
         "阻挡弹",
         "雷达定位"
@@ -1452,6 +1494,9 @@
       ],
       "equips": {
         "uniequip_002_acdrop": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_acdrop": "arc-x"
       },
       "skills": [
         "花式点射",
@@ -1487,6 +1532,9 @@
       "equips": {
         "uniequip_002_totter": "X"
       },
+      "equipIcons": {
+        "uniequip_002_totter": "sie-x"
+      },
       "skills": [
         "贯日",
         "破虹"
@@ -1520,6 +1568,9 @@
       ],
       "equips": {
         "uniequip_002_caper": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_caper": "lps-x"
       },
       "skills": [
         "强力击·β型",
@@ -1555,6 +1606,9 @@
       "equips": {
         "uniequip_002_blackd": "X"
       },
+      "equipIcons": {
+        "uniequip_002_blackd": "sol-x"
+      },
       "skills": [
         "冲锋号令·β型",
         "冲锋号令·防御"
@@ -1588,6 +1642,9 @@
       ],
       "equips": {
         "uniequip_002_scave": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_scave": "sol-x"
       },
       "skills": [
         "冲锋号令·β型",
@@ -1623,6 +1680,9 @@
       "equips": {
         "uniequip_002_vigna": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_vigna": "chg-y"
+      },
       "skills": [
         "攻击力强化·β型",
         "槌音"
@@ -1656,6 +1716,9 @@
       ],
       "equips": {
         "uniequip_002_myrtle": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_myrtle": "bea-x"
       },
       "skills": [
         "支援号令·β型",
@@ -1691,6 +1754,9 @@
       "equips": {
         "uniequip_002_bstalk": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_bstalk": "tac-y"
+      },
       "skills": [
         "定点指令",
         "“大家一起上”"
@@ -1724,6 +1790,9 @@
       ],
       "equips": {
         "uniequip_002_wintim": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_wintim": "age-x"
       },
       "skills": [
         "数据分析",
@@ -1759,6 +1828,9 @@
       "equips": {
         "uniequip_002_doberm": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_doberm": "ins-y"
+      },
       "skills": [
         "强力击·β型",
         "鞭策"
@@ -1792,6 +1864,9 @@
       ],
       "equips": {
         "uniequip_002_gyuki": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_gyuki": "dre-y"
       },
       "skills": [
         "生命回复·β型",
@@ -1827,6 +1902,9 @@
       "equips": {
         "uniequip_002_peacok": "X"
       },
+      "equipIcons": {
+        "uniequip_002_peacok": "dre-x"
+      },
       "skills": [
         "断罪",
         "创世纪"
@@ -1860,6 +1938,9 @@
       ],
       "equips": {
         "uniequip_002_frostl": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_frostl": "lor-x"
       },
       "skills": [
         "寒霜枪刃",
@@ -1895,6 +1976,9 @@
       "equips": {
         "uniequip_002_estell": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_estell": "cen-y"
+      },
       "skills": [
         "攻击力强化·β型",
         "舍身突击"
@@ -1928,6 +2012,9 @@
       ],
       "equips": {
         "uniequip_002_frncat": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_frncat": "aft-x"
       },
       "skills": [
         "挠伤",
@@ -1963,6 +2050,9 @@
       "equips": {
         "uniequip_002_cutter": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_cutter": "swo-y"
+      },
       "skills": [
         "红移",
         "绯红刺刀"
@@ -1996,6 +2086,9 @@
       ],
       "equips": {
         "uniequip_002_utage": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_utage": "sbl-x"
       },
       "skills": [
         "分神",
@@ -2040,6 +2133,9 @@
       "equips": {
         "uniequip_002_spikes": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_spikes": "lor-y"
+      },
       "skills": [
         "小玩笑",
         "致命恶作剧"
@@ -2073,6 +2169,9 @@
       ],
       "equips": {
         "uniequip_002_lolxh": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_lolxh": "lor-y"
       },
       "skills": [
         "掠光尾影",
@@ -2108,6 +2207,9 @@
       "equips": {
         "uniequip_002_quartz": "X"
       },
+      "equipIcons": {
+        "uniequip_002_quartz": "cru-x"
+      },
       "skills": [
         "攻击力强化·β型",
         "全力相搏"
@@ -2141,6 +2243,9 @@
       ],
       "equips": {
         "uniequip_002_humus": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_humus": "rea-x"
       },
       "skills": [
         "固废切割",
@@ -2176,6 +2281,9 @@
       "equips": {
         "uniequip_002_wscoot": "X"
       },
+      "equipIcons": {
+        "uniequip_002_wscoot": "lib-x"
+      },
       "skills": [
         "以攻为守",
         "招无虚发"
@@ -2209,6 +2317,9 @@
       ],
       "equips": {
         "uniequip_002_gravel": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_gravel": "exe-x"
       },
       "skills": [
         "影袭",
@@ -2244,6 +2355,9 @@
       "equips": {
         "uniequip_002_strong": "X"
       },
+      "equipIcons": {
+        "uniequip_002_strong": "mer-x"
+      },
       "skills": [
         "断螯",
         "刺身拼盘"
@@ -2277,6 +2391,9 @@
       ],
       "equips": {
         "uniequip_002_rope": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_rope": "hok-x"
       },
       "skills": [
         "勾爪发射",
@@ -2312,6 +2429,9 @@
       "equips": {
         "uniequip_002_myrrh": "X"
       },
+      "equipIcons": {
+        "uniequip_002_myrrh": "phy-x"
+      },
       "skills": [
         "二重治疗",
         "医疗力场"
@@ -2345,6 +2465,9 @@
       ],
       "equips": {
         "uniequip_002_ccheal": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_ccheal": "phy-y"
       },
       "skills": [
         "活力再生",
@@ -2380,6 +2503,9 @@
       "equips": {
         "uniequip_002_susuro": "X"
       },
+      "equipIcons": {
+        "uniequip_002_susuro": "phy-x"
+      },
       "skills": [
         "治疗强化·β型",
         "深度治疗"
@@ -2413,6 +2539,9 @@
       ],
       "equips": {
         "uniequip_002_flower": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_flower": "rin-y"
       },
       "skills": [
         "治疗强化·β型",
@@ -2448,6 +2577,9 @@
       "equips": {
         "uniequip_002_finlpp": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_finlpp": "wah-y"
+      },
       "skills": [
         "治愈水波",
         "涌泉"
@@ -2481,6 +2613,9 @@
       ],
       "equips": {
         "uniequip_002_chnut": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_chnut": "wdm-x"
       },
       "skills": [
         "积微成著",
@@ -2516,6 +2651,9 @@
       "equips": {
         "uniequip_002_yak": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_yak": "pro-y"
+      },
       "skills": [
         "体能强化",
         "抗寒体质"
@@ -2549,6 +2687,9 @@
       ],
       "equips": {
         "uniequip_002_snakek": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_snakek": "pro-x"
       },
       "skills": [
         "防御力强化·β型",
@@ -2584,6 +2725,9 @@
       "equips": {
         "uniequip_002_bubble": "X"
       },
+      "equipIcons": {
+        "uniequip_002_bubble": "pro-x"
+      },
       "skills": [
         "防御力强化·β型",
         "“挨打”"
@@ -2617,6 +2761,9 @@
       ],
       "equips": {
         "uniequip_002_luton": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_luton": "uny-x"
       },
       "skills": [
         "强力击·β型",
@@ -2652,6 +2799,9 @@
       "equips": {
         "uniequip_002_sunbr": "X"
       },
+      "equipIcons": {
+        "uniequip_002_sunbr": "gua-x"
+      },
       "skills": [
         "备用军粮",
         "食粮烹制"
@@ -2686,6 +2836,9 @@
       "equips": {
         "uniequip_002_durnar": "X"
       },
+      "equipIcons": {
+        "uniequip_002_durnar": "ast-x"
+      },
       "skills": [
         "攻击力强化·β型",
         "起盾回击"
@@ -2719,6 +2872,9 @@
       ],
       "equips": {
         "uniequip_002_deepcl": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_deepcl": "sum-y"
       },
       "skills": [
         "光影之触",
@@ -2763,6 +2919,9 @@
       "equips": {
         "uniequip_002_skgoat": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_skgoat": "dec-y"
+      },
       "skills": [
         "攻击力强化·β型",
         "流沙化"
@@ -2806,6 +2965,9 @@
       "equips": {
         "uniequip_002_podego": "X"
       },
+      "equipIcons": {
+        "uniequip_002_podego": "dec-x"
+      },
       "skills": [
         "花香疗法",
         "孢子扩散"
@@ -2839,6 +3001,9 @@
       ],
       "equips": {
         "uniequip_002_robrta": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_robrta": "cra-x"
       },
       "skills": [
         "叙拉古式上妆",
@@ -2874,6 +3039,9 @@
       "equips": {
         "uniequip_002_ethan": "X"
       },
+      "equipIcons": {
+        "uniequip_002_ethan": "amb-x"
+      },
       "skills": [
         "花式回旋",
         "十字悬挂"
@@ -2908,6 +3076,9 @@
       "equips": {
         "uniequip_002_sqrrel": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_sqrrel": "pus-y"
+      },
       "skills": [
         "水蒸气泵",
         "高压水炮"
@@ -2941,6 +3112,9 @@
       ],
       "equips": {
         "uniequip_002_vrdant": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_vrdant": "pum-y"
       },
       "skills": [
         "苍翠屏障",
@@ -3007,6 +3181,9 @@
       "equips": {
         "uniequip_002_plosis": "X"
       },
+      "equipIcons": {
+        "uniequip_002_plosis": "rin-x"
+      },
       "skills": [
         "治疗强化·γ型",
         "脑啡肽"
@@ -3040,6 +3217,9 @@
       ],
       "equips": {
         "uniequip_002_breeze": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_breeze": "rin-x"
       },
       "skills": [
         "集束疗法",
@@ -3075,6 +3255,9 @@
       "equips": {
         "uniequip_002_rosesa": "X"
       },
+      "equipIcons": {
+        "uniequip_002_rosesa": "rin-x"
+      },
       "skills": [
         "上佳的应急药呀",
         "绝妙的长效药呀"
@@ -3108,6 +3291,9 @@
       ],
       "equips": {
         "uniequip_002_headbr": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_headbr": "sol-x"
       },
       "skills": [
         "冲锋号令·γ型",
@@ -3143,6 +3329,9 @@
       "equips": {
         "uniequip_002_texas": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_texas": "sol-y"
+      },
       "skills": [
         "冲锋号令·γ型",
         "剑雨"
@@ -3176,6 +3365,9 @@
       ],
       "equips": {
         "uniequip_002_chiave": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_chiave": "sol-y"
       },
       "skills": [
         "冲锋号令·γ型",
@@ -3211,6 +3403,9 @@
       "equips": {
         "uniequip_002_buildr": "X"
       },
+      "equipIcons": {
+        "uniequip_002_buildr": "sol-x"
+      },
       "skills": [
         "冲锋号令·γ型",
         "工程者之愿"
@@ -3244,6 +3439,9 @@
       ],
       "equips": {
         "uniequip_002_rfalcn": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_rfalcn": "sol-y"
       },
       "skills": [
         "冲锋号令·γ型",
@@ -3310,6 +3508,9 @@
       "equips": {
         "uniequip_002_sddrag": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_sddrag": "chg-y"
+      },
       "skills": [
         "迅捷打击·γ型",
         "生灵火花"
@@ -3343,6 +3544,9 @@
       ],
       "equips": {
         "uniequip_002_wildmn": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_wildmn": "chg-x"
       },
       "skills": [
         "骑枪刺击",
@@ -3378,6 +3582,9 @@
       "equips": {
         "uniequip_002_fang2": "X"
       },
+      "equipIcons": {
+        "uniequip_002_fang2": "chg-x"
+      },
       "skills": [
         "贯敌刺枪",
         "执守阵线"
@@ -3411,6 +3618,9 @@
       ],
       "equips": {
         "uniequip_002_elysm": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_elysm": "bea-x"
       },
       "skills": [
         "支援号令·γ型",
@@ -3446,6 +3656,9 @@
       "equips": {
         "uniequip_002_wanqin": "X"
       },
+      "equipIcons": {
+        "uniequip_002_wanqin": "bea-x"
+      },
       "skills": [
         "支援号令·γ型",
         "应东风"
@@ -3479,6 +3692,9 @@
       ],
       "equips": {
         "uniequip_002_jcinta": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_jcinta": "bea-x"
       },
       "skills": [
         "支援号令·γ型",
@@ -3514,6 +3730,9 @@
       "equips": {
         "uniequip_002_blkngt": "X"
       },
+      "equipIcons": {
+        "uniequip_002_blkngt": "tac-x"
+      },
       "skills": [
         "半醒",
         "安眠"
@@ -3547,6 +3766,9 @@
       ],
       "equips": {
         "uniequip_002_mitm": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_mitm": "tac-y"
       },
       "skills": [
         "遥控解体",
@@ -3582,6 +3804,9 @@
       "equips": {
         "uniequip_002_ctable": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_ctable": "age-y"
+      },
       "skills": [
         "观火",
         "浮光"
@@ -3615,6 +3840,9 @@
       ],
       "equips": {
         "uniequip_002_puzzle": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_puzzle": "age-x"
       },
       "skills": [
         "关键线索",
@@ -3650,6 +3878,9 @@
       "equips": {
         "uniequip_002_chilc": "X"
       },
+      "equipIcons": {
+        "uniequip_002_chilc": "age-x"
+      },
       "skills": [
         "开锁工具",
         "随机应变"
@@ -3683,6 +3914,9 @@
       ],
       "equips": {
         "uniequip_002_surfer": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_surfer": "age-x"
       },
       "skills": [
         "探寻",
@@ -3718,6 +3952,9 @@
       "equips": {
         "uniequip_002_swire": "X"
       },
+      "equipIcons": {
+        "uniequip_002_swire": "ins-x"
+      },
       "skills": [
         "指挥调度",
         "协同作战"
@@ -3751,6 +3988,9 @@
       ],
       "equips": {
         "uniequip_002_sophia": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_sophia": "ins-x"
       },
       "skills": [
         "激励艺术",
@@ -3786,6 +4026,9 @@
       "equips": {
         "uniequip_002_bryota": "X"
       },
+      "equipIcons": {
+        "uniequip_002_bryota": "ins-x"
+      },
       "skills": [
         "强力击·β型",
         "土石的恒心"
@@ -3819,6 +4062,9 @@
       ],
       "equips": {
         "uniequip_002_rdoc": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_rdoc": "ins-y"
       },
       "skills": [
         "以暴制暴",
@@ -3872,6 +4118,9 @@
       "equips": {
         "uniequip_002_franka": "X"
       },
+      "equipIcons": {
+        "uniequip_002_franka": "dre-x"
+      },
       "skills": [
         "迅捷打击·γ型",
         "极致锋度"
@@ -3905,6 +4154,9 @@
       ],
       "equips": {
         "uniequip_002_flameb": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_flameb": "dre-y"
       },
       "skills": [
         "歃血",
@@ -3940,6 +4192,9 @@
       "equips": {
         "uniequip_002_morgan": "X"
       },
+      "equipIcons": {
+        "uniequip_002_morgan": "dre-x"
+      },
       "skills": [
         "街头好手",
         "无畏招架"
@@ -3973,6 +4228,9 @@
       ],
       "equips": {
         "uniequip_002_laios": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_laios": "dre-y"
       },
       "skills": [
         "胆小剑助",
@@ -4008,6 +4266,9 @@
       "equips": {
         "uniequip_002_tiger": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_tiger": "fgt-y"
+      },
       "skills": [
         "碎甲拳",
         "裂魂"
@@ -4041,6 +4302,9 @@
       ],
       "equips": {
         "uniequip_002_flint": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_flint": "fgt-y"
       },
       "skills": [
         "不息",
@@ -4076,6 +4340,9 @@
       "equips": {
         "uniequip_002_dagda": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_dagda": "fgt-y"
+      },
       "skills": [
         "反制技巧",
         "精准捕杀"
@@ -4109,6 +4376,9 @@
       ],
       "equips": {
         "uniequip_002_whitew": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_whitew": "lor-x"
       },
       "skills": [
         "日晷",
@@ -4144,6 +4414,9 @@
       "equips": {
         "uniequip_002_ayer": "X"
       },
+      "equipIcons": {
+        "uniequip_002_ayer": "lor-x"
+      },
       "skills": [
         "多导向散射弹丸",
         "浮游刃启动"
@@ -4177,6 +4450,9 @@
       ],
       "equips": {
         "uniequip_002_leto": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_leto": "lor-y"
       },
       "skills": [
         "迅捷打击·γ型",
@@ -4212,6 +4488,9 @@
       "equips": {
         "uniequip_002_chimes": "X"
       },
+      "equipIcons": {
+        "uniequip_002_chimes": "cru-x"
+      },
       "skills": [
         "攻击力强化·γ型",
         "乡心无改"
@@ -4245,6 +4524,9 @@
       ],
       "equips": {
         "uniequip_002_bibeak": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_bibeak": "swo-x"
       },
       "skills": [
         "飞针剑羽",
@@ -4280,6 +4562,9 @@
       "equips": {
         "uniequip_002_tachak": "X"
       },
+      "equipIcons": {
+        "uniequip_002_tachak": "swo-x"
+      },
       "skills": [
         "燃烧榴弹",
         "倾泻弹药"
@@ -4313,6 +4598,9 @@
       ],
       "equips": {
         "uniequip_002_ghost": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_ghost": "cen-x"
       },
       "skills": [
         "攻击力强化·γ型",
@@ -4348,6 +4636,9 @@
       "equips": {
         "uniequip_002_broca": "X"
       },
+      "equipIcons": {
+        "uniequip_002_broca": "cen-x"
+      },
       "skills": [
         "通电",
         "高压电流"
@@ -4381,6 +4672,9 @@
       ],
       "equips": {
         "uniequip_002_fuze": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_fuze": "cen-y"
       },
       "skills": [
         "火力侦察",
@@ -4416,6 +4710,9 @@
       "equips": {
         "uniequip_002_varkis": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_varkis": "cen-y"
+      },
       "skills": [
         "奔流",
         "同胞的意志"
@@ -4449,6 +4746,9 @@
       ],
       "equips": {
         "uniequip_002_astesi": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_astesi": "aft-y"
       },
       "skills": [
         "星座守护",
@@ -4484,6 +4784,9 @@
       "equips": {
         "uniequip_002_sidero": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_sidero": "aft-y"
+      },
       "skills": [
         "生命回复·γ型",
         "破浪回神"
@@ -4517,6 +4820,9 @@
       ],
       "equips": {
         "uniequip_002_akafyu": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_akafyu": "sbl-x"
       },
       "skills": [
         "信影流·雷刀之势",
@@ -4552,6 +4858,9 @@
       "equips": {
         "uniequip_002_noirc2": "X"
       },
+      "equipIcons": {
+        "uniequip_002_noirc2": "sbl-x"
+      },
       "skills": [
         "居合拔刀气刃斩",
         "气刃兜割"
@@ -4585,6 +4894,9 @@
       ],
       "equips": {
         "uniequip_002_crow": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_crow": "rea-x"
       },
       "skills": [
         "高速切割",
@@ -4620,6 +4932,9 @@
       "equips": {
         "uniequip_002_highmo": "X"
       },
+      "equipIcons": {
+        "uniequip_002_highmo": "rea-x"
+      },
       "skills": [
         "回首，断舍",
         "泡影，殆尽"
@@ -4653,6 +4968,9 @@
       ],
       "equips": {
         "uniequip_002_takila": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_takila": "lib-x"
       },
       "skills": [
         "当机立断",
@@ -4696,6 +5014,9 @@
       ],
       "equips": {
         "uniequip_002_odda": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_odda": "ham-x"
       },
       "skills": [
         "火花溅射",
@@ -4761,6 +5082,9 @@
       ],
       "equips": {
         "uniequip_002_amoris": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_amoris": "ham-x"
       },
       "skills": [
         "如焰般热烈",
@@ -4836,6 +5160,9 @@
       "equips": {
         "uniequip_002_catap2": "X"
       },
+      "equipIcons": {
+        "uniequip_002_catap2": "mcn-x"
+      },
       "skills": [
         "高压回填斩",
         "超高输出属性解放斩"
@@ -4869,6 +5196,9 @@
       ],
       "equips": {
         "uniequip_002_bluep": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_bluep": "mar-y"
       },
       "skills": [
         "二重射击·自动",
@@ -4904,6 +5234,9 @@
       "equips": {
         "uniequip_002_platnm": "X"
       },
+      "equipIcons": {
+        "uniequip_002_platnm": "mar-x"
+      },
       "skills": [
         "攻击力强化·γ型",
         "天马视域"
@@ -4937,6 +5270,9 @@
       ],
       "equips": {
         "uniequip_002_swllow": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_swllow": "mar-y"
       },
       "skills": [
         "飞羽",
@@ -4981,6 +5317,9 @@
       "equips": {
         "uniequip_002_aprl": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_aprl": "mar-y"
+      },
       "skills": [
         "精准射击",
         "灵活伪装"
@@ -5014,6 +5353,9 @@
       ],
       "equips": {
         "uniequip_002_kroos2": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_kroos2": "mar-x"
       },
       "skills": [
         "无痕",
@@ -5049,6 +5391,9 @@
       "equips": {
         "uniequip_002_inside": "X"
       },
+      "equipIcons": {
+        "uniequip_002_inside": "mar-x"
+      },
       "skills": [
         "“不惹麻烦”",
         "“解决麻烦”"
@@ -5083,6 +5428,9 @@
       "equips": {
         "uniequip_002_meteo": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_meteo": "art-y"
+      },
       "skills": [
         "霰射弹头",
         "高爆弹头"
@@ -5116,6 +5464,9 @@
       ],
       "equips": {
         "uniequip_002_sesa": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_sesa": "art-x"
       },
       "skills": [
         "攻击力强化·γ型",
@@ -5160,6 +5511,9 @@
       "equips": {
         "uniequip_002_bdhkgt": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_bdhkgt": "art-y"
+      },
       "skills": [
         "探前路",
         "掷旧尘"
@@ -5193,6 +5547,9 @@
       ],
       "equips": {
         "uniequip_002_excu": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_excu": "rpr-x"
       },
       "skills": [
         "铳口收束",
@@ -5228,6 +5585,9 @@
       "equips": {
         "uniequip_002_aosta": "X"
       },
+      "equipIcons": {
+        "uniequip_002_aosta": "rpr-x"
+      },
       "skills": [
         "迅捷打击·γ型",
         "影钉"
@@ -5261,6 +5621,9 @@
       ],
       "equips": {
         "uniequip_002_kichi": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_kichi": "rpr-x"
       },
       "skills": [
         "欢迎您来！",
@@ -5362,6 +5725,9 @@
       "equips": {
         "uniequip_002_amiya": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_amiya": "ccr-y"
+      },
       "skills": [
         "战术咏唱·γ型",
         "精神爆发",
@@ -5397,6 +5763,9 @@
       "equips": {
         "uniequip_002_absin": "X"
       },
+      "equipIcons": {
+        "uniequip_002_absin": "ccr-x"
+      },
       "skills": [
         "执法模式",
         "终结连射"
@@ -5430,6 +5799,9 @@
       ],
       "equips": {
         "uniequip_002_tomimi": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_tomimi": "ccr-y"
       },
       "skills": [
         "部族技艺",
@@ -5465,6 +5837,9 @@
       "equips": {
         "uniequip_002_qanik": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_qanik": "ccr-y"
+      },
       "skills": [
         "冻风",
         "坠雪"
@@ -5498,6 +5873,9 @@
       ],
       "equips": {
         "uniequip_002_skfire": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_skfire": "spc-y"
       },
       "skills": [
         "攻击力强化·γ型",
@@ -5533,6 +5911,9 @@
       "equips": {
         "uniequip_002_leizi": "X"
       },
+      "equipIcons": {
+        "uniequip_002_leizi": "cha-x"
+      },
       "skills": [
         "攻击力强化·γ型",
         "初雷"
@@ -5566,6 +5947,9 @@
       ],
       "equips": {
         "uniequip_002_halo": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_halo": "cha-y"
       },
       "skills": [
         "双端导流",
@@ -5601,6 +5985,9 @@
       "equips": {
         "uniequip_002_beewax": "X"
       },
+      "equipIcons": {
+        "uniequip_002_beewax": "plx-x"
+      },
       "skills": [
         "沙暴扩散",
         "守卫尖碑"
@@ -5634,6 +6021,9 @@
       ],
       "equips": {
         "uniequip_002_lionhd": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_lionhd": "spc-x"
       },
       "skills": [
         "攻击力强化·γ型",
@@ -5669,6 +6059,9 @@
       "equips": {
         "uniequip_002_sntlla": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_sntlla": "spc-y"
+      },
       "skills": [
         "迅捷打击·γ型",
         "“女巫之泪”"
@@ -5702,6 +6095,9 @@
       ],
       "equips": {
         "uniequip_002_liesel": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_liesel": "spc-y"
       },
       "skills": [
         "合奏起拍",
@@ -5746,6 +6142,9 @@
       "equips": {
         "uniequip_002_mint": "X"
       },
+      "equipIcons": {
+        "uniequip_002_mint": "plx-x"
+      },
       "skills": [
         "风语",
         "聚能涡旋"
@@ -5779,6 +6178,9 @@
       ],
       "equips": {
         "uniequip_002_iris": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_iris": "msc-x"
       },
       "skills": [
         "童话守卫者",
@@ -5814,6 +6216,9 @@
       "equips": {
         "uniequip_002_hamoni": "X"
       },
+      "equipIcons": {
+        "uniequip_002_hamoni": "msc-x"
+      },
       "skills": [
         "轻巧舞步",
         "沉溺之灾"
@@ -5848,6 +6253,9 @@
       "equips": {
         "uniequip_002_delphn": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_delphn": "msc-y"
+      },
       "skills": [
         "“贯注”",
         "“抢攻”"
@@ -5881,6 +6289,9 @@
       ],
       "equips": {
         "uniequip_002_lava2": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_lava2": "spc-x"
       },
       "skills": [
         "焰淬匕首",
@@ -5925,6 +6336,9 @@
       "equips": {
         "uniequip_002_serum": "X"
       },
+      "equipIcons": {
+        "uniequip_002_serum": "bla-x"
+      },
       "skills": [
         "专注力超载",
         "传导蚀滞弹"
@@ -5958,6 +6372,9 @@
       ],
       "equips": {
         "uniequip_002_aroma": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_aroma": "bla-x"
       },
       "skills": [
         "强效清洁",
@@ -6002,6 +6419,9 @@
       "equips": {
         "uniequip_002_kjera": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_kjera": "fun-y"
+      },
       "skills": [
         "攻击力强化·γ型",
         "心随意动"
@@ -6035,6 +6455,9 @@
       ],
       "equips": {
         "uniequip_002_rockr": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_rockr": "fun-x"
       },
       "skills": [
         "战术咏唱·γ型",
@@ -6079,6 +6502,9 @@
       "equips": {
         "uniequip_002_malist": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_malist": "fun-y"
+      },
       "skills": [
         "迅捷打击·γ型",
         "神工意匠"
@@ -6113,6 +6539,9 @@
       "equips": {
         "uniequip_002_tmslot": "X"
       },
+      "equipIcons": {
+        "uniequip_002_tmslot": "fun-x"
+      },
       "skills": [
         "攻击力强化·γ型",
         "科技与传统仪式"
@@ -6146,6 +6575,9 @@
       ],
       "equips": {
         "uniequip_002_kaitou": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_kaitou": "pri-x"
       },
       "skills": [
         "镭射穿凿",
@@ -6190,6 +6622,9 @@
       "equips": {
         "uniequip_002_warmy": "X"
       },
+      "equipIcons": {
+        "uniequip_002_warmy": "pri-x"
+      },
       "skills": [
         "炎炎火焰",
         "滔滔热流"
@@ -6223,6 +6658,9 @@
       ],
       "equips": {
         "uniequip_002_christ": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_christ": "pri-x"
       },
       "skills": [
         "自由用餐礼仪",
@@ -6258,6 +6696,9 @@
       "equips": {
         "uniequip_002_tecno": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_tecno": "soc-y"
+      },
       "skills": [
         "关节锁定",
         "恣意挥洒"
@@ -6291,6 +6732,9 @@
       ],
       "equips": {
         "uniequip_002_otter": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_otter": "sum-x"
       },
       "skills": [
         "迷惑装置",
@@ -6326,6 +6770,9 @@
       "equips": {
         "uniequip_002_folivo": "X"
       },
+      "equipIcons": {
+        "uniequip_002_folivo": "sum-x"
+      },
       "skills": [
         "保护色隐蔽",
         "全景过载摄像"
@@ -6359,6 +6806,9 @@
       ],
       "equips": {
         "uniequip_002_lasher": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_lasher": "sum-x"
       },
       "skills": [
         "上紧发条",
@@ -6394,6 +6844,9 @@
       "equips": {
         "uniequip_002_silent": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_silent": "phy-y"
+      },
       "skills": [
         "治疗强化·γ型",
         "医疗无人机"
@@ -6427,6 +6880,9 @@
       ],
       "equips": {
         "uniequip_002_bldsk": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_bldsk": "phy-x"
       },
       "skills": [
         "紧急包扎",
@@ -6462,6 +6918,9 @@
       "equips": {
         "uniequip_002_folnic": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_folnic": "phy-y"
+      },
       "skills": [
         "最大剂量输注",
         "复合型药物弹片"
@@ -6495,6 +6954,9 @@
       ],
       "equips": {
         "uniequip_002_reckpr": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_reckpr": "phy-x"
       },
       "skills": [
         "触类旁通",
@@ -6530,6 +6992,9 @@
       "equips": {
         "uniequip_002_ceylon": "X"
       },
+      "equipIcons": {
+        "uniequip_002_ceylon": "wah-x"
+      },
       "skills": [
         "集中式水疗",
         "水灵庇护"
@@ -6563,6 +7028,9 @@
       ],
       "equips": {
         "uniequip_002_whispr": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_whispr": "wah-x"
       },
       "skills": [
         "定向诊断",
@@ -6598,6 +7066,9 @@
       "equips": {
         "uniequip_002_nowell": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_nowell": "wah-y"
+      },
       "skills": [
         "步履不停",
         "生命不息"
@@ -6631,6 +7102,9 @@
       ],
       "equips": {
         "uniequip_002_tuye": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_tuye": "phy-x"
       },
       "skills": [
         "水流环",
@@ -6675,6 +7149,9 @@
       "equips": {
         "uniequip_002_mberry": "X"
       },
+      "equipIcons": {
+        "uniequip_002_mberry": "wdm-x"
+      },
       "skills": [
         "治愈云雾",
         "安全区域"
@@ -6718,6 +7195,9 @@
       "equips": {
         "uniequip_002_glider": "X"
       },
+      "equipIcons": {
+        "uniequip_002_glider": "wdm-x"
+      },
       "skills": [
         "精神护理",
         "振奋"
@@ -6751,6 +7231,9 @@
       ],
       "equips": {
         "uniequip_002_harold": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_harold": "wdm-x"
       },
       "skills": [
         "治疗强化·γ型",
@@ -6786,6 +7269,9 @@
       "equips": {
         "uniequip_002_hbisc2": "X"
       },
+      "equipIcons": {
+        "uniequip_002_hbisc2": "inc-x"
+      },
       "skills": [
         "攻击力强化·γ型",
         "抚业之触"
@@ -6819,6 +7305,9 @@
       ],
       "equips": {
         "uniequip_002_vendla": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_vendla": "inc-x"
       },
       "skills": [
         "战术咏唱·γ型",
@@ -6863,6 +7352,9 @@
       "equips": {
         "uniequip_002_peper": "X"
       },
+      "equipIcons": {
+        "uniequip_002_peper": "xah-x"
+      },
       "skills": [
         "掩护作战·γ型",
         "同伴意识"
@@ -6897,6 +7389,9 @@
       "equips": {
         "uniequip_002_papyrs": "X"
       },
+      "equipIcons": {
+        "uniequip_002_papyrs": "xah-x"
+      },
       "skills": [
         "巧思乍现",
         "临考发挥"
@@ -6930,6 +7425,9 @@
       ],
       "equips": {
         "uniequip_002_turdus": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_turdus": "xah-x"
       },
       "skills": [
         "火钳秘咒",
@@ -6996,6 +7494,9 @@
       "equips": {
         "uniequip_002_nearl": "X"
       },
+      "equipIcons": {
+        "uniequip_002_nearl": "gua-x"
+      },
       "skills": [
         "急救",
         "急救模式"
@@ -7029,6 +7530,9 @@
       ],
       "equips": {
         "uniequip_002_hmau": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_hmau": "gua-y"
       },
       "skills": [
         "反制治疗",
@@ -7073,6 +7577,9 @@
       "equips": {
         "uniequip_002_baslin": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_baslin": "gua-y"
+      },
       "skills": [
         "急救",
         "沉音宁神"
@@ -7106,6 +7613,9 @@
       ],
       "equips": {
         "uniequip_002_sensi": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_sensi": "gua-y"
       },
       "skills": [
         "单人份料理",
@@ -7141,6 +7651,9 @@
       "equips": {
         "uniequip_002_red": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_red": "exe-y"
+      },
       "skills": [
         "处决模式",
         "狼群"
@@ -7174,6 +7687,9 @@
       ],
       "equips": {
         "uniequip_002_waaifu": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_waaifu": "exe-x"
       },
       "skills": [
         "寸劲",
@@ -7209,6 +7725,9 @@
       "equips": {
         "uniequip_002_kafka": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_kafka": "exe-y"
+      },
       "skills": [
         "怪异魔方",
         "诡异剪刀"
@@ -7242,6 +7761,9 @@
       ],
       "equips": {
         "uniequip_002_nothin": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_nothin": "mer-x"
       },
       "skills": [
         "知难而退",
@@ -7277,6 +7799,9 @@
       "equips": {
         "uniequip_002_talr": "X"
       },
+      "equipIcons": {
+        "uniequip_002_talr": "mer-x"
+      },
       "skills": [
         "量衣尺",
         "缝线缠身"
@@ -7310,6 +7835,9 @@
       ],
       "equips": {
         "uniequip_002_liskam": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_liskam": "spt-x"
       },
       "skills": [
         "充能防御",
@@ -7345,6 +7873,9 @@
       "equips": {
         "uniequip_002_udflow": "X"
       },
+      "equipIcons": {
+        "uniequip_002_udflow": "spt-x"
+      },
       "skills": [
         "侵袭破坏应对",
         "行动能力剥夺"
@@ -7378,6 +7909,9 @@
       ],
       "equips": {
         "uniequip_002_moeshd": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_moeshd": "pro-y"
       },
       "skills": [
         "自动防御",
@@ -7413,6 +7947,9 @@
       "equips": {
         "uniequip_002_bison": "X"
       },
+      "equipIcons": {
+        "uniequip_002_bison": "pro-x"
+      },
       "skills": [
         "防御力强化·γ型",
         "深化阵线"
@@ -7446,6 +7983,9 @@
       ],
       "equips": {
         "uniequip_002_hpsts": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_hpsts": "uny-x"
       },
       "skills": [
         "坚守模式",
@@ -7481,6 +8021,9 @@
       "equips": {
         "uniequip_002_branch": "X"
       },
+      "equipIcons": {
+        "uniequip_002_branch": "uny-x"
+      },
       "skills": [
         "绝境抵抗",
         "生存决心"
@@ -7514,6 +8057,9 @@
       ],
       "equips": {
         "uniequip_002_asbest": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_asbest": "ast-x"
       },
       "skills": [
         "固守模式",
@@ -7549,6 +8095,9 @@
       "equips": {
         "uniequip_002_aprot2": "X"
       },
+      "equipIcons": {
+        "uniequip_002_aprot2": "ast-x"
+      },
       "skills": [
         "速战速决",
         "燃命狂欢"
@@ -7583,6 +8132,9 @@
       "equips": {
         "uniequip_002_pianst": "X"
       },
+      "equipIcons": {
+        "uniequip_002_pianst": "ast-x"
+      },
       "skills": [
         "纷飞十指",
         "曲惊四座"
@@ -7616,6 +8168,9 @@
       ],
       "equips": {
         "uniequip_002_blitz": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_blitz": "spt-x"
       },
       "skills": [
         "闪光护盾",
@@ -7660,6 +8215,9 @@
       "equips": {
         "uniequip_002_zebra": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_zebra": "pro-y"
+      },
       "skills": [
         "应急迷彩",
         "群体迷彩"
@@ -7693,6 +8251,9 @@
       ],
       "equips": {
         "uniequip_002_ashlok": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_ashlok": "for-x"
       },
       "skills": [
         "攻击力强化·γ型",
@@ -7728,6 +8289,9 @@
       "equips": {
         "uniequip_002_firwhl": "X"
       },
+      "equipIcons": {
+        "uniequip_002_firwhl": "for-x"
+      },
       "skills": [
         "野火",
         "焦土"
@@ -7761,6 +8325,9 @@
       ],
       "equips": {
         "uniequip_002_aurora": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_aurora": "hes-x"
       },
       "skills": [
         "固守家园",
@@ -7796,6 +8363,9 @@
       "equips": {
         "uniequip_002_cement": "X"
       },
+      "equipIcons": {
+        "uniequip_002_cement": "hes-x"
+      },
       "skills": [
         "突破矿层",
         "结构加固"
@@ -7829,6 +8399,9 @@
       ],
       "equips": {
         "uniequip_002_philae": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_philae": "prp-x"
       },
       "skills": [
         "灵河护佑",
@@ -7864,6 +8437,9 @@
       "equips": {
         "uniequip_002_tanya": "X"
       },
+      "equipIcons": {
+        "uniequip_002_tanya": "prp-x"
+      },
       "skills": [
         "涤净",
         "溃决"
@@ -7897,6 +8473,9 @@
       ],
       "equips": {
         "uniequip_002_prove": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_prove": "arc-x"
       },
       "skills": [
         "狼眼",
@@ -7932,6 +8511,9 @@
       "equips": {
         "uniequip_002_melnte": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_melnte": "arc-y"
+      },
       "skills": [
         "饱和脉冲",
         "临界爆发"
@@ -7965,6 +8547,9 @@
       ],
       "equips": {
         "uniequip_002_milu": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_milu": "dea-y"
       },
       "skills": [
         "环境伪装",
@@ -8000,6 +8585,9 @@
       "equips": {
         "uniequip_002_cuttle": "X"
       },
+      "equipIcons": {
+        "uniequip_002_cuttle": "dea-x"
+      },
       "skills": [
         "攻击力强化·γ型",
         "阻滞射击战术"
@@ -8033,6 +8621,9 @@
       ],
       "equips": {
         "uniequip_002_lunacu": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_lunacu": "dea-y"
       },
       "skills": [
         "狩猎时刻",
@@ -8068,6 +8659,9 @@
       "equips": {
         "uniequip_002_toddi": "X"
       },
+      "equipIcons": {
+        "uniequip_002_toddi": "sie-x"
+      },
       "skills": [
         "信号矢",
         "便携破城矢"
@@ -8102,6 +8696,9 @@
       "equips": {
         "uniequip_002_erato": "X"
       },
+      "equipIcons": {
+        "uniequip_002_erato": "sie-x"
+      },
       "skills": [
         "安眠旋律",
         "英雄赞歌"
@@ -8135,6 +8732,9 @@
       ],
       "equips": {
         "uniequip_002_ju": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_ju": "sie-x"
       },
       "skills": [
         "良弓难张",
@@ -8171,6 +8771,9 @@
       "equips": {
         "uniequip_002_greyy2": "X"
       },
+      "equipIcons": {
+        "uniequip_002_greyy2": "bom-x"
+      },
       "skills": [
         "迅捷打击·γ型",
         "晨曦信标"
@@ -8204,6 +8807,9 @@
       ],
       "equips": {
         "uniequip_002_coldst": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_coldst": "hun-x"
       },
       "skills": [
         "攻击力强化·γ型",
@@ -8239,6 +8845,9 @@
       "equips": {
         "uniequip_002_snhunt": "X"
       },
+      "equipIcons": {
+        "uniequip_002_snhunt": "hun-x"
+      },
       "skills": [
         "强力击·β型",
         "风雪连弩"
@@ -8272,6 +8881,9 @@
       ],
       "equips": {
         "uniequip_002_brigid": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_brigid": "lps-x"
       },
       "skills": [
         "所熟知的",
@@ -8318,6 +8930,9 @@
       "equips": {
         "uniequip_002_spuria": "X"
       },
+      "equipIcons": {
+        "uniequip_002_spuria": "gee-x"
+      },
       "skills": [
         "见机行事",
         "临场铳械改装"
@@ -8351,6 +8966,9 @@
       ],
       "equips": {
         "uniequip_002_slchan": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_slchan": "hok-x"
       },
       "skills": [
         "锁链勾爪",
@@ -8386,6 +9004,9 @@
       "equips": {
         "uniequip_002_snsant": "X"
       },
+      "equipIcons": {
+        "uniequip_002_snsant": "hok-x"
+      },
       "skills": [
         "倒刺钩爪",
         "伸缩式电捕网"
@@ -8419,6 +9040,9 @@
       ],
       "equips": {
         "uniequip_002_almond": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_almond": "hok-x"
       },
       "skills": [
         "磁力抓取",
@@ -8454,6 +9078,9 @@
       "equips": {
         "uniequip_002_slbell": "X"
       },
+      "equipIcons": {
+        "uniequip_002_slbell": "umd-x"
+      },
       "skills": [
         "传音回响",
         "自然震慑"
@@ -8487,6 +9114,9 @@
       ],
       "equips": {
         "uniequip_002_vodfox": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_vodfox": "umd-x"
       },
       "skills": [
         "病入膏肓",
@@ -8522,6 +9152,9 @@
       "equips": {
         "uniequip_002_haini": "X"
       },
+      "equipIcons": {
+        "uniequip_002_haini": "umd-x"
+      },
       "skills": [
         "迷惑性洋流图",
         "阻滞性显色剂"
@@ -8556,6 +9189,9 @@
       "equips": {
         "uniequip_002_glassb": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_glassb": "dec-y"
+      },
       "skills": [
         "专心致志",
         "文学风暴"
@@ -8589,6 +9225,9 @@
       ],
       "equips": {
         "uniequip_002_glacus": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_glacus": "dec-x"
       },
       "skills": [
         "双线装填",
@@ -8633,6 +9272,9 @@
       "equips": {
         "uniequip_002_provs": "X"
       },
+      "equipIcons": {
+        "uniequip_002_provs": "dec-x"
+      },
       "skills": [
         "纠纷起诉",
         "致胜立论"
@@ -8667,6 +9309,9 @@
       "equips": {
         "uniequip_002_grabds": "X"
       },
+      "equipIcons": {
+        "uniequip_002_grabds": "dec-x"
+      },
       "skills": [
         "竹笛飞声",
         "乡音沉沉"
@@ -8700,6 +9345,9 @@
       ],
       "equips": {
         "uniequip_002_windft": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_windft": "cra-x"
       },
       "skills": [
         "此身为筑",
@@ -8744,6 +9392,9 @@
       "equips": {
         "uniequip_002_cathy": "X"
       },
+      "equipIcons": {
+        "uniequip_002_cathy": "cra-x"
+      },
       "skills": [
         "岁月锻打",
         "战火淬炼"
@@ -8787,6 +9438,9 @@
       "equips": {
         "uniequip_002_alanna": "X"
       },
+      "equipIcons": {
+        "uniequip_002_alanna": "cra-x"
+      },
       "skills": [
         "气动增压",
         "“万斤顶”"
@@ -8820,6 +9474,9 @@
       ],
       "equips": {
         "uniequip_002_sora": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_sora": "bar-x"
       },
       "skills": [
         "睡眠之歌",
@@ -8864,6 +9521,9 @@
       "equips": {
         "uniequip_002_heidi": "X"
       },
+      "equipIcons": {
+        "uniequip_002_heidi": "bar-x"
+      },
       "skills": [
         "虚构故事·怒士",
         "虚构故事·锈城"
@@ -8897,6 +9557,9 @@
       ],
       "equips": {
         "uniequip_002_dolris": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_dolris": "bar-x"
       },
       "skills": [
         "我思念的",
@@ -8932,6 +9595,9 @@
       "equips": {
         "uniequip_002_tknogi": "X"
       },
+      "equipIcons": {
+        "uniequip_002_tknogi": "bls-x"
+      },
       "skills": [
         "迹无",
         "森廻"
@@ -8966,6 +9632,9 @@
       "equips": {
         "uniequip_002_ncdeer": "X"
       },
+      "equipIcons": {
+        "uniequip_002_ncdeer": "bls-x"
+      },
       "skills": [
         "人间降吉",
         "仙山去远"
@@ -8999,6 +9668,9 @@
       ],
       "equips": {
         "uniequip_002_quercu": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_quercu": "bls-x"
       },
       "skills": [
         "大地的慈悲",
@@ -9043,6 +9715,9 @@
       "equips": {
         "uniequip_002_xingzh": "X"
       },
+      "equipIcons": {
+        "uniequip_002_xingzh": "bls-x"
+      },
       "skills": [
         "盈帙满笥",
         "食不厌精"
@@ -9076,6 +9751,9 @@
       ],
       "equips": {
         "uniequip_002_flwr2": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_flwr2": "bls-y"
       },
       "skills": [
         "“山中的喜悦”",
@@ -9111,6 +9789,9 @@
       "equips": {
         "uniequip_002_threye": "X"
       },
+      "equipIcons": {
+        "uniequip_002_threye": "rit-x"
+      },
       "skills": [
         "我见崩毁之前",
         "我见枯朽之后"
@@ -9145,6 +9826,9 @@
       "equips": {
         "uniequip_002_bobb": "X"
       },
+      "equipIcons": {
+        "uniequip_002_bobb": "rit-x"
+      },
       "skills": [
         "非和平劝说",
         "“此路不通”"
@@ -9178,6 +9862,9 @@
       ],
       "equips": {
         "uniequip_002_botany": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_botany": "rit-x"
       },
       "skills": [
         "谐波破坏",
@@ -9275,6 +9962,9 @@
       "equips": {
         "uniequip_002_mantic": "X"
       },
+      "equipIcons": {
+        "uniequip_002_mantic": "amb-x"
+      },
       "skills": [
         "蝎毒",
         "蓄力毒尾击"
@@ -9308,6 +9998,9 @@
       ],
       "equips": {
         "uniequip_002_kirara": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_kirara": "amb-x"
       },
       "skills": [
         "锚击",
@@ -9343,6 +10036,9 @@
       "equips": {
         "uniequip_002_tmoris": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_tmoris": "amb-y"
+      },
       "skills": [
         "颤栗之弦",
         "无存之所"
@@ -9376,6 +10072,9 @@
       ],
       "equips": {
         "uniequip_002_panda": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_panda": "pus-y"
       },
       "skills": [
         "铁意六合",
@@ -9411,6 +10110,9 @@
       "equips": {
         "uniequip_002_forcer": "X"
       },
+      "equipIcons": {
+        "uniequip_002_forcer": "pus-x"
+      },
       "skills": [
         "护身射击",
         "惊爆射击"
@@ -9444,6 +10146,9 @@
       ],
       "equips": {
         "uniequip_002_robin": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_robin": "trp-y"
       },
       "skills": [
         "束缚“夹子”",
@@ -9479,6 +10184,9 @@
       "equips": {
         "uniequip_002_rfrost": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_rfrost": "trp-y"
+      },
       "skills": [
         "陷阱部署",
         "击倒猎物"
@@ -9512,6 +10220,9 @@
       ],
       "equips": {
         "uniequip_002_wulfen": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_wulfen": "trp-y"
       },
       "skills": [
         "“驱兽专用”",
@@ -9547,6 +10258,9 @@
       "equips": {
         "uniequip_002_bena": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_bena": "pum-y"
+      },
       "skills": [
         "奋力修剪",
         "快速修剪"
@@ -9580,6 +10294,9 @@
       ],
       "equips": {
         "uniequip_002_kazema": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_kazema": "pum-x"
       },
       "skills": [
         "纸艺·迅击",
@@ -9615,6 +10332,9 @@
       "equips": {
         "uniequip_002_iana": "X"
       },
+      "equipIcons": {
+        "uniequip_002_iana": "pum-x"
+      },
       "skills": [
         "幻影诡雷",
         "全知者的战术"
@@ -9649,6 +10369,9 @@
       "equips": {
         "uniequip_002_mortis": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_mortis": "pum-y"
+      },
       "skills": [
         "多首野兽",
         "破坏与滋养"
@@ -9682,6 +10405,9 @@
       ],
       "equips": {
         "uniequip_002_tinman": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_tinman": "alc-x"
       },
       "skills": [
         "“老科利”",
@@ -9749,6 +10475,10 @@
         "uniequip_002_angel": "X",
         "uniequip_003_angel": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_angel": "mar-x",
+        "uniequip_003_angel": "mar-y"
+      },
       "skills": [
         "冲锋模式",
         "扫射模式",
@@ -9786,6 +10516,11 @@
         "uniequip_003_archet": "X",
         "uniequip_004_archet": "A"
       },
+      "equipIcons": {
+        "uniequip_002_archet": "mar-y",
+        "uniequip_003_archet": "mar-x",
+        "uniequip_004_archet": "isw-a"
+      },
       "skills": [
         "箭矢·散逸",
         "箭矢·追猎",
@@ -9821,6 +10556,10 @@
       "equips": {
         "uniequip_002_ash": "Y",
         "uniequip_003_ash": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_ash": "mar-y",
+        "uniequip_003_ash": "mar-x"
       },
       "skills": [
         "支援射击",
@@ -9858,6 +10597,10 @@
         "uniequip_002_shwaz": "X",
         "uniequip_003_shwaz": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_shwaz": "arc-x",
+        "uniequip_003_shwaz": "arc-y"
+      },
       "skills": [
         "强弩",
         "暮眼锐瞳",
@@ -9894,6 +10637,10 @@
         "uniequip_002_bgsnow": "Y",
         "uniequip_003_bgsnow": "X"
       },
+      "equipIcons": {
+        "uniequip_002_bgsnow": "arc-y",
+        "uniequip_003_bgsnow": "arc-x"
+      },
       "skills": [
         "抑扬格",
         "点题",
@@ -9928,6 +10675,9 @@
       ],
       "equips": {
         "uniequip_002_orchd2": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_orchd2": "arc-x"
       },
       "skills": [
         "刚射",
@@ -9974,6 +10724,10 @@
         "uniequip_002_fartth": "X",
         "uniequip_003_fartth": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_fartth": "dea-x",
+        "uniequip_003_fartth": "dea-y"
+      },
       "skills": [
         "迅捷打击·γ型",
         "同盟支援",
@@ -10008,6 +10762,9 @@
       ],
       "equips": {
         "uniequip_002_lemuen": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_lemuen": "dea-y"
       },
       "skills": [
         "重逢问候",
@@ -10054,6 +10811,10 @@
         "uniequip_002_cqbw": "X",
         "uniequip_003_cqbw": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_cqbw": "art-x",
+        "uniequip_003_cqbw": "art-y"
+      },
       "skills": [
         "红桃K",
         "惊吓盒子",
@@ -10091,6 +10852,11 @@
         "uniequip_003_phenxi": "X",
         "uniequip_004_phenxi": "A"
       },
+      "equipIcons": {
+        "uniequip_002_phenxi": "art-y",
+        "uniequip_003_phenxi": "art-x",
+        "uniequip_004_phenxi": "isw-a"
+      },
       "skills": [
         "“你须直面”",
         "“你须愧悔”",
@@ -10126,6 +10892,10 @@
       "equips": {
         "uniequip_002_poca": "X",
         "uniequip_003_poca": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_poca": "sie-x",
+        "uniequip_003_poca": "sie-y"
       },
       "skills": [
         "攻击力强化·γ型",
@@ -10163,6 +10933,11 @@
         "uniequip_002_typhon": "X",
         "uniequip_003_typhon": "Y",
         "uniequip_004_typhon": "A"
+      },
+      "equipIcons": {
+        "uniequip_002_typhon": "sie-x",
+        "uniequip_003_typhon": "sie-y",
+        "uniequip_004_typhon": "isw-a"
       },
       "skills": [
         "迅捷打击·γ型",
@@ -10209,6 +10984,10 @@
         "uniequip_002_rosmon": "X",
         "uniequip_003_rosmon": "A"
       },
+      "equipIcons": {
+        "uniequip_002_rosmon": "bom-x",
+        "uniequip_003_rosmon": "isw-a"
+      },
       "skills": [
         "思维膨大",
         "末梢阻断",
@@ -10252,6 +11031,9 @@
       ],
       "equips": {
         "uniequip_002_wisdel": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_wisdel": "bom-x"
       },
       "skills": [
         "定点清算",
@@ -10298,6 +11080,10 @@
         "uniequip_002_chen2": "X",
         "uniequip_003_chen2": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_chen2": "rpr-x",
+        "uniequip_003_chen2": "rpr-y"
+      },
       "skills": [
         "高压冲击",
         "“堇青之夜”",
@@ -10343,6 +11129,10 @@
         "uniequip_002_ray": "X",
         "uniequip_003_ray": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_ray": "hun-x",
+        "uniequip_003_ray": "hun-y"
+      },
       "skills": [
         "脱身矢",
         "广域警觉",
@@ -10378,6 +11168,10 @@
       "equips": {
         "uniequip_002_narant": "X",
         "uniequip_003_narant": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_narant": "lps-x",
+        "uniequip_003_narant": "lps-y"
       },
       "skills": [
         "旋刃",
@@ -10415,6 +11209,10 @@
         "uniequip_002_siege": "X",
         "uniequip_003_siege": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_siege": "sol-x",
+        "uniequip_003_siege": "sol-y"
+      },
       "skills": [
         "冲锋号令·γ型",
         "跃空锤",
@@ -10451,6 +11249,10 @@
         "uniequip_002_bpipe": "X",
         "uniequip_003_bpipe": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_bpipe": "chg-x",
+        "uniequip_003_bpipe": "chg-y"
+      },
       "skills": [
         "迅捷打击·γ型",
         "高效冲击",
@@ -10486,6 +11288,10 @@
       "equips": {
         "uniequip_002_saga": "Y",
         "uniequip_003_saga": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_saga": "sol-y",
+        "uniequip_003_saga": "sol-x"
       },
       "skills": [
         "冲锋号令·γ型",
@@ -10532,6 +11338,10 @@
         "uniequip_002_vulpis": "X",
         "uniequip_003_vulpis": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_vulpis": "sol-x",
+        "uniequip_003_vulpis": "sol-y"
+      },
       "skills": [
         "小施惩戒",
         "坠刃拷问",
@@ -10567,6 +11377,10 @@
       "equips": {
         "uniequip_002_sleach": "X",
         "uniequip_003_sleach": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_sleach": "bea-x",
+        "uniequip_003_sleach": "bea-y"
       },
       "skills": [
         "支援号令·γ型",
@@ -10604,6 +11418,10 @@
         "uniequip_002_flamtl": "Y",
         "uniequip_003_flamtl": "X"
       },
+      "equipIcons": {
+        "uniequip_002_flamtl": "sol-y",
+        "uniequip_003_flamtl": "sol-x"
+      },
       "skills": [
         "迅敏直觉",
         "“红松林”",
@@ -10639,6 +11457,10 @@
       "equips": {
         "uniequip_002_vigil": "X",
         "uniequip_003_vigil": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_vigil": "tac-x",
+        "uniequip_003_vigil": "tac-y"
       },
       "skills": [
         "领袖的呼唤",
@@ -10681,6 +11503,10 @@
         "uniequip_002_mlyss": "X",
         "uniequip_003_mlyss": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_mlyss": "tac-x",
+        "uniequip_003_mlyss": "tac-y"
+      },
       "skills": [
         "渐进性润化",
         "生态耦合",
@@ -10715,6 +11541,9 @@
       ],
       "equips": {
         "uniequip_002_closur": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_closur": "tac-x"
       },
       "skills": [
         "递归策略",
@@ -10792,6 +11621,9 @@
       "equips": {
         "uniequip_002_ines": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_ines": "age-y"
+      },
       "skills": [
         "淬影突袭",
         "暗夜无明",
@@ -10828,6 +11660,10 @@
         "uniequip_002_ifrit": "X",
         "uniequip_003_ifrit": "D"
       },
+      "equipIcons": {
+        "uniequip_002_ifrit": "bla-x",
+        "uniequip_003_ifrit": "bla-d"
+      },
       "skills": [
         "狂热",
         "炎爆",
@@ -10862,6 +11698,9 @@
       ],
       "equips": {
         "uniequip_002_aphris": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_aphris": "bla-y"
       },
       "skills": [
         "连续映射",
@@ -10899,6 +11738,10 @@
         "uniequip_002_mostma": "Y",
         "uniequip_003_mostma": "X"
       },
+      "equipIcons": {
+        "uniequip_002_mostma": "spc-y",
+        "uniequip_003_mostma": "spc-x"
+      },
       "skills": [
         "攻击力强化·γ型",
         "荒时之锁",
@@ -10935,6 +11778,10 @@
         "uniequip_002_amgoat": "X",
         "uniequip_003_amgoat": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_amgoat": "ccr-x",
+        "uniequip_003_amgoat": "ccr-y"
+      },
       "skills": [
         "二重咏唱",
         "点燃",
@@ -10970,6 +11817,10 @@
       "equips": {
         "uniequip_002_cerber": "X",
         "uniequip_003_cerber": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_cerber": "ccr-x",
+        "uniequip_003_cerber": "ccr-y"
       },
       "skills": [
         "“很冰的斧”",
@@ -11017,6 +11868,11 @@
         "uniequip_003_heyak": "Y",
         "uniequip_004_heyak": "A"
       },
+      "equipIcons": {
+        "uniequip_002_heyak": "ccr-x",
+        "uniequip_003_heyak": "ccr-y",
+        "uniequip_004_heyak": "isw-a"
+      },
       "skills": [
         "但为求索",
         "群星逶迤",
@@ -11052,6 +11908,10 @@
       "equips": {
         "uniequip_002_logos": "D",
         "uniequip_003_logos": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_logos": "ccr-d",
+        "uniequip_003_logos": "ccr-y"
       },
       "skills": [
         "殁亡",
@@ -11089,6 +11949,11 @@
         "uniequip_002_dusk": "X",
         "uniequip_003_dusk": "Y",
         "uniequip_004_dusk": "A"
+      },
+      "equipIcons": {
+        "uniequip_002_dusk": "spc-x",
+        "uniequip_003_dusk": "spc-y",
+        "uniequip_004_dusk": "isw-a"
       },
       "skills": [
         "工笔入化",
@@ -11133,6 +11998,9 @@
       ],
       "equips": {
         "uniequip_002_marcil": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_marcil": "spc-y"
       },
       "skills": [
         "才女的实力",
@@ -11180,6 +12048,11 @@
         "uniequip_003_pasngr": "Y",
         "uniequip_004_pasngr": "A"
       },
+      "equipIcons": {
+        "uniequip_002_pasngr": "cha-x",
+        "uniequip_003_pasngr": "cha-y",
+        "uniequip_004_pasngr": "ra-a"
+      },
       "skills": [
         "电能之触",
         "聚焦指令",
@@ -11215,6 +12088,10 @@
       "equips": {
         "uniequip_002_billro": "X",
         "uniequip_003_billro": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_billro": "plx-x",
+        "uniequip_003_billro": "plx-y"
       },
       "skills": [
         "沙暴守卫",
@@ -11252,6 +12129,10 @@
         "uniequip_002_lin": "X",
         "uniequip_003_lin": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_lin": "plx-x",
+        "uniequip_003_lin": "plx-y"
+      },
       "skills": [
         "玲珑",
         "荫庇",
@@ -11286,6 +12167,9 @@
       ],
       "equips": {
         "uniequip_002_sbell2": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_sbell2": "plx-y"
       },
       "skills": [
         "铃音吹雪",
@@ -11323,6 +12207,10 @@
         "uniequip_002_gdglow": "X",
         "uniequip_003_gdglow": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_gdglow": "fun-x",
+        "uniequip_003_gdglow": "fun-y"
+      },
       "skills": [
         "火花四溅",
         "电流翻涌",
@@ -11357,6 +12245,9 @@
       ],
       "equips": {
         "uniequip_002_whitw2": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_whitw2": "fun-x"
       },
       "skills": [
         "慵怠者悲鸣",
@@ -11404,6 +12295,11 @@
         "uniequip_003_ebnhlz": "Y",
         "uniequip_004_ebnhlz": "D"
       },
+      "equipIcons": {
+        "uniequip_002_ebnhlz": "msc-x",
+        "uniequip_003_ebnhlz": "msc-y",
+        "uniequip_004_ebnhlz": "msc-d"
+      },
       "skills": [
         "渐快急板",
         "荒芜回响",
@@ -11447,6 +12343,9 @@
       ],
       "equips": {
         "uniequip_002_veen": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_veen": "msc-y"
       },
       "skills": [
         "“自呼号生发”",
@@ -11493,6 +12392,10 @@
         "uniequip_002_nymph": "X",
         "uniequip_003_nymph": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_nymph": "pri-x",
+        "uniequip_003_nymph": "pri-y"
+      },
       "skills": [
         "笞心击",
         "怵然震爆",
@@ -11529,6 +12432,10 @@
         "uniequip_002_blaze2": "X",
         "uniequip_003_blaze2": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_blaze2": "pri-x",
+        "uniequip_003_blaze2": "pri-y"
+      },
       "skills": [
         "炙手之援",
         "沸血燎原",
@@ -11563,6 +12470,9 @@
       ],
       "equips": {
         "uniequip_002_mantra": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_mantra": "pri-x"
       },
       "skills": [
         "共鸣溃缩",
@@ -11608,6 +12518,9 @@
       "equips": {
         "uniequip_002_necras": "X"
       },
+      "equipIcons": {
+        "uniequip_002_necras": "soc-x"
+      },
       "skills": [
         "噩愿",
         "折朽",
@@ -11644,6 +12557,11 @@
         "uniequip_002_gnosis": "X",
         "uniequip_003_gnosis": "Y",
         "uniequip_004_gnosis": "A"
+      },
+      "equipIcons": {
+        "uniequip_002_gnosis": "umd-x",
+        "uniequip_003_gnosis": "umd-y",
+        "uniequip_004_gnosis": "isw-a"
       },
       "skills": [
         "高速思考",
@@ -11682,6 +12600,11 @@
         "uniequip_003_aglina": "X",
         "uniequip_004_aglina": "A"
       },
+      "equipIcons": {
+        "uniequip_002_aglina": "dec-y",
+        "uniequip_003_aglina": "dec-x",
+        "uniequip_004_aglina": "isw-a"
+      },
       "skills": [
         "秘杖·速充模式",
         "秘杖·微粒模式",
@@ -11718,6 +12641,10 @@
         "uniequip_002_lisa": "X",
         "uniequip_003_lisa": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_lisa": "dec-x",
+        "uniequip_003_lisa": "dec-y"
+      },
       "skills": [
         "全力以赴",
         "儿时的舞乐",
@@ -11752,6 +12679,9 @@
       ],
       "equips": {
         "uniequip_002_halo2": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_halo2": "dec-y"
       },
       "skills": [
         "星图闪烁",
@@ -11789,6 +12719,10 @@
         "uniequip_002_mgllan": "X",
         "uniequip_003_mgllan": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_mgllan": "sum-x",
+        "uniequip_003_mgllan": "sum-y"
+      },
       "skills": [
         "高效制冷模块",
         "激光开采模块",
@@ -11824,6 +12758,10 @@
       "equips": {
         "uniequip_002_radian": "A",
         "uniequip_003_radian": "B"
+      },
+      "equipIcons": {
+        "uniequip_002_radian": "so-a",
+        "uniequip_003_radian": "so-b"
       },
       "skills": [
         "律动线",
@@ -11870,6 +12808,10 @@
         "uniequip_002_skadi2": "X",
         "uniequip_003_skadi2": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_skadi2": "bar-x",
+        "uniequip_003_skadi2": "bar-y"
+      },
       "skills": [
         "同归殊途之吟",
         "同葬无光之愿",
@@ -11914,6 +12856,9 @@
       "equips": {
         "uniequip_002_cetsyr": "X"
       },
+      "equipIcons": {
+        "uniequip_002_cetsyr": "bar-x"
+      },
       "skills": [
         "往昔萦绕身旁",
         "明日渺远不及",
@@ -11950,6 +12895,10 @@
         "uniequip_002_slent2": "X",
         "uniequip_003_slent2": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_slent2": "bls-x",
+        "uniequip_003_slent2": "bls-y"
+      },
       "skills": [
         "进取之心",
         "俯瞰视界",
@@ -11985,6 +12934,9 @@
       "equips": {
         "uniequip_002_haruka": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_haruka": "bls-y"
+      },
       "skills": [
         "夜啼彩羽",
         "幽隙栖萤",
@@ -12019,6 +12971,9 @@
       ],
       "equips": {
         "uniequip_002_ling": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_ling": "sum-y"
       },
       "skills": [
         "重进酒",
@@ -12056,6 +13011,10 @@
         "uniequip_002_ironmn": "X",
         "uniequip_003_ironmn": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_ironmn": "cra-x",
+        "uniequip_003_ironmn": "cra-y"
+      },
       "skills": [
         "极致火力",
         "高效补给",
@@ -12090,6 +13049,9 @@
       ],
       "equips": {
         "uniequip_002_nasti": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_nasti": "cra-x"
       },
       "skills": [
         "“拱卫”",
@@ -12127,6 +13089,10 @@
         "uniequip_002_cello": "X",
         "uniequip_003_cello": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_cello": "rit-x",
+        "uniequip_003_cello": "rit-y"
+      },
       "skills": [
         "“黄金的狂喜”",
         "“安魂的弥撒”",
@@ -12161,6 +13127,9 @@
       ],
       "equips": {
         "uniequip_002_phatm2": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_phatm2": "rit-x"
       },
       "skills": [
         "暗夜回声",
@@ -12199,6 +13168,11 @@
         "uniequip_003_phatom": "Y",
         "uniequip_004_phatom": "A"
       },
+      "equipIcons": {
+        "uniequip_002_phatom": "exe-x",
+        "uniequip_003_phatom": "exe-y",
+        "uniequip_004_phatom": "isw-a"
+      },
       "skills": [
         "暗夜魅影",
         "血色乐章",
@@ -12234,6 +13208,10 @@
       "equips": {
         "uniequip_002_texas2": "Y",
         "uniequip_003_texas2": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_texas2": "exe-y",
+        "uniequip_003_texas2": "exe-x"
       },
       "skills": [
         "细雨无声",
@@ -12271,6 +13249,10 @@
         "uniequip_002_yato2": "X",
         "uniequip_003_yato2": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_yato2": "exe-x",
+        "uniequip_003_yato2": "exe-y"
+      },
       "skills": [
         "鬼人化",
         "乱舞",
@@ -12307,6 +13289,10 @@
         "uniequip_002_crosly": "X",
         "uniequip_003_crosly": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_crosly": "exe-x",
+        "uniequip_003_crosly": "exe-y"
+      },
       "skills": [
         "尘烟蔽目",
         "硝烟震爆",
@@ -12342,6 +13328,10 @@
       "equips": {
         "uniequip_002_lmlee": "X",
         "uniequip_003_lmlee": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_lmlee": "mer-x",
+        "uniequip_003_lmlee": "mer-y"
       },
       "skills": [
         "小惩大诫",
@@ -12380,6 +13370,11 @@
         "uniequip_003_swire2": "Y",
         "uniequip_004_swire2": "A"
       },
+      "equipIcons": {
+        "uniequip_002_swire2": "mer-x",
+        "uniequip_003_swire2": "mer-y",
+        "uniequip_004_swire2": "isw-a"
+      },
       "skills": [
         "仗义疏财",
         "“见面礼”",
@@ -12416,6 +13411,10 @@
         "uniequip_002_weedy": "X",
         "uniequip_003_weedy": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_weedy": "pus-x",
+        "uniequip_003_weedy": "pus-y"
+      },
       "skills": [
         "炮管敲击",
         "水炮模式",
@@ -12451,6 +13450,10 @@
       "equips": {
         "uniequip_002_haak": "X",
         "uniequip_003_haak": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_haak": "gee-x",
+        "uniequip_003_haak": "gee-y"
       },
       "skills": [
         "快速射击",
@@ -12495,6 +13498,9 @@
       ],
       "equips": {
         "uniequip_002_angel2": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_angel2": "gee-x"
       },
       "skills": [
         "天空大扫除",
@@ -12541,6 +13547,10 @@
         "uniequip_002_glady": "X",
         "uniequip_003_glady": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_glady": "hok-x",
+        "uniequip_003_glady": "hok-y"
+      },
       "skills": [
         "缺水的大洋裂断",
         "缺水的掌握怒海",
@@ -12578,6 +13588,11 @@
         "uniequip_003_mizuki": "Y",
         "uniequip_004_mizuki": "A"
       },
+      "equipIcons": {
+        "uniequip_002_mizuki": "amb-x",
+        "uniequip_003_mizuki": "amb-y",
+        "uniequip_004_mizuki": "isw-a"
+      },
       "skills": [
         "唤醒",
         "囚徒困境",
@@ -12613,6 +13628,10 @@
       "equips": {
         "uniequip_002_ascln": "X",
         "uniequip_003_ascln": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_ascln": "amb-x",
+        "uniequip_003_ascln": "amb-y"
       },
       "skills": [
         "追袭",
@@ -12659,6 +13678,11 @@
         "uniequip_002_ghost2": "X",
         "uniequip_003_ghost2": "Y",
         "uniequip_004_ghost2": "A"
+      },
+      "equipIcons": {
+        "uniequip_002_ghost2": "pum-x",
+        "uniequip_003_ghost2": "pum-y",
+        "uniequip_004_ghost2": "isw-a"
       },
       "skills": [
         "生存的技巧",
@@ -12728,6 +13752,10 @@
         "uniequip_002_doroth": "Y",
         "uniequip_003_doroth": "X"
       },
+      "equipIcons": {
+        "uniequip_002_doroth": "trp-y",
+        "uniequip_003_doroth": "trp-x"
+      },
       "skills": [
         "危险目标清除",
         "流沙区域生成",
@@ -12762,6 +13790,9 @@
       ],
       "equips": {
         "uniequip_002_ela": "D"
+      },
+      "equipIcons": {
+        "uniequip_002_ela": "trp-d"
       },
       "skills": [
         "眩目阻滞",
@@ -12798,6 +13829,9 @@
       "equips": {
         "uniequip_002_wang": "X"
       },
+      "equipIcons": {
+        "uniequip_002_wang": "trp-x"
+      },
       "skills": [
         "取势",
         "连星",
@@ -12832,6 +13866,9 @@
       ],
       "equips": {
         "uniequip_002_thorn2": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_thorn2": "alc-x"
       },
       "skills": [
         "度算浪波",
@@ -12901,6 +13938,10 @@
         "uniequip_002_shining": "Y",
         "uniequip_003_shining": "X"
       },
+      "equipIcons": {
+        "uniequip_002_shining": "phy-y",
+        "uniequip_003_shining": "phy-x"
+      },
       "skills": [
         "信条",
         "自动掩护",
@@ -12936,6 +13977,10 @@
       "equips": {
         "uniequip_002_cgbird": "X",
         "uniequip_003_cgbird": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_cgbird": "rin-x",
+        "uniequip_003_cgbird": "rin-y"
       },
       "skills": [
         "治疗强化·γ型",
@@ -12974,6 +14019,11 @@
         "uniequip_003_kalts": "Y",
         "uniequip_004_kalts": "A"
       },
+      "equipIcons": {
+        "uniequip_002_kalts": "phy-x",
+        "uniequip_003_kalts": "phy-y",
+        "uniequip_004_kalts": "isw-a"
+      },
       "skills": [
         "指令：结构加固",
         "指令：战术协同",
@@ -13009,6 +14059,10 @@
       "equips": {
         "uniequip_002_lumen": "X",
         "uniequip_003_lumen": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_lumen": "wah-x",
+        "uniequip_003_lumen": "wah-y"
       },
       "skills": [
         "沐雨",
@@ -13055,6 +14109,10 @@
         "uniequip_002_agoat2": "X",
         "uniequip_003_agoat2": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_agoat2": "wdm-x",
+        "uniequip_003_agoat2": "wdm-y"
+      },
       "skills": [
         "无声润物",
         "云霭荫佑",
@@ -13100,6 +14158,10 @@
         "uniequip_002_reed2": "X",
         "uniequip_003_reed2": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_reed2": "inc-x",
+        "uniequip_003_reed2": "inc-y"
+      },
       "skills": [
         "迅捷打击·γ型",
         "枯荣共息",
@@ -13144,6 +14206,9 @@
       "equips": {
         "uniequip_002_titi": "X"
       },
+      "equipIcons": {
+        "uniequip_002_titi": "inc-x"
+      },
       "skills": [
         "缓蚀",
         "封护",
@@ -13178,6 +14243,9 @@
       ],
       "equips": {
         "uniequip_002_monstr": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_monstr": "xah-x"
       },
       "skills": [
         "策略：超压链接",
@@ -13256,6 +14324,10 @@
         "uniequip_002_hsguma": "Y",
         "uniequip_003_hsguma": "X"
       },
+      "equipIcons": {
+        "uniequip_002_hsguma": "pro-y",
+        "uniequip_003_hsguma": "pro-x"
+      },
       "skills": [
         "战意",
         "荆棘",
@@ -13291,6 +14363,10 @@
       "equips": {
         "uniequip_002_demkni": "X",
         "uniequip_003_demkni": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_demkni": "gua-x",
+        "uniequip_003_demkni": "gua-y"
       },
       "skills": [
         "急救",
@@ -13328,6 +14404,10 @@
         "uniequip_002_blemsh": "Y",
         "uniequip_003_blemsh": "X"
       },
+      "equipIcons": {
+        "uniequip_002_blemsh": "gua-y",
+        "uniequip_003_blemsh": "gua-x"
+      },
       "skills": [
         "光芒涌动",
         "慑敌辉光",
@@ -13362,6 +14442,9 @@
       ],
       "equips": {
         "uniequip_002_shu": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_shu": "gua-x"
       },
       "skills": [
         "化被草木",
@@ -13399,6 +14482,10 @@
         "uniequip_002_nian": "X",
         "uniequip_003_nian": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_nian": "pro-x",
+        "uniequip_003_nian": "pro-y"
+      },
       "skills": [
         "锡灼",
         "铜印",
@@ -13435,6 +14522,10 @@
         "uniequip_002_mudrok": "X",
         "uniequip_003_mudrok": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_mudrok": "uny-x",
+        "uniequip_003_mudrok": "uny-y"
+      },
       "skills": [
         "防御力强化·γ型",
         "岩崩锤",
@@ -13470,6 +14561,10 @@
       "equips": {
         "uniequip_002_judge": "X",
         "uniequip_003_judge": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_judge": "uny-x",
+        "uniequip_003_judge": "uny-y"
       },
       "skills": [
         "一锤定音",
@@ -13517,6 +14612,11 @@
         "uniequip_003_zumama": "Y",
         "uniequip_004_zumama": "A"
       },
+      "equipIcons": {
+        "uniequip_002_zumama": "hes-x",
+        "uniequip_003_zumama": "hes-y",
+        "uniequip_004_zumama": "ra-a"
+      },
       "skills": [
         "轻型挂斧",
         "震慑劈砍",
@@ -13553,6 +14653,10 @@
         "uniequip_002_horn": "X",
         "uniequip_003_horn": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_horn": "for-x",
+        "uniequip_003_horn": "for-y"
+      },
       "skills": [
         "照明榴弹",
         "暴风号令",
@@ -13588,6 +14692,10 @@
       "equips": {
         "uniequip_002_jesca2": "X",
         "uniequip_003_jesca2": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_jesca2": "spt-x",
+        "uniequip_003_jesca2": "spt-y"
       },
       "skills": [
         "坚守阵线",
@@ -13634,6 +14742,10 @@
         "uniequip_002_rmixer": "X",
         "uniequip_003_rmixer": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_rmixer": "spt-x",
+        "uniequip_003_rmixer": "spt-y"
+      },
       "skills": [
         "铳骑主考官",
         "八臂电锯侠",
@@ -13668,6 +14780,9 @@
       ],
       "equips": {
         "uniequip_002_mcnist": "A"
+      },
+      "equipIcons": {
+        "uniequip_002_mcnist": "so-a"
       },
       "skills": [
         "聚类分析",
@@ -13704,6 +14819,9 @@
       "equips": {
         "uniequip_002_yu": "X"
       },
+      "equipIcons": {
+        "uniequip_002_yu": "prp-x"
+      },
       "skills": [
         "今日做东",
         "厚礼上宾",
@@ -13739,6 +14857,9 @@
       "equips": {
         "uniequip_002_thumpy": "X"
       },
+      "equipIcons": {
+        "uniequip_002_thumpy": "prp-x"
+      },
       "skills": [
         "“还不走？”",
         "“慢慢走~”",
@@ -13773,6 +14894,9 @@
       ],
       "equips": {
         "uniequip_002_hsgma2": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_hsgma2": "ast-x"
       },
       "skills": [
         "恶业苦果",
@@ -13810,6 +14934,10 @@
         "uniequip_002_f12yin": "Y",
         "uniequip_003_f12yin": "X"
       },
+      "equipIcons": {
+        "uniequip_002_f12yin": "fgt-y",
+        "uniequip_003_f12yin": "fgt-x"
+      },
       "skills": [
         "左勾扫拳",
         "横扫架势",
@@ -13845,6 +14973,10 @@
       "equips": {
         "uniequip_002_chyue": "X",
         "uniequip_003_chyue": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_chyue": "fgt-x",
+        "uniequip_003_chyue": "fgt-y"
       },
       "skills": [
         "冲盈",
@@ -13890,6 +15022,9 @@
       "equips": {
         "uniequip_002_demetr": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_demetr": "fgt-y"
+      },
       "skills": [
         "家主的余裕",
         "军师的手段",
@@ -13924,6 +15059,9 @@
       ],
       "equips": {
         "uniequip_002_svrash": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_svrash": "lor-x"
       },
       "skills": [
         "强力击·γ型",
@@ -13961,6 +15099,10 @@
         "uniequip_002_thorns": "X",
         "uniequip_003_thorns": "D"
       },
+      "equipIcons": {
+        "uniequip_002_thorns": "lor-x",
+        "uniequip_003_thorns": "lor-d"
+      },
       "skills": [
         "攻击力强化·γ型",
         "护身尖刺",
@@ -13995,6 +15137,9 @@
       ],
       "equips": {
         "uniequip_002_qiubai": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_qiubai": "lor-x"
       },
       "skills": [
         "留羽",
@@ -14040,6 +15185,9 @@
       "equips": {
         "uniequip_002_oblvns": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_oblvns": "lor-y"
+      },
       "skills": [
         "新月的苏醒",
         "满月的舞会",
@@ -14076,6 +15224,10 @@
         "uniequip_002_hodrer": "X",
         "uniequip_003_hodrer": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_hodrer": "cru-x",
+        "uniequip_003_hodrer": "cru-y"
+      },
       "skills": [
         "重锋不熄",
         "余烬重荷",
@@ -14110,6 +15262,9 @@
       ],
       "equips": {
         "uniequip_002_ulpia": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_ulpia": "cru-x"
       },
       "skills": [
         "必须促成的接触",
@@ -14146,6 +15301,10 @@
       "equips": {
         "uniequip_002_pepe": "X",
         "uniequip_003_pepe": "A"
+      },
+      "equipIcons": {
+        "uniequip_002_pepe": "ham-x",
+        "uniequip_003_pepe": "ra-a"
       },
       "skills": [
         "盖戳！",
@@ -14191,6 +15350,9 @@
       "equips": {
         "uniequip_002_headb2": "X"
       },
+      "equipIcons": {
+        "uniequip_002_headb2": "ham-x"
+      },
       "skills": [
         "誓不低头",
         "绝不罢休",
@@ -14226,6 +15388,10 @@
       "equips": {
         "uniequip_002_chen": "X",
         "uniequip_003_chen": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_chen": "swo-x",
+        "uniequip_003_chen": "swo-y"
       },
       "skills": [
         "鞘击",
@@ -14263,6 +15429,11 @@
         "uniequip_002_irene": "Y",
         "uniequip_003_irene": "X",
         "uniequip_004_irene": "A"
+      },
+      "equipIcons": {
+        "uniequip_002_irene": "swo-y",
+        "uniequip_003_irene": "swo-x",
+        "uniequip_004_irene": "isw-a"
       },
       "skills": [
         "起风",
@@ -14309,6 +15480,10 @@
         "uniequip_002_blkkgt": "X",
         "uniequip_003_blkkgt": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_blkkgt": "swo-x",
+        "uniequip_003_blkkgt": "swo-y"
+      },
       "skills": [
         "纯粹的武力",
         "无声的嘲笑",
@@ -14344,6 +15519,10 @@
       "equips": {
         "uniequip_002_huang": "X",
         "uniequip_003_huang": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_huang": "cen-x",
+        "uniequip_003_huang": "cen-y"
       },
       "skills": [
         "强力击·γ型",
@@ -14391,6 +15570,11 @@
         "uniequip_003_gvial2": "Y",
         "uniequip_004_gvial2": "A"
       },
+      "equipIcons": {
+        "uniequip_002_gvial2": "cen-x",
+        "uniequip_003_gvial2": "cen-y",
+        "uniequip_004_gvial2": "ra-a"
+      },
       "skills": [
         "精准痛击",
         "链锯强袭",
@@ -14426,6 +15610,10 @@
       "equips": {
         "uniequip_002_surtr": "X",
         "uniequip_003_surtr": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_surtr": "aft-x",
+        "uniequip_003_surtr": "aft-y"
       },
       "skills": [
         "烈焰魔剑",
@@ -14463,6 +15651,10 @@
         "uniequip_002_vvana": "D",
         "uniequip_003_vvana": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_vvana": "aft-d",
+        "uniequip_003_vvana": "aft-y"
+      },
       "skills": [
         "光影迅捷剑",
         "烛燃影息",
@@ -14499,6 +15691,10 @@
         "uniequip_002_siege2": "X",
         "uniequip_003_siege2": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_siege2": "aft-x",
+        "uniequip_003_siege2": "aft-y"
+      },
       "skills": [
         "重铸晖光",
         "进赴故土",
@@ -14533,6 +15729,9 @@
       ],
       "equips": {
         "uniequip_002_chen3": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_chen3": "aft-x"
       },
       "skills": [
         "赤霄·奔夜",
@@ -14588,6 +15787,10 @@
         "uniequip_002_helage": "X",
         "uniequip_003_helage": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_helage": "sbl-x",
+        "uniequip_003_helage": "sbl-y"
+      },
       "skills": [
         "新月",
         "弦月",
@@ -14623,6 +15826,10 @@
       "equips": {
         "uniequip_002_zuole": "X",
         "uniequip_003_zuole": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_zuole": "sbl-x",
+        "uniequip_003_zuole": "sbl-y"
       },
       "skills": [
         "破虏",
@@ -14660,6 +15867,10 @@
         "uniequip_002_pallas": "X",
         "uniequip_003_pallas": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_pallas": "ins-x",
+        "uniequip_003_pallas": "ins-y"
+      },
       "skills": [
         "胜利的连击",
         "信念的长鞭",
@@ -14695,6 +15906,10 @@
       "equips": {
         "uniequip_002_nearl2": "X",
         "uniequip_003_nearl2": "Y"
+      },
+      "equipIcons": {
+        "uniequip_002_nearl2": "dre-x",
+        "uniequip_003_nearl2": "dre-y"
       },
       "skills": [
         "灿焰长刃",
@@ -14741,6 +15956,10 @@
         "uniequip_002_lessng": "X",
         "uniequip_003_lessng": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_lessng": "dre-x",
+        "uniequip_003_lessng": "dre-y"
+      },
       "skills": [
         "强力击·γ型",
         "虔修对决",
@@ -14786,6 +16005,10 @@
         "uniequip_002_excu2": "X",
         "uniequip_003_excu2": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_excu2": "rea-x",
+        "uniequip_003_excu2": "rea-y"
+      },
       "skills": [
         "遗嘱执行",
         "近身铳斗",
@@ -14822,6 +16045,10 @@
         "uniequip_002_etlchi": "X",
         "uniequip_003_etlchi": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_etlchi": "rea-x",
+        "uniequip_003_etlchi": "rea-y"
+      },
       "skills": [
         "玫影觅迹",
         "绯红壁合",
@@ -14857,6 +16084,9 @@
       "equips": {
         "uniequip_002_mlynar": "X"
       },
+      "equipIcons": {
+        "uniequip_002_mlynar": "lib-x"
+      },
       "skills": [
         "未声张的怒火",
         "未宽解的悲哀",
@@ -14891,6 +16121,9 @@
       ],
       "equips": {
         "uniequip_002_leizi2": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_leizi2": "lib-x"
       },
       "skills": [
         "浩气长存",
@@ -14936,6 +16169,9 @@
       "equips": {
         "uniequip_002_cairn": "X"
       },
+      "equipIcons": {
+        "uniequip_002_cairn": "prp-x"
+      },
       "skills": [
         "覆盖式休整",
         "震撼型指路"
@@ -14969,6 +16205,9 @@
       ],
       "equips": {
         "uniequip_002_savage": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_savage": "cen-x"
       },
       "skills": [
         "强力击·β型",
@@ -15064,6 +16303,9 @@
       "equips": {
         "uniequip_002_brownb": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_brownb": "fgt-y"
+      },
       "skills": [
         "高机动",
         "急速拳"
@@ -15097,6 +16339,9 @@
       ],
       "equips": {
         "uniequip_002_jaksel": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_jaksel": "fgt-x"
       },
       "skills": [
         "给你一拳！",
@@ -15132,6 +16377,9 @@
       "equips": {
         "uniequip_002_nightm": "Y"
       },
+      "equipIcons": {
+        "uniequip_002_nightm": "ccr-y"
+      },
       "skills": [
         "灵魂汲取",
         "夜魇魔影"
@@ -15165,6 +16413,9 @@
       ],
       "equips": {
         "uniequip_002_grani": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_grani": "chg-x"
       },
       "skills": [
         "防御力强化·γ型",
@@ -15200,6 +16451,10 @@
       "equips": {
         "uniequip_002_skadi": "Y",
         "uniequip_003_skadi": "X"
+      },
+      "equipIcons": {
+        "uniequip_002_skadi": "dre-y",
+        "uniequip_003_skadi": "dre-x"
       },
       "skills": [
         "迅捷打击·γ型",

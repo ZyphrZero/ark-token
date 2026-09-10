@@ -6,6 +6,7 @@ import {
   buildingSkillUnlockText,
   isBuildingSkillUnlocked,
   operatorData,
+  operatorModuleIconOf,
   operatorName,
   operatorRarity,
   professionKey,
@@ -27,6 +28,12 @@ describe('operatorName / operatorRarity', () => {
   it('未收录干员：名字回退 charId、星级为 null（调用方跳过以保证上传报文正确）', () => {
     expect(operatorName('char_999_unknown')).toBe('char_999_unknown')
     expect(operatorRarity('char_999_unknown')).toBeNull()
+  })
+})
+
+describe('operatorModuleIconOf', () => {
+  it('returns the game resource icon name, not the upload type', () => {
+    expect(operatorModuleIconOf('uniequip_002_amiya')).toBe('ccr-y')
   })
 })
 
