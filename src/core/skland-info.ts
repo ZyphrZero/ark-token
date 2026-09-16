@@ -133,7 +133,7 @@ export interface SklandBuildingHire extends SklandBuildingRoom {
 /** 线索系列：会客室 1-7 号线索对应的阵营，编号顺序即列表顺序 */
 export type ClueSeries = 'RHINE' | 'PENGUIN' | 'BLACKSTEEL' | 'URSUS' | 'GLASGOW' | 'KJERAG' | 'RHODES'
 
-/** 会客室线索板状态（clue 对象，见抓包样本 skland_dump/20260908_capture/raw/game_player_info.uid25186623.decoded.json 的 building.meeting；board 空数组时 sharing 仍可为 true） */
+/** 会客室线索板状态（clue 对象，见抓包样本 skland_dump/20260908_capture/raw/game_player_info.uid2518_mask.decoded.json 的 building.meeting；board 空数组时 sharing 仍可为 true） */
 export interface SklandMeetingClue {
   /** 已置入线索板的系列名，紧凑列表（非按槽位稀疏、无占位元素），槽位 i 是否置入须按系列名成员判断 */
   board: ClueSeries[]

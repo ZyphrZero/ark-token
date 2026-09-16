@@ -61,7 +61,7 @@ characters.sort：
 ### 2. GET /api/v1/game/assist/user-info?uid={uid} — 玩家游戏身份
 
 ```json
-{"gameNickname":"慕长秋#5721",
+{"gameNickname":"<昵称已脱敏>",
  "gameAvatar":{"type":"ICON","id":"avatar_special_MissC","url":"https://web.hycdn.cn/arknights/game/assets/avatar/avatar_special_MissC.png"},
  "isOfficial":true,"isAuth":true}
 ```
@@ -79,7 +79,7 @@ characters.sort：
 
 ```json
 {
-  "uid": "25186623",              // 自己的游戏 uid
+  "uid": "2518***MASKED***",       // 自己的游戏 uid
   "charId": "char_4217_makoto",   // 目标干员
   "level": {"evolvePhase": 2, "level": 1},   // 精英化 + 等级需求；level 是模式值：
                                              // 0=不限、1=所选精英化满级、2=精二 ≥N 级
@@ -147,7 +147,7 @@ characters.sort：
 
 ### 4. POST /api/v1/game/friend — 向检索结果发送好友申请
 
-请求体：`{"uid":"25186623","targetUid":"19719455"}`（targetUid = 结果项里的游戏 uid）。
+请求体：`{"uid":"2518***MASKED***","targetUid":"19719455"}`（targetUid = 结果项里的游戏 uid）。
 响应：`{"code":0,"message":"OK","timestamp":"..."}`（data 为 null）。
 申请成功后，后续 search 结果里该玩家的 `hasSend` 变为 true。
 本次会话共发送 4 例（882055434 / 100792512 / 84530254 / 19719455 / 429641844），
@@ -163,7 +163,7 @@ assist/search 实整请求头见 `assist-search-request-headers.json`。除常�
 | cred | 森空岛凭证（`/web/v1/user/auth/generate_cred_by_code` 返回的 cred） |
 | sign | 请求签名 |
 | timestamp | 签名所用秒级时间戳 |
-| did | 设备 ID（39cbf90f60e6a190） |
+| did | 设备 ID（值已脱敏） |
 | platform / os / vname / vcode / nid / language / channel / manufacture / rid | 客户端元数据（1 / 32 / 1.62.0 / 106200040 / 1 / zh-cn / OF / Xiaomi / 请求随机 id） |
 | xsm / wtoken / is_new_tiger | 数美设备指纹相关 token |
 
@@ -178,7 +178,7 @@ sign = md5( hex( hmac_sha256(key=cred_token, msg=raw) ) )  // cred_token 为 gen
 ## 四、一次完整检索的时序（本次抓包实测）
 
 1. `GET game.skland.com/arknights/support?header=0&bg_color=1e1e1e&hg_media=skland`（WebView 页面，2.90 KB）
-2. `GET /api/v1/game/assist/user-info?uid=25186623`（校验自己的游戏身份）
+2. `GET /api/v1/game/assist/user-info?uid=2518***MASKED***`（校验自己的游戏身份）
 3. `GET /api/v1/game/assist/info`（拉干员目录，仅首次/过期后）
 4. `POST /api/v1/game/assist/search`（每次改筛选条件都整体重查，无分页参数）
 5. `GET web.hycdn.cn/...`（结果中干员图片批量加载）

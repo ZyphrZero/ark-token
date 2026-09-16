@@ -25,7 +25,7 @@
 
 ## 样本与验证
 
-现有抓包：`skland_dump/20260908_capture/raw/game_player_info.uid25186623.decoded.json`，抓包日期 2026-09-08。检查发现 `status.charCnt = 171`，`chars.length = 171`，去重后的 `charId` 数也为 171。样本中的阿米娅包含 `potentialRank`、`mainSkillLvl`、`skills[].specializeLevel` 和 `equip[].{id,level,locked}`，这些字段已在 `SklandPanelCharacter` 中保留；回归用例覆盖潜能、专精和锁定模组，不包含账号身份或凭据。
+现有抓包：`skland_dump/20260908_capture/raw/game_player_info.uid2518_mask.decoded.json`，抓包日期 2026-09-08。检查发现 `status.charCnt = 171`，`chars.length = 171`，去重后的 `charId` 数也为 171。样本中的阿米娅包含 `potentialRank`、`mainSkillLvl`、`skills[].specializeLevel` 和 `equip[].{id,level,locked}`，这些字段已在 `SklandPanelCharacter` 中保留；回归用例覆盖潜能、专精和锁定模组，不包含账号身份或凭据。
 
 该样本只验证当前已声明字段和这一份快照的一致性，不据此推断未来接口的完整性、未公开的干员形态或获取规则。本轮未验证新的森空岛数据字段。
 

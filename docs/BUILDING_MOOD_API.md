@@ -11,8 +11,8 @@
 
 2026-09-10 补充采集（App 已升级 v2.0.0，签名头结构与 player/info schema 均无变化）：
 `skland_dump/20260910_capture/` 含同一份游戏上传快照的双形态拉取——10:58 App base64
-形态（`raw/game_player_info.uid25186623.decoded.json`）与 11:52 明文形态
-（`raw/game_player_info.uid25186623.refetch.json`，直接签名请求所得），两者
+形态（`raw/game_player_info.uid2518_mask.decoded.json`）与 11:52 明文形态
+（`raw/game_player_info.uid2518_mask.refetch.json`，直接签名请求所得），两者
 `lastUpdateTime`/clue/labor/workTime 逐字段一致，再次印证 API 只返回最近一次游戏上传
 状态；另含三个干员的 char-book/char-info 全量样本（见 `docs/CHAR_BOOK_API.md`）。
 注：本文件早前引用的 `skland_dump/building_api/` 样本目录与 Reqable record 编号来自
@@ -97,7 +97,7 @@ App 首页「干员疲劳 N」= 服务端 tiredChars 数 + 客户端按上述外
 | `own` | 自有库数量，**含已置入线索**，上限 10（游戏内 N/10 口径） |
 | `sharing` | 线索交流进行中；开启交流**不要求** board 集齐 7 条（实测只置入 4 条仍为 true） |
 
-2026-09-10 新增现物样本（`skland_dump/20260910_capture/raw/game_player_info.uid25186623.refetch.json`）：
+2026-09-10 新增现物样本（`skland_dump/20260910_capture/raw/game_player_info.uid2518_mask.refetch.json`）：
 `board=["PENGUIN","GLASGOW","KJERAG","RHODES"]`、`own=6`、`sharing=true`——置入 4 个不同
 系列即为 4 个元素的紧凑列表（与 9/8 归档 `skland_dump/20260908_capture/` 的 `board=[]`
 空置形态、以及早前 4 系列样本互证），再次确认无占位稀疏元素、与 own/sharing 无联动。
@@ -276,9 +276,9 @@ remainSecs ≈ remainPoint / speed − (currentTs − lastUpdateTime)
 `trainingCompleteTimeSec()` / `trainingSpeedBonusPercent()`（`src/core/status/building.ts`）。
 
 现物样本：空闲形态（`trainee` 对象保留、`targetSkill/remainPoint/remainSecs` 均 -1、
-`slotState=2`）见 `skland_dump/20260910_capture/raw/game_player_info.uid25186623.refetch.json`；
+`slotState=2`）见 `skland_dump/20260910_capture/raw/game_player_info.uid2518_mask.refetch.json`；
 训练进行中形态（`targetSkill=2`、含 `remainSecs` 口径核实数据）见
-`skland_dump/20260908_capture/raw/game_player_info.uid25186623.decoded.json`。
+`skland_dump/20260908_capture/raw/game_player_info.uid2518_mask.decoded.json`。
 
 技能名称与专精等级（专精一/二/三）**可以**推导：`player/info` 的 `chars[]` 完整结构含
 `skills: [{ id, specializeLevel }]`（槽位顺序 1-3，抓包核实见
